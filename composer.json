@@ -1,0 +1,38 @@
+{
+    "name": "kusaasira/uganda-geo",
+    "description": "Find districts, counties, sub counties, parishes and villages in Uganda",
+    "type": "library",
+    "require": {
+        "php": ">=7.1.3",
+        "phpunit/phpunit": "^9.5"
+    },
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Joshua Kusaasira",
+            "email": "joshuakusaasira@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "Uganda\\": "src/Uganda/"
+        },
+        "files": [
+            "src/Uganda/Geo.php"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Uganda\\GeoServiceProvider"
+            ]
+        }
+    },
+    "require-dev": {
+        "fakerphp/faker": "^1.19",
+        "doctrine/orm": "^2.12",
+        "symfony/cache": "^5.4",
+        "symfony/yaml": "^5.4"
+    }
+}
