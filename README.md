@@ -117,11 +117,38 @@ The data used in this package has been scrapped off This data has been scrapped 
 ## Collaborators ✨
 
 <!-- readme: collaborators -start -->
+<table>
+<tr>
+    <td align="center">
+        <a href="https://github.com/kusaasira">
+            <img src="https://avatars.githubusercontent.com/u/10392992?v=4" width="100;" alt="kusaasira"/>
+            <br />
+            <sub><b>Joshua Kusaasira</b></sub>
+        </a>
+    </td>
+    <td align="center">
+        <a href="https://github.com/Marshud">
+            <img src="https://avatars.githubusercontent.com/u/63245157?v=4" width="100;" alt="Marshud"/>
+            <br />
+            <sub><b>Marshud</b></sub>
+        </a>
+    </td></tr>
+</table>
 <!-- readme: collaborators -end -->
 
 ## Contributors ✨
 
 <!-- readme: contributors -start -->
+<table>
+<tr>
+    <td align="center">
+        <a href="https://github.com/kusaasira">
+            <img src="https://avatars.githubusercontent.com/u/10392992?v=4" width="100;" alt="kusaasira"/>
+            <br />
+            <sub><b>Joshua Kusaasira</b></sub>
+        </a>
+    </td></tr>
+</table>
 <!-- readme: contributors -end -->
 
 ## License
