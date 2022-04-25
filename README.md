@@ -11,8 +11,8 @@ This package gives you the leverage to access all sub levels ranging from distri
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
-  - [Getting All Records](#getting-records)
-  - [Getting Specific Records](#getting-specific-records)
+  - [Retrieve Districts data](#retrieve-districts-data)
+  - [Retrieve Individual geo units data.](#retrieve-individual-geo-units-data)
 - [Credits](#credits)
 - [Contributions](#contributions)
 - [License](#license)
@@ -33,6 +33,8 @@ $ composer require kusaasira/uganda-geo
 ```
 
 ## Usage
+
+The examples below show examples of usage of the package and their resulting outputs
 
 ### Retrieve Districts data.
 
@@ -81,6 +83,45 @@ echo $villages;
 
 ### Retrieve Individual geo units data.
 
+#### Retrieve all districts
+
+```php
+# Query Districts
+<?php
+require 'vendor/autoload.php';
+
+use Uganda\Geo;
+
+$geo = new Geo();
+$all_districts = $geo->districts()->all();
+echo $all_districts;
+```
+
+```json
+{
+  "districts": {
+    "count": 135,
+    "data": [
+      {
+        "id": "98",
+        "name": "Abim"
+      },
+      {
+        "id": "68",
+        "name": "Adjumani"
+      },
+      {
+        "id": "23",
+        "name": "Agago"
+      },
+      ...
+    ]
+  }
+}
+```
+
+### Retrieve all counties in Uganda
+
 ```php
 <?php
 require 'vendor/autoload.php';
@@ -88,26 +129,151 @@ require 'vendor/autoload.php';
 use Uganda\Geo;
 
 $geo = new Geo();
-
-# Retrieve all districts
-$all_districts = $geo->districts()->all();
-echo $all_districts;
-
-# Retrieve all counties in Uganda
 $counties = $geo->counties()->all();
 echo $counties;
+```
 
-# Retrieve all sub counties in Uganda
+```json
+{
+  "counties": {
+    "count": 303,
+    "data": [
+      {
+      "id": "242",
+      "name": "Labwor County",
+      "district": "98"
+      },
+      {
+      "id": "166",
+      "name": "Adjumani East County",
+      "district": "68"
+      },
+      {
+      "id": "165",
+      "name": "Adjumani West County",
+      "district": "68"
+      },
+      ...
+    ]
+  }
+}
+```
+
+### Retrieve all sub counties in Uganda
+
+```php
+<?php
+require 'vendor/autoload.php';
+
+use Uganda\Geo;
+
+$geo = new Geo();
 $sub_counties = $geo->sub_counties()->all();
 echo $sub_counties;
+```
 
-# Retrieve all parishes in Uganda
+```json
+{
+  "sub_counties": {
+    "count": 2120,
+    "data": [
+      {
+      "id": "242",
+      "name": "Labwor County",
+      "district": "98"
+      },
+      {
+      "id": "166",
+      "name": "Adjumani East County",
+      "district": "68"
+      },
+      {
+      "id": "165",
+      "name": "Adjumani West County",
+      "district": "68"
+      },
+      ...
+    ]
+  }
+}
+```
+
+### Retrieve all parishes in Uganda
+
+```php
+require 'vendor/autoload.php';
+
+use Uganda\Geo;
+
+$geo = new Geo();
+<?php
 $parishes = $geo->parishes()->all();
 echo $parishes;
+```
 
-# Retrieve villages in Uganda
+```json
+{
+  "parishes": {
+    "count": 10365,
+    "data": [
+      {
+      "id": "9127",
+      "name": "Abongepach",
+      "subcounty": "1546"
+      },
+      {
+      "id": "9150",
+      "Name": "Adwal",
+      "subcounty": "1546"
+      },
+      {
+      "id": "7279",
+      "name": "Aninata",
+      "subcounty": "1546"
+      },
+      ...
+    ]
+  }
+}
+```
+
+### Retrieve villages in Uganda
+
+```php
+require 'vendor/autoload.php';
+
+use Uganda\Geo;
+
+$geo = new Geo();
+<?php
 $villages = $geo->villages()->all();
 echo $villages;
+```
+
+```json
+{
+  "villages": {
+    "count": 71250,
+    "data": [
+      {
+        "id":"57217",
+        "name":"ABONGEPACH",
+        "parish":"9127"
+      },
+      {
+        "id":"58161",
+        "name":"AMITA PRISON",
+        "parish":"9127"
+      },
+      {
+        "id":"58171",
+        "name":"AMONICEK",
+        "parish":"9127"
+      },
+      ...
+    ]
+  }
+}
 ```
 
 ## Credits
