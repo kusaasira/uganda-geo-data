@@ -286,6 +286,13 @@ The data used in this package has been scrapped off This data has been scrapped 
 <table>
 <tr>
     <td align="center">
+        <a href="https://github.com/timek">
+            <img src="https://avatars.githubusercontent.com/u/2828143?v=4" width="100;" alt="timek"/>
+            <br />
+            <sub><b>Timo Ek</b></sub>
+        </a>
+    </td>
+    <td align="center">
         <a href="https://github.com/kusaasira">
             <img src="https://avatars.githubusercontent.com/u/10392992?v=4" width="100;" alt="kusaasira"/>
             <br />
