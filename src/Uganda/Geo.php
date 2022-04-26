@@ -109,4 +109,23 @@ class Geo extends Helpers {
         }
         return json_encode(end($properties));
     }
+
+     /**
+     * Retrieve count
+     * @param array $properties 
+     */
+    public function count(){  
+        $properties = get_object_vars($this); 
+            if (is_array($properties) || is_object($properties)){
+                foreach($properties as $p){ 
+                    foreach($p as $x){
+                        return number_format($x['count']);
+                    }
+            } 
+        }  
+    }
+
+
+    
 }
+
