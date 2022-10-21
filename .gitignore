@@ -2,3 +2,4 @@ vendor/
 build/
 yarn.lock
 node_modules/
+pull_request.md

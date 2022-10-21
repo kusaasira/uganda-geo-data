@@ -7,11 +7,10 @@ use \Faker\Provider\en_UG\Address;
 
 /**
  * @covers \Uganda\Geo
-*/
+ */
 final class CountyTest extends TestCase {
 
-    public function setUp() : void
-    {
+    public function setUp(): void {
         $this->Uganda = new Geo();
         $this->faker = Factory::create();
         $this->faker->addProvider(new Address($this->faker));
@@ -20,7 +19,7 @@ final class CountyTest extends TestCase {
     /**
      * @runInSeparateProcess
      * @covers \Uganda\Geo::counties
-    */
+     */
     public function testUgandaHasCounties() {
         $district_data = $this->Uganda->counties()->all();
         $data = json_decode($district_data);
