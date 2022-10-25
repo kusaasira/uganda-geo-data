@@ -3,7 +3,7 @@
     "description": "Find districts, counties, sub counties, parishes and villages in Uganda",
     "type": "library",
     "require": {
-        "php": ">=7.4.*",
+        "php": ">=7.4",
         "phpunit/phpunit": "^9.5",
         "ext-json": "*"
     },
@@ -39,6 +39,7 @@
     },
     "scripts": {
         "cs-test": "ecs check src",
-        "cs-fix": "ecs check src --fix"
+        "cs-fix": "ecs check src --fix",
+        "test": "phpunit"
     }
 }

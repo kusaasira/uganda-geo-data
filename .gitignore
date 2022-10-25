@@ -7,3 +7,5 @@ pull_request.md
 .idea/
 
 composer.lock
+
+.phpunit.result.cache
