@@ -3,7 +3,7 @@ name: CI
 on: [push]
 
 jobs:
-  Unit Tests:
+  Unit-Tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,7 +26,7 @@ jobs:
       - name: Run PHPUnit
         run: ./vendor/bin/phpunit
 
-  Coding Standards:
+  Coding-Standards:
     runs-on: ubuntu-latest
 
     steps:
