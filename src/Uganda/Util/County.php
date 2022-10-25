@@ -2,9 +2,11 @@
 
 namespace Uganda\Util;
 
-trait County {
+trait County
+{
     use Helpers;
-    public function counties($county = null) {
+    public function counties($county = null)
+    {
         $counties = $this->fetch('counties.json');
         if ($county) {
             $filtered = array_filter($counties, $this->filter('name', $county));

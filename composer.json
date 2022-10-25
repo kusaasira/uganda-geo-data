@@ -34,6 +34,11 @@
         "fakerphp/faker": "^1.19",
         "doctrine/orm": "^2.12",
         "symfony/cache": "^5.4",
-        "symfony/yaml": "^5.4"
+        "symfony/yaml": "^5.4",
+        "symplify/easy-coding-standard": "^11.1"
+    },
+    "scripts": {
+        "cs-test": "ecs check src",
+        "cs-fix": "ecs check src --fix"
     }
 }
