@@ -2,9 +2,11 @@
 
 namespace Uganda\Util;
 
-trait District {
+trait District
+{
     use Helpers;
-    public function districts($district = null) {
+    public function districts($district = null)
+    {
         $districts = $this->fetch('districts.json');
 
         if ($district) {

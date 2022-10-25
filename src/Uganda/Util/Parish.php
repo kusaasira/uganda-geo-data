@@ -2,9 +2,11 @@
 
 namespace Uganda\Util;
 
-trait Parish {
+trait Parish
+{
     use Helpers;
-    public function parishes($parish = null) {
+    public function parishes($parish = null)
+    {
         $parishes = $this->fetch('parishes.json');
         if ($parish) {
             $filtered = array_filter($parishes, $this->filter('name', $parish));
@@ -15,7 +17,6 @@ trait Parish {
             }
         } else {
             if (isset($this->_district) && isset($this->_county) && isset($this->_sub_county)) {
-
                 $filtered = array_filter($parishes, $this->filter('subcounty', $this->_sub_county));
                 $this->_parishes['parishes'] = $this->format([...$filtered]);
             } else {

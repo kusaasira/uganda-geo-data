@@ -2,9 +2,11 @@
 
 namespace Uganda\Util;
 
-trait Village {
+trait Village
+{
     use Helpers;
-    public function villages() {
+    public function villages()
+    {
         $villages = $this->fetch('villages.json');
 
         if (isset($this->_district) && isset($this->_county) && isset($this->_sub_county) && isset($this->_parish)) {

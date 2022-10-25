@@ -286,24 +286,10 @@ The data used in this package has been scrapped off This data has been scrapped 
 <table>
 <tr>
     <td align="center">
-        <a href="https://github.com/timek">
-            <img src="https://avatars.githubusercontent.com/u/2828143?v=4" width="100;" alt="timek"/>
+        <a href="https://github.com/RoadSigns">
+            <img src="https://avatars.githubusercontent.com/u/5822139?v=4" width="100;" alt="RoadSigns"/>
             <br />
-            <sub><b>Timo Ek</b></sub>
-        </a>
-    </td>
-    <td align="center">
-        <a href="https://github.com/kusaasira">
-            <img src="https://avatars.githubusercontent.com/u/10392992?v=4" width="100;" alt="kusaasira"/>
-            <br />
-            <sub><b>Joshua Kusaasira</b></sub>
-        </a>
-    </td>
-    <td align="center">
-        <a href="https://github.com/Marshud">
-            <img src="https://avatars.githubusercontent.com/u/63245157?v=4" width="100;" alt="Marshud"/>
-            <br />
-            <sub><b>Marshud</b></sub>
+            <sub><b>Zack</b></sub>
         </a>
     </td></tr>
 </table>
@@ -319,6 +305,13 @@ The data used in this package has been scrapped off This data has been scrapped 
             <img src="https://avatars.githubusercontent.com/u/10392992?v=4" width="100;" alt="kusaasira"/>
             <br />
             <sub><b>Joshua Kusaasira</b></sub>
+        </a>
+    </td>
+    <td align="center">
+        <a href="https://github.com/RoadSigns">
+            <img src="https://avatars.githubusercontent.com/u/5822139?v=4" width="100;" alt="RoadSigns"/>
+            <br />
+            <sub><b>Zack</b></sub>
         </a>
     </td></tr>
 </table>

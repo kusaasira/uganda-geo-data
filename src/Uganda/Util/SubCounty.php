@@ -2,9 +2,11 @@
 
 namespace Uganda\Util;
 
-trait SubCounty {
+trait SubCounty
+{
     use Helpers;
-    public function sub_counties($sub_county = null) {
+    public function sub_counties($sub_county = null)
+    {
         $sub_counties = $this->fetch('sub_counties.json');
         if ($sub_county) {
             $filtered = array_filter($sub_counties, $this->filter('name', $sub_county));

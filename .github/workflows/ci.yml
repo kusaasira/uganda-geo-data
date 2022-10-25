@@ -1,0 +1,47 @@
+name: CI
+
+on: [push]
+
+jobs:
+  Unit-Tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          extensions: json
+          tools: composer:v2
+          coverage: none
+
+      - name: Run composer install
+        run: composer install -n --prefer-dist
+
+      - name: Run ECS
+        run: ./vendor/bin/ecs check src
+
+      - name: Run PHPUnit
+        run: ./vendor/bin/phpunit
+
+  Coding-Standards:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          extensions: json
+          tools: composer:v2
+          coverage: none
+
+      - name: Run composer install
+        run: composer install -n --prefer-dist
+
+      - name: Run ECS
+        run: ./vendor/bin/ecs check src
