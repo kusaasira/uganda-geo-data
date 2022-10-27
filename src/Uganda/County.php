@@ -1,6 +1,8 @@
 <?php
 
-namespace Uganda\Util;
+namespace Uganda;
+
+use Uganda\Util\Helpers;
 
 trait County
 {
