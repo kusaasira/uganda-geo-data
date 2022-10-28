@@ -1,31 +1,46 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Uganda;
 
-use Uganda\Util\Helpers;
-
-trait Parish
+final class Parish
 {
-    use Helpers;
-    public function parishes($parish = null)
+    private int $id;
+
+    private string $name;
+
+    /** @var array<int, Village> */
+    private array $villages;
+
+    public function __construct(int $id, string $name, array $villages = [])
     {
-        $parishes = $this->fetch('parishes.json');
-        if ($parish) {
-            $filtered = array_filter($parishes, $this->filter('name', $parish));
-            if (empty($filtered)) {
-                $this->_error['parish'] = 'Parish ' . $parish . ' does not exist.';
-            } else {
-                $this->_parish = [...$filtered][0]['id'];
-            }
-        } else {
-            if (isset($this->_district) && isset($this->_county) && isset($this->_sub_county)) {
-                $filtered = array_filter($parishes, $this->filter('subcounty', $this->_sub_county));
-                $this->_parishes['parishes'] = $this->format([...$filtered]);
-            } else {
-                $this->_parishes['parishes'] = $this->format($parishes);
-            }
+        $this->id = $id;
+        $this->name = $name;
+        $this->villages = $villages;
+    }
+
+    public function id(): int
+    {
+        return $this->id;
+    }
+
+    public function name(): string
+    {
+        return $this->name;
+    }
+
+    public function villages(): array
+    {
+        return $this->villages;
+    }
+
+    public function village(string $name): Village
+    {
+        if (!in_array($name, $this->villages, true)) {
+            // Throw Exception
         }
 
-        return $this;
+        return $this->villages[$name];
     }
 }

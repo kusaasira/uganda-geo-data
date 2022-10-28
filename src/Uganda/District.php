@@ -1,27 +1,49 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Uganda;
 
-use Uganda\Util\Helpers;
-
-trait District
+final class District
 {
-    use Helpers;
-    public function districts($district = null)
+    private int $id;
+
+    private string $name;
+
+    /** @var array<int, County> */
+    private $counties;
+
+    public function __construct(int $id, string $name, array $counties = [])
     {
-        $districts = $this->fetch('districts.json');
+        $this->id = $id;
+        $this->name = $name;
+        $this->counties = $counties;
+    }
 
-        if ($district) {
-            $filtered = array_filter($districts, $this->filter('name', $district));
+    /**
+     * @return array<int, County>
+     */
+    public function counties(): array
+    {
+        return $this->counties;
+    }
 
-            if (empty($filtered)) {
-                $this->_error['district'] = 'District ' . $district . ' does not exist.';
-            } else {
-                $this->_district = [...$filtered][0]['id'];
-            }
-        } else {
-            $this->_districts['districts'] = $this->format($districts);
+    public function county(string $name): County
+    {
+        if (!in_array($name, $this->counties, true)) {
+            // Throw Exception
         }
-        return $this;
+
+        return $this->counties[$name];
+    }
+
+    public function id(): int
+    {
+        return $this->id;
+    }
+
+    public function name(): string
+    {
+        return $this->name;
     }
 }

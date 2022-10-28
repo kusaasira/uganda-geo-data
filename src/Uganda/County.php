@@ -1,31 +1,46 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Uganda;
 
-use Uganda\Util\Helpers;
-
-trait County
+final class County
 {
-    use Helpers;
-    public function counties($county = null)
+    private int $id;
+
+    private string $name;
+
+    /** @var array<int, SubCounty */
+    private array $subCounties;
+
+    public function __construct(int $id, string $name, array $subCounties = [])
     {
-        $counties = $this->fetch('counties.json');
-        if ($county) {
-            $filtered = array_filter($counties, $this->filter('name', $county));
-            if (empty($filtered)) {
-                $this->_error['county'] = 'County ' . $county . ' does not exist.';
-            } else {
-                $this->_county = [...$filtered][0]['id'];
-            }
-        } else {
-            if (isset($this->_district)) {
-                $filtered = array_filter($counties, $this->filter('district', $this->_district));
-                $this->_counties['counties'] = $this->format([...$filtered]);
-            } else {
-                $this->_counties['counties'] = $this->format($counties);
-            }
+        $this->id = $id;
+        $this->name = $name;
+        $this->subCounties = $subCounties;
+    }
+
+    public function subCounty(string $name): SubCounty
+    {
+        if (!in_array($name, $this->subCounties, true)) {
+            // Throw Exception
         }
 
-        return $this;
+        return $this->subCounties[$name];
+    }
+
+    public function id(): int
+    {
+        return $this->id;
+    }
+
+    public function name(): string
+    {
+        return $this->name;
+    }
+
+    public function subCounties(): array
+    {
+        return $this->subCounties;
     }
 }

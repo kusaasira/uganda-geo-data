@@ -1,22 +1,44 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Uganda;
 
-use Uganda\Util\Helpers;
-
-class Uganda
+final class Uganda
 {
-    use Helpers, District, County, SubCounty, Parish;
+    /**
+     * @var array<int, District>
+     */
+    private array $districts;
 
-    public function all()
+    public function __construct()
     {
-        $properties = get_object_vars($this);
-        header("Content-Type:application/json");
+        $this->districts = [];
+    }
 
-        if (array_key_exists("_error", $properties)) {
-            $error['errors'] = $properties['_error'];
-            return json_encode($error);
+    /**
+     * @return array<int, District>
+     */
+    public function districts(): array
+    {
+        return $this->districts;
+    }
+
+    public function district(string $name): District
+    {
+        if (!in_array($name, $this->districts, true)) {
+            // Throw Exception
         }
-        return json_encode(end($properties));
+
+        return $this->districts[$name];
+    }
+
+    /**
+     * @return array<int, County>
+     */
+    public function counties(): array
+    {
+        $counties = [];
+        foreach ($)
     }
 }
