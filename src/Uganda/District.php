@@ -15,13 +15,13 @@ final class District
 
     private string $name;
 
-    /** @var array<int, County> */
+    /** @var array<string, County> */
     private $counties;
 
     /**
      * @param int $id
      * @param string $name
-     * @param County[] $counties
+     * @param array<string, County> $counties
      */
     public function __construct(int $id, string $name, array $counties = [])
     {
@@ -41,7 +41,7 @@ final class District
     }
 
     /**
-     * @return array<int, County>
+     * @return array<string, County>
      */
     public function counties(): array
     {
@@ -53,7 +53,7 @@ final class District
      */
     public function county(string $name): County
     {
-        if (!in_array($name, $this->counties, true)) {
+        if (!array_key_exists(strtolower($name), $this->counties)) {
             throw new CountyNotFoundException(sprintf('unable to locate county called %s', $name));
         }
 
@@ -65,7 +65,7 @@ final class District
     {
         $subCounties = [];
         foreach ($this->counties() as $county) {
-            array_push($subCounties, ...$county->subCounties());
+            array_push($subCounties, ...array_values($county->subCounties()));
         }
         return $subCounties;
     }
@@ -91,7 +91,7 @@ final class District
     {
         $parishes = [];
         foreach ($this->subCounties() as $subCounty) {
-            array_push($parishes, ...$subCounty->parishes());
+            array_push($parishes, ...array_values($subCounty->parishes()));
         }
         return $parishes;
     }
@@ -117,7 +117,7 @@ final class District
     {
         $villages = [];
         foreach ($this->parishes() as $parish) {
-            array_push($villages, ...$parish->villages());
+            array_push($villages, ...array_values($parish->villages()));
         }
         return $villages;
     }
@@ -138,7 +138,8 @@ final class District
         throw new VillageNotFoundException();
     }
 
-    /** @return array<string, array<int, array<string, array<int, array<string, array<int, array<string,array<array<string, int|string>>|int|string>>|int|string>>|int|string>>|int|string> */
+    /** @return array<string,
+    array<string, array<string, array<string, array<string, array<string, array<string, array<array<string, int|string>>|int|string>>|int|string>>|int|string>>|int|string> */
     public function toArray(): array
     {
         return [

@@ -16,14 +16,14 @@ final class County
 
     private int $districtId;
 
-    /** @var SubCounty[] */
+    /** @var array<string, SubCounty> */
     private array $subCounties;
 
     /**
      * @param int $id
      * @param string $name
      * @param int $districtId
-     * @param SubCounty[] $subCounties
+     * @param array<string, SubCounty> $subCounties
      */
     public function __construct(int $id, string $name, int $districtId, array $subCounties = [])
     {
@@ -53,14 +53,14 @@ final class County
      */
     public function subCounty(string $name): SubCounty
     {
-        if (!in_array($name, $this->subCounties, true)) {
+        if (!array_key_exists(strtolower($name), $this->subCounties)) {
             throw new SubCountyNotFoundException(sprintf('unable to locate sub county called %s', $name));
         }
 
         return $this->subCounties[$name];
     }
 
-    /** @return array<int, SubCounty> */
+    /** @return array<string, SubCounty> */
     public function subCounties(): array
     {
         return $this->subCounties;
@@ -71,7 +71,7 @@ final class County
     {
         $parishes = [];
         foreach ($this->subCounties() as $subCounty) {
-            array_push($parishes, ...$subCounty->parishes());
+            array_push($parishes, ...array_values($subCounty->parishes()));
         }
         return $parishes;
     }
@@ -97,7 +97,7 @@ final class County
     {
         $villages = [];
         foreach ($this->parishes() as $parish) {
-            array_push($villages, ...$parish->villages());
+            array_push($villages, ...array_values($parish->villages()));
         }
         return $villages;
     }
@@ -118,7 +118,7 @@ final class County
         throw new VillageNotFoundException();
     }
 
-    /** @return array<string, array<int, array<string, array<int, array<string, array<array<string,int|string>>|int|string>>|int|string>>|int|string> */
+    /** @return array<string, array<string, array<string, array<string,array<string, array<array<string, int|string>>|int|string>>|int|string>>|int|string> */
     public function toArray(): array
     {
         return [

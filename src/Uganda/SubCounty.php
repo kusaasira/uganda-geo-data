@@ -15,13 +15,13 @@ final class SubCounty
 
     private int $countyId;
 
-    /** @var array<int, Parish> */
+    /** @var array<string, Parish> */
     private array $parishes;
 
     /**
      * @param int $id
      * @param string $name
-     * @param Parish[] $parishes
+     * @param array<string, Parish> $parishes
      */
     public function __construct(int $id, string $name, int $countyId, array $parishes = [])
     {
@@ -46,7 +46,7 @@ final class SubCounty
         return $this->countyId;
     }
 
-    /** @return array<int, Parish> */
+    /** @return array<string, Parish> */
     public function parishes(): array
     {
         return $this->parishes;
@@ -54,11 +54,11 @@ final class SubCounty
 
     public function parish(string $name): Parish
     {
-        if (!in_array($name, $this->parishes, true)) {
+        if (!array_key_exists(strtolower($name), $this->parishes)) {
             throw new ParishNotFoundException(sprintf('unable to locate parish called %s', $name));
         }
 
-        return $this->parishes[$name];
+        return $this->parishes[strtolower($name)];
     }
 
     /** @return array<int, Village> */
@@ -66,7 +66,7 @@ final class SubCounty
     {
         $villages = [];
         foreach ($this->parishes() as $parish) {
-            array_push($villages, ...$parish->villages());
+            array_push($villages, ...array_values($parish->villages()));
         }
         return $villages;
     }
@@ -84,10 +84,10 @@ final class SubCounty
             }
         }
 
-        throw new VillageNotFoundException();
+        throw new VillageNotFoundException(sprintf('unable to locate village called %s', $name));
     }
 
-    /** @return array<string, array<int, array<string, array<array<string, int|string>>|int|string>>|int|string> */
+    /** @return array<string, array<string, array<string, array<array<string, int|string>>|int|string>>|int|string> */
     public function toArray(): array
     {
         return [

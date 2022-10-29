@@ -13,17 +13,17 @@ use Uganda\Exceptions\VillageNotFoundException;
 final class Uganda
 {
     /**
-     * @var array<int, District>
+     * @var array<string, District>
      */
     private array $districts;
 
     public function __construct()
     {
-        $this->districts = [];
+        $this->districts = $this->generateTree();
     }
 
     /**
-     * @return array<int, District>
+     * @return array<string, District>
      */
     public function districts(): array
     {
@@ -35,11 +35,11 @@ final class Uganda
      */
     public function district(string $name): District
     {
-        if (!in_array($name, $this->districts, true)) {
-            throw new DistrictNotFoundException();
+        if (!array_key_exists(strtolower($name), $this->districts)) {
+            throw new DistrictNotFoundException(sprintf('unable to locate district called %s', $name));
         }
 
-        return $this->districts[$name];
+        return $this->districts[strtolower($name)];
     }
 
     /**
@@ -49,7 +49,7 @@ final class Uganda
     {
         $counties = [];
         foreach ($this->districts() as $district) {
-            array_push($counties, ...$district->counties());
+            array_push($counties, ...array_values($district->counties()));
         }
         return $counties;
     }
@@ -75,7 +75,7 @@ final class Uganda
     {
         $subCounties = [];
         foreach ($this->counties() as $county) {
-            array_push($subCounties, ...$county->subCounties());
+            array_push($subCounties, ...array_values($county->subCounties()));
         }
         return $subCounties;
     }
@@ -101,7 +101,7 @@ final class Uganda
     {
         $parishes = [];
         foreach ($this->subCounties() as $subCounty) {
-            array_push($parishes, ...$subCounty->parishes());
+            array_push($parishes, ...array_values($subCounty->parishes()));
         }
         return $parishes;
     }
@@ -111,6 +111,7 @@ final class Uganda
      */
     public function parish(string $name): Parish
     {
+        $name = strtolower($name);
         foreach ($this->subCounties() as $subCounty) {
             try {
                 return $subCounty->parish($name);
@@ -127,7 +128,7 @@ final class Uganda
     {
         $villages = [];
         foreach ($this->parishes() as $parish) {
-            array_push($villages, ...$parish->villages());
+            array_push($villages, ...array_values($parish->villages()));
         }
         return $villages;
     }
