@@ -301,17 +301,17 @@ The data used in this package has been scrapped off This data has been scrapped 
 <table>
 <tr>
     <td align="center">
-        <a href="https://github.com/kusaasira">
-            <img src="https://avatars.githubusercontent.com/u/10392992?v=4" width="100;" alt="kusaasira"/>
-            <br />
-            <sub><b>Joshua Kusaasira</b></sub>
-        </a>
-    </td>
-    <td align="center">
         <a href="https://github.com/RoadSigns">
             <img src="https://avatars.githubusercontent.com/u/5822139?v=4" width="100;" alt="RoadSigns"/>
             <br />
             <sub><b>Zack</b></sub>
+        </a>
+    </td>
+    <td align="center">
+        <a href="https://github.com/kusaasira">
+            <img src="https://avatars.githubusercontent.com/u/10392992?v=4" width="100;" alt="kusaasira"/>
+            <br />
+            <sub><b>Joshua Kusaasira</b></sub>
         </a>
     </td></tr>
 </table>
