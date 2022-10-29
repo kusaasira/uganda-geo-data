@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Uganda;
 
+use Uganda\Exceptions\ParishNotFoundException;
+
 final class SubCounty
 {
     private int $id;
@@ -39,7 +41,7 @@ final class SubCounty
     public function parish(string $name): Parish
     {
         if (!in_array($name, $this->parishes, true)) {
-            // Throw Exception
+            throw new ParishNotFoundException(sprintf('unable to locate parish called %s', $name));
         }
 
         return $this->parishes[$name];

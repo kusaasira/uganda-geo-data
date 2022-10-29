@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Uganda;
 
+use Uganda\Exceptions\SubCountyNotFoundException;
+
 final class County
 {
     private int $id;
@@ -20,10 +22,13 @@ final class County
         $this->subCounties = $subCounties;
     }
 
+    /**
+     * @throws SubCountyNotFoundException
+     */
     public function subCounty(string $name): SubCounty
     {
         if (!in_array($name, $this->subCounties, true)) {
-            // Throw Exception
+            throw new SubCountyNotFoundException(sprintf('unable to locate sub county called %s', $name));
         }
 
         return $this->subCounties[$name];

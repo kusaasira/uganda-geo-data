@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Uganda;
 
+use Uganda\Exceptions\CountyNotFoundException;
+
 final class District
 {
     private int $id;
@@ -28,10 +30,13 @@ final class District
         return $this->counties;
     }
 
+    /**
+     * @throws CountyNotFoundException
+     */
     public function county(string $name): County
     {
         if (!in_array($name, $this->counties, true)) {
-            // Throw Exception
+            throw new CountyNotFoundException(sprintf('unable to locate county called %s', $name));
         }
 
         return $this->counties[$name];
