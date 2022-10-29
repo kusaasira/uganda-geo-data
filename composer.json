@@ -35,7 +35,8 @@
         "doctrine/orm": "^2.12",
         "symfony/cache": "^5.4",
         "symfony/yaml": "^5.4",
-        "symplify/easy-coding-standard": "^11.1"
+        "symplify/easy-coding-standard": "^11.1",
+        "phpstan/phpstan": "^1.8"
     },
     "scripts": {
         "cs-test": "ecs check src",
