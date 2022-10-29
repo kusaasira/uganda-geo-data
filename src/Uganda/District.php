@@ -137,4 +137,16 @@ final class District
 
         throw new VillageNotFoundException();
     }
+
+    /** @return array<string, array<int, array<string, array<int, array<string, array<int, array<string,array<array<string, int|string>>|int|string>>|int|string>>|int|string>>|int|string> */
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id(),
+            'name' => $this->name(),
+            'counties' => array_map(static function (County $county) {
+                return $county->toArray();
+            }, $this->counties())
+        ];
+    }
 }

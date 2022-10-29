@@ -12,6 +12,8 @@ final class Parish
 
     private string $name;
 
+    private int $subCountyId;
+
     /** @var array<int, Village> */
     private array $villages;
 
@@ -20,10 +22,11 @@ final class Parish
      * @param string $name
      * @param Village[] $villages
      */
-    public function __construct(int $id, string $name, array $villages = [])
+    public function __construct(int $id, string $name, int $subCountyId, array $villages = [])
     {
         $this->id = $id;
         $this->name = $name;
+        $this->subCountyId = $subCountyId;
         $this->villages = $villages;
     }
 
@@ -35,6 +38,11 @@ final class Parish
     public function name(): string
     {
         return $this->name;
+    }
+
+    public function subCountyId(): int
+    {
+        return $this->subCountyId;
     }
 
     /** @return Village[] */
@@ -53,5 +61,18 @@ final class Parish
         }
 
         return $this->villages[$name];
+    }
+
+    /** @return array<string, array<array<string, int|string>>|int|string> */
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id(),
+            'name' => $this->name(),
+            'subCountyId' => $this->subCountyId(),
+            'villages' => array_map(static function (Village $village) {
+                return $village->toArray();
+            }, $this->villages())
+        ];
     }
 }

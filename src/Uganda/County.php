@@ -14,18 +14,22 @@ final class County
 
     private string $name;
 
+    private int $districtId;
+
     /** @var SubCounty[] */
     private array $subCounties;
 
     /**
      * @param int $id
      * @param string $name
+     * @param int $districtId
      * @param SubCounty[] $subCounties
      */
-    public function __construct(int $id, string $name, array $subCounties = [])
+    public function __construct(int $id, string $name, int $districtId, array $subCounties = [])
     {
         $this->id = $id;
         $this->name = $name;
+        $this->districtId = $districtId;
         $this->subCounties = $subCounties;
     }
 
@@ -37,6 +41,11 @@ final class County
     public function name(): string
     {
         return $this->name;
+    }
+
+    public function districtId(): int
+    {
+        return $this->districtId;
     }
 
     /**
@@ -107,5 +116,18 @@ final class County
         }
 
         throw new VillageNotFoundException();
+    }
+
+    /** @return array<string, array<int, array<string, array<int, array<string, array<array<string,int|string>>|int|string>>|int|string>>|int|string> */
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id(),
+            'name' => $this->name(),
+            'districtId' => $this->districtId(),
+            'subCounties' => array_map(static function (SubCounty $subCounty) {
+                return $subCounty->toArray();
+            }, $this->subCounties())
+        ];
     }
 }
