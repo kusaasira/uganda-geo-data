@@ -1,74 +1,53 @@
 <?php
 
-use Uganda\Geo;
+declare(strict_types=1);
+
+namespace unit;
+
 use PHPUnit\Framework\TestCase;
-use Faker\Factory;
-use \Faker\Provider\en_UG\Address;
+use Uganda\Exceptions\VillageNotFoundException;
+use Uganda\Parish;
+use Uganda\Village;
 
-/**
- * @covers \Uganda\Geo
- */
-final class ParishTest extends TestCase {
+final class ParishTest extends TestCase
+{
+    private Parish $parish;
 
-    public function setUp(): void {
-        $this->Uganda = new Geo();
-        $this->faker = Factory::create();
-        $this->faker->addProvider(new Address($this->faker));
+    public function setUp(): void
+    {
+        parent::setUp();
 
-        $this->district = $this->faker->district();
-        $counties = $this->Uganda->districts($this->district)->counties()->all();
-        $this->county = json_decode($counties)->counties->data[0]->name;
-
-        $sub_counties = $this->Uganda->districts($this->district)->counties($this->county)->sub_counties()->all();
-        $this->sub_county = json_decode($sub_counties)->sub_counties->data[0]->name;
+        $village1 = new Village(123, 'New York', 456);
+        $village2 = new Village(124, 'Boston', 456);
+        $this->parish = new Parish(456, 'Murica', 789, [
+            strtolower($village1->name()) => $village1,
+            strtolower($village2->name()) => $village2
+        ]);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @covers \Uganda\Geo::parishes
-     */
-    public function testUgandaHasParishes() {
-        $parish_data = $this->Uganda->parishes()->all();
-        $data = json_decode($parish_data);
-        $this->assertGreaterThanOrEqual(10365, $data->parishes->count);
+    /** @test */
+    public function canAccessProperties(): void
+    {
+        $this->assertSame(456, $this->parish->id());
+        $this->assertSame('Murica', $this->parish->name());
+        $this->assertSame(789, $this->parish->subCountyId());
+        $this->assertIsArray($this->parish->villages());
+        $this->assertCount(2, $this->parish->villages());
     }
 
-    /**
-     * @runInSeparateProcess
-     * @covers \Uganda\Geo::districts
-     * @covers \Uganda\Geo::counties
-     * @covers \Uganda\Geo::sub_counties
-     * @covers \Uganda\Geo::parishes
-     */
-    public function testParishInNonExistentSubCounty() {
-        $fake_sub_county = $this->faker->name;
-        $district_data = $this
-            ->Uganda
-            ->districts($this->faker->district())
-            ->counties($this->county)
-            ->sub_counties($fake_sub_county)
-            ->parishes()
-            ->all();
-        $data = json_decode($district_data);
-        $this->assertEquals('Sub county ' . $fake_sub_county . ' does not exist.', $data->errors->sub_county);
+    /** @test */
+    public function canAccessSpecificVillage(): void
+    {
+        $village = $this->parish->village('Boston');
+        $this->assertSame('Boston', $village->name());
     }
 
-    /**
-     * @runInSeparateProcess
-     * @covers \Uganda\Geo::districts
-     * @covers \Uganda\Geo::counties
-     * @covers \Uganda\Geo::sub_counties
-     * @covers \Uganda\Geo::parishes
-     */
-    public function testDistrictHasParishes() {
-        $parishes = $this
-            ->Uganda
-            ->districts($this->district)
-            ->counties($this->county)
-            ->sub_counties($this->sub_county)
-            ->parishes()->all();
-        $parish_data = json_decode($parishes);
+    /** @test */
+    public function throwsVillageNotFoundExceptionWhenVillageDoesNotExist(): void
+    {
+        $this->expectException(VillageNotFoundException::class);
+        $this->expectExceptionMessage('unable to locate village called Dallas');
 
-        $this->assertGreaterThan(0, $parish_data->parishes->count);
+        $this->parish->village('Dallas');
     }
 }

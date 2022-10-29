@@ -180,10 +180,6 @@ final class Uganda
         /** @var array<string, array<string, Parish>> $mappedParishes */
         $mappedParishes = [];
         foreach ($parishes as $parish) {
-            if (!isset($parish['name'])) {
-                var_dump($parish);
-                die();
-            }
             $mappedParishes[$parish['subcounty']][strtolower($parish['name'])] = new Parish(
                 (int) $parish['id'],
                 ucfirst($parish['name']),

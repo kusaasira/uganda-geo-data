@@ -57,7 +57,7 @@ final class District
             throw new CountyNotFoundException(sprintf('unable to locate county called %s', $name));
         }
 
-        return $this->counties[$name];
+        return $this->counties[strtolower($name)];
     }
 
     /** @return array<int, SubCounty> */
@@ -83,7 +83,7 @@ final class District
             }
         }
 
-        throw new SubCountyNotFoundException();
+        throw new SubCountyNotFoundException(sprintf('unable to locate sub county called %s', $name));
     }
 
     /** @return array<int, Parish> */
@@ -109,7 +109,7 @@ final class District
             }
         }
 
-        throw new ParishNotFoundException();
+        throw new ParishNotFoundException(sprintf('unable to locate parish called %s', $name));
     }
 
     /** @return array<int, Village> */
@@ -135,7 +135,7 @@ final class District
             }
         }
 
-        throw new VillageNotFoundException();
+        throw new VillageNotFoundException(sprintf('unable to locate village called %s', $name));
     }
 
     /** @return array<string,
