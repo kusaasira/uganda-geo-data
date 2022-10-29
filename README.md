@@ -39,241 +39,119 @@ The examples below show examples of usage of the package and their resulting out
 ### Retrieve Districts data.
 
 ```php
-<?php
-require 'vendor/autoload.php';
+use Uganda\Uganda;
 
-use Uganda\Geo;
-
-$geo = new Geo();
+$uganda = new Uganda();
 
 # Retrieve all districts
-$all_districts = $geo->districts()->all();
-echo $all_districts;
+$districts = $uganda->districts();
 
-# Retrieve all counties in particular ditrict
-$counties = $geo
-                ->districts('Mukono')
-                ->counties()->all();
-echo $counties;
+# Retrieve all counties in a particular district
+$counties = $uganda
+    ->district('Mukono')
+    ->counties();
 
-# Retrieve all sub counties under county in particular ditrict
-$sub_counties = $geo
-                ->districts('Mukono')
-                ->counties('Mukono Municipality')
-                ->sub_counties()->all();
-echo $sub_counties;
+# Retrieve all sub counties in a particular district
+$subCounties = $uganda
+    ->district('Mukono')
+    ->subCounties();
 
-# Retrieve all parishes in a sub county under county in particular ditrict
-$parishes = $geo
-                ->districts('Mukono')
-                ->counties('Mukono Municipality')
-                ->sub_counties('Goma Division')
-                ->parishes()->all();
-echo $parishes;
 
-# Retrieve villages in a parish under a sub county under county in particular ditrict
-$villages = $geo
-                ->districts('Mukono')
-                ->counties('Mukono Municipality')
-                ->sub_counties('Goma Division')
-                ->parishes('Nantabulirwa Ward')
-                ->villages()->all();
-echo $villages;
+# Retrieve all parishes in a particular district
+$parishes = $uganda
+    ->district('Mukono')
+    ->parishes();
+
+# Retrieve all villages in a particular district
+$villages = $uganda
+    ->district('Mukono')
+    ->villages();
 ```
 
-### Retrieve Individual geo units data.
-
-#### Retrieve all districts
+### Retrieve County data.
 
 ```php
-# Query Districts
-<?php
-require 'vendor/autoload.php';
+use Uganda\Uganda;
 
-use Uganda\Geo;
+$uganda = new Uganda();
 
-$geo = new Geo();
-$all_districts = $geo->districts()->all();
-echo $all_districts;
+# Retrieve all counties
+$counties = $uganda->counties();
+
+# Retrieve specific county
+$county = $uganda->county('Adjumani West County');
+
+# Retrieve all sub counties in a particular county
+$subCounties = $uganda
+    ->county('Adjumani West County')
+    ->subCounties();
+
+# Retrieve all parishes in a particular county
+$parishes = $uganda
+    ->county('Adjumani West County')
+    ->parishes();
+
+# Retrieve all villages in a particular county
+$villages = $uganda
+    ->county('Adjumani West County')
+    ->villages();
 ```
 
-```json
-{
-  "districts": {
-    "count": 135,
-    "data": [
-      {
-        "id": "98",
-        "name": "Abim"
-      },
-      {
-        "id": "68",
-        "name": "Adjumani"
-      },
-      {
-        "id": "23",
-        "name": "Agago"
-      },
-      ...
-    ]
-  }
-}
-```
-
-### Retrieve all counties in Uganda
+### Retrieve Sub County data.
 
 ```php
-<?php
-require 'vendor/autoload.php';
+use Uganda\Uganda;
 
-use Uganda\Geo;
+$uganda = new Uganda();
 
-$geo = new Geo();
-$counties = $geo->counties()->all();
-echo $counties;
+# Retrieve all sub counties
+$subCounties = $uganda->subCounties();
+
+# Retrieve specific sub county
+$subCounty = $uganda->subCounty('Namasale Town Council');
+
+# Retrieve all parishes in a particular sub county
+$parishes = $uganda
+    ->county('Namasale Town Council')
+    ->parishes();
+
+# Retrieve all villages in a particular sub county
+$villages = $uganda
+    ->county('Namasale Town Council')
+    ->villages();
 ```
 
-```json
-{
-  "counties": {
-    "count": 303,
-    "data": [
-      {
-      "id": "242",
-      "name": "Labwor County",
-      "district": "98"
-      },
-      {
-      "id": "166",
-      "name": "Adjumani East County",
-      "district": "68"
-      },
-      {
-      "id": "165",
-      "name": "Adjumani West County",
-      "district": "68"
-      },
-      ...
-    ]
-  }
-}
-```
-
-### Retrieve all sub counties in Uganda
+### Retrieve Parish data.
 
 ```php
-<?php
-require 'vendor/autoload.php';
+use Uganda\Uganda;
 
-use Uganda\Geo;
+$uganda = new Uganda();
 
-$geo = new Geo();
-$sub_counties = $geo->sub_counties()->all();
-echo $sub_counties;
+# Retrieve all parishes
+$parishes = $uganda->parishes();
+
+# Retrieve specific parish
+$parish = $uganda->parish('Bunamwamba');
+
+# Retrieve all villages in a particular parish
+$villages = $uganda
+    ->county('Bunamwamba')
+    ->villages();
 ```
 
-```json
-{
-  "sub_counties": {
-    "count": 2120,
-    "data": [
-      {
-      "id": "242",
-      "name": "Labwor County",
-      "district": "98"
-      },
-      {
-      "id": "166",
-      "name": "Adjumani East County",
-      "district": "68"
-      },
-      {
-      "id": "165",
-      "name": "Adjumani West County",
-      "district": "68"
-      },
-      ...
-    ]
-  }
-}
-```
-
-### Retrieve all parishes in Uganda
+### Retrieve Village data.
 
 ```php
-require 'vendor/autoload.php';
+use Uganda\Uganda;
 
-use Uganda\Geo;
+$uganda = new Uganda();
 
-$geo = new Geo();
-<?php
-$parishes = $geo->parishes()->all();
-echo $parishes;
-```
+# Retrieve all villages
+$villages = $uganda->villages();
 
-```json
-{
-  "parishes": {
-    "count": 10365,
-    "data": [
-      {
-      "id": "9127",
-      "name": "Abongepach",
-      "subcounty": "1546"
-      },
-      {
-      "id": "9150",
-      "Name": "Adwal",
-      "subcounty": "1546"
-      },
-      {
-      "id": "7279",
-      "name": "Aninata",
-      "subcounty": "1546"
-      },
-      ...
-    ]
-  }
-}
-```
-
-### Retrieve villages in Uganda
-
-```php
-require 'vendor/autoload.php';
-
-use Uganda\Geo;
-
-$geo = new Geo();
-<?php
-$villages = $geo->villages()->all();
-echo $villages;
-```
-
-```json
-{
-  "villages": {
-    "count": 71250,
-    "data": [
-      {
-        "id":"57217",
-        "name":"ABONGEPACH",
-        "parish":"9127"
-      },
-      {
-        "id":"58161",
-        "name":"AMITA PRISON",
-        "parish":"9127"
-      },
-      {
-        "id":"58171",
-        "name":"AMONICEK",
-        "parish":"9127"
-      },
-      ...
-    ]
-  }
-}
+# Retrieve specific village
+$subCounty = $uganda->village('Ayeye');
 ```
 
 ## Credits
