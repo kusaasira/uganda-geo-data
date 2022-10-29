@@ -39,8 +39,8 @@
         "phpstan/phpstan": "^1.8"
     },
     "scripts": {
-        "cs-test": "ecs check src",
-        "cs-fix": "ecs check src --fix",
+        "cs-test": "ecs check src tests",
+        "cs-fix": "ecs check src tests --fix",
         "test": "phpunit"
     }
 }
