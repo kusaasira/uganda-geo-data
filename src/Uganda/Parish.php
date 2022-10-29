@@ -15,6 +15,11 @@ final class Parish
     /** @var array<int, Village> */
     private array $villages;
 
+    /**
+     * @param int $id
+     * @param string $name
+     * @param Village[] $villages
+     */
     public function __construct(int $id, string $name, array $villages = [])
     {
         $this->id = $id;
@@ -32,11 +37,15 @@ final class Parish
         return $this->name;
     }
 
+    /** @return Village[] */
     public function villages(): array
     {
         return $this->villages;
     }
 
+    /**
+     * @throws VillageNotFoundException
+     */
     public function village(string $name): Village
     {
         if (!in_array($name, $this->villages, true)) {

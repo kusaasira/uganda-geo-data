@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Uganda;
 
 use Uganda\Exceptions\ParishNotFoundException;
+use Uganda\Exceptions\VillageNotFoundException;
 
 final class SubCounty
 {
@@ -15,6 +16,11 @@ final class SubCounty
     /** @var array<int, Parish> */
     private array $parishes;
 
+    /**
+     * @param int $id
+     * @param string $name
+     * @param Parish[] $parishes
+     */
     public function __construct(int $id, string $name, array $parishes = [])
     {
         $this->id = $id;
@@ -45,5 +51,31 @@ final class SubCounty
         }
 
         return $this->parishes[$name];
+    }
+
+    /** @return array<int, Village> */
+    public function villages(): array
+    {
+        $villages = [];
+        foreach ($this->parishes() as $parish) {
+            array_push($villages, ...$parish->villages());
+        }
+        return $villages;
+    }
+
+    /**
+     * @throws VillageNotFoundException
+     */
+    public function village(string $name): Village
+    {
+        foreach ($this->parishes() as $parish) {
+            try {
+                return $parish->village($name);
+            } catch (VillageNotFoundException $exception) {
+                continue;
+            }
+        }
+
+        throw new VillageNotFoundException();
     }
 }

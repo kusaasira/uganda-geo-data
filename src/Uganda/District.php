@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Uganda;
 
 use Uganda\Exceptions\CountyNotFoundException;
+use Uganda\Exceptions\ParishNotFoundException;
+use Uganda\Exceptions\SubCountyNotFoundException;
+use Uganda\Exceptions\VillageNotFoundException;
 
 final class District
 {
@@ -15,11 +18,26 @@ final class District
     /** @var array<int, County> */
     private $counties;
 
+    /**
+     * @param int $id
+     * @param string $name
+     * @param County[] $counties
+     */
     public function __construct(int $id, string $name, array $counties = [])
     {
         $this->id = $id;
         $this->name = $name;
         $this->counties = $counties;
+    }
+
+    public function id(): int
+    {
+        return $this->id;
+    }
+
+    public function name(): string
+    {
+        return $this->name;
     }
 
     /**
@@ -42,13 +60,81 @@ final class District
         return $this->counties[$name];
     }
 
-    public function id(): int
+    /** @return array<int, SubCounty> */
+    public function subCounties(): array
     {
-        return $this->id;
+        $subCounties = [];
+        foreach ($this->counties() as $county) {
+            array_push($subCounties, ...$county->subCounties());
+        }
+        return $subCounties;
     }
 
-    public function name(): string
+    /**
+     * @throws SubCountyNotFoundException
+     */
+    public function subCounty(string $name): SubCounty
     {
-        return $this->name;
+        foreach ($this->counties() as $county) {
+            try {
+                return $county->subCounty($name);
+            } catch (SubCountyNotFoundException $exception) {
+                continue;
+            }
+        }
+
+        throw new SubCountyNotFoundException();
+    }
+
+    /** @return array<int, Parish> */
+    public function parishes(): array
+    {
+        $parishes = [];
+        foreach ($this->subCounties() as $subCounty) {
+            array_push($parishes, ...$subCounty->parishes());
+        }
+        return $parishes;
+    }
+
+    /**
+     * @throws ParishNotFoundException
+     */
+    public function parish(string $name): Parish
+    {
+        foreach ($this->subCounties() as $subCounty) {
+            try {
+                return $subCounty->parish($name);
+            } catch (ParishNotFoundException $exception) {
+                continue;
+            }
+        }
+
+        throw new ParishNotFoundException();
+    }
+
+    /** @return array<int, Village> */
+    public function villages(): array
+    {
+        $villages = [];
+        foreach ($this->parishes() as $parish) {
+            array_push($villages, ...$parish->villages());
+        }
+        return $villages;
+    }
+
+    /**
+     * @throws VillageNotFoundException
+     */
+    public function village(string $name): Village
+    {
+        foreach ($this->parishes() as $parish) {
+            try {
+                return $parish->village($name);
+            } catch (VillageNotFoundException $exception) {
+                continue;
+            }
+        }
+
+        throw new VillageNotFoundException();
     }
 }

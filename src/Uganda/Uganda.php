@@ -30,6 +30,9 @@ final class Uganda
         return $this->districts;
     }
 
+    /**
+     * @throws DistrictNotFoundException
+     */
     public function district(string $name): District
     {
         if (!in_array($name, $this->districts, true)) {
@@ -46,8 +49,7 @@ final class Uganda
     {
         $counties = [];
         foreach ($this->districts() as $district) {
-            $districtCounties = $district->counties();
-            $counties = array_push(...$districtCounties);
+            array_push($counties, ...$district->counties());
         }
         return $counties;
     }
@@ -71,12 +73,9 @@ final class Uganda
     /** @return array<int, SubCounty> */
     public function subCounties(): array
     {
-        /** @var County[] $counties */
-        $counties = $this->counties();
         $subCounties = [];
-        foreach ($counties as $county) {
-            $countySubCounties = $county->subCounties();
-            $subCounties = array_push(...$countySubCounties);
+        foreach ($this->counties() as $county) {
+            array_push($subCounties, ...$county->subCounties());
         }
         return $subCounties;
     }
@@ -100,15 +99,16 @@ final class Uganda
     /** @return array<int, Parish> */
     public function parishes(): array
     {
-        $subCounties = $this->subCounties();
         $parishes = [];
-        foreach ($subCounties as $subCounty) {
-            $subCountyParishes = $subCounty->parishes();
-            $parishes = array_push(...$subCountyParishes);
+        foreach ($this->subCounties() as $subCounty) {
+            array_push($parishes, ...$subCounty->parishes());
         }
         return $parishes;
     }
 
+    /**
+     * @throws ParishNotFoundException
+     */
     public function parish(string $name): Parish
     {
         foreach ($this->subCounties() as $subCounty) {
@@ -125,11 +125,9 @@ final class Uganda
     /** @return array<int, Village> */
     public function villages(): array
     {
-        $parishes = $this->parishes();
         $villages = [];
-        foreach ($parishes as $parish) {
-            $parishVillages = $parish->parishes();
-            $villages = array_push(...$parishVillages);
+        foreach ($this->parishes() as $parish) {
+            array_push($villages, ...$parish->villages());
         }
         return $villages;
     }

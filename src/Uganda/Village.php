@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Uganda;
 
 final class Village
 {
-    private string $id;
+    private int $id;
+
     private string $name;
+
     private int $parishId;
 
     public function __construct(int $id, string $name, int $parish)
@@ -30,11 +34,12 @@ final class Village
         return $this->parishId;
     }
 
+    /** @return array<string, int|string> */
     public function toArray(): array
     {
         return [
-            'id'       => $this->id(),
-            'name'     => $this->name(),
+            'id' => $this->id(),
+            'name' => $this->name(),
             'parishId' => $this->parishId()
         ];
     }
