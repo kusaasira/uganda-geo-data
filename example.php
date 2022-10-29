@@ -9,18 +9,17 @@ require 'vendor/autoload.php';
 $uganda = new Uganda();
 
 /**
- * Fetch all Villages in Uganada
+ * Fetch all Villages in Uganda
  */
 $villages = $uganda->villages();
 
 foreach ($villages as $village) {
-    echo $village->name();
+    echo $village->name() . "\n";
 }
 
 /**
  * Fetch all Sub Counties in a District
  */
-
 try {
     $subCountiesInDistrict = $uganda->district('Bukomansimbi')->subCounties();
 } catch (DistrictNotFoundException $e) {
@@ -32,6 +31,7 @@ try {
  */
 try {
     $parishInformation = $uganda->parish('Akwangagwel')->toArray();
+    print_r($parishInformation);
 } catch (ParishNotFoundException $e) {
     // Calling for a Specific Location can throw an Exception if it doesn't exist
 }
