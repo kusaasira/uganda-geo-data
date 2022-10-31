@@ -20,9 +20,6 @@ jobs:
       - name: Run composer install
         run: composer install -n --prefer-dist
 
-      - name: Run ECS
-        run: ./vendor/bin/ecs check src
-
       - name: Run PHPUnit
         run: ./vendor/bin/phpunit
 
@@ -44,4 +41,24 @@ jobs:
         run: composer install -n --prefer-dist
 
       - name: Run ECS
-        run: ./vendor/bin/ecs check src
+        run: ./vendor/bin/ecs check src tests
+
+  PHPStan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          extensions: json
+          tools: composer:v2
+          coverage: none
+
+      - name: Run composer install
+        run: composer install -n --prefer-dist
+
+      - name: Run ECS
+        run: ./vendor/bin/phpstan analyse src --level 9
