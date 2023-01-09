@@ -21,7 +21,7 @@ This package gives you the leverage to access all sub levels ranging from distri
 
 In order to run this project, ensure that you have installed;
 
-- PHP 7.4 or later
+- PHP 8.0 or later
 - Composer
 
 ## Installation
