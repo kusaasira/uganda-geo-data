@@ -39,9 +39,9 @@ The examples below show examples of usage of the package and their resulting out
 ### Retrieve Districts data.
 
 ```php
-use Uganda\Uganda;
+use Uganda\Geo;
 
-$uganda = new Uganda();
+$uganda = new Geo();
 
 # Retrieve all districts
 $districts = $uganda->districts();
@@ -71,9 +71,9 @@ $villages = $uganda
 ### Retrieve County data.
 
 ```php
-use Uganda\Uganda;
+use Uganda\Geo;
 
-$uganda = new Uganda();
+$uganda = new Geo();
 
 # Retrieve all counties
 $counties = $uganda->counties();
@@ -100,9 +100,9 @@ $villages = $uganda
 ### Retrieve Sub County data.
 
 ```php
-use Uganda\Uganda;
+use Uganda\Geo;
 
-$uganda = new Uganda();
+$uganda = new Geo();
 
 # Retrieve all sub counties
 $subCounties = $uganda->subCounties();
@@ -124,9 +124,9 @@ $villages = $uganda
 ### Retrieve Parish data.
 
 ```php
-use Uganda\Uganda;
+use Uganda\Geo;
 
-$uganda = new Uganda();
+$uganda = new Geo();
 
 # Retrieve all parishes
 $parishes = $uganda->parishes();
@@ -143,9 +143,9 @@ $villages = $uganda
 ### Retrieve Village data.
 
 ```php
-use Uganda\Uganda;
+use Uganda\Geo;
 
-$uganda = new Uganda();
+$uganda = new Geo();
 
 # Retrieve all villages
 $villages = $uganda->villages();
