@@ -93,6 +93,30 @@ final class ArtifactManifestTest extends TestCase
     }
 
     /** @test */
+    public function verifiesThatNoTwoManifestEntriesAliasTheSameFile(): void
+    {
+        $root = sys_get_temp_dir() . '/uganda-geo-verify-alias-' . bin2hex(random_bytes(6));
+        mkdir($root);
+        try {
+            file_put_contents($root . '/dataset.json', '{}');
+            symlink('dataset.json', $root . '/alias.json');
+            $builder = new ArtifactManifest();
+            $manifest = $builder->build($root, ['dataset.json']);
+            $alias = $manifest['artifacts'][0];
+            $alias['path'] = 'alias.json';
+            $manifest['artifacts'][] = $alias;
+
+            $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessage('Duplicate physical release artifact');
+            $builder->verify($root, $manifest, ['dataset.json', 'alias.json']);
+        } finally {
+            unlink($root . '/alias.json');
+            unlink($root . '/dataset.json');
+            rmdir($root);
+        }
+    }
+
+    /** @test */
     public function rejectsAnEmptyManifestPresentedForVerification(): void
     {
         $this->expectException(InvalidArgumentException::class);
