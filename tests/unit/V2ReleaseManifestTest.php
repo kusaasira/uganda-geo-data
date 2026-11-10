@@ -32,6 +32,6 @@ final class V2ReleaseManifestTest extends TestCase
         self::assertStringContainsString('not verified', strtolower($notes));
         self::assertStringContainsString('redistribution', strtolower($notes));
         self::assertStringContainsString('v1-to-v2', strtolower($notes));
-        self::assertStringContainsString('PHP 8.2', $notes);
+        self::assertStringContainsString('Minimum supported PHP runtime is 8.2', $notes);
     }
 }
