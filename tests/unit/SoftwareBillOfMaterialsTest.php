@@ -56,5 +56,4 @@ final class SoftwareBillOfMaterialsTest extends TestCase
             array_column($bom['components'], 'name')
         );
     }
-
 }
