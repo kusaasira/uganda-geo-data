@@ -122,5 +122,4 @@ final class GeometryRoundTripVerifierTest extends TestCase
         (new GeometryRoundTripVerifier())->verify($source, $roundTrip);
         self::assertTrue(true);
     }
-
 }
