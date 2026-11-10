@@ -18,10 +18,15 @@ must independently inspect the linked CI runs, data provenance, geometry
 topology, format round trips, source rights, package installation, release
 notes and approvals.
 
-The stable public Packagist install smoke requires a published release tag.
-Pre-tag readiness and post-tag verification are therefore distinct gates:
-a post-tag installation must be verified before announcing the stable
-release. Never claim success ahead of publication.
+Before approving a stable release, verify that a real alpha, beta or RC tag
+can be installed independently through Packagist. This **prerelease** install
+is the pre-stable gate and avoids the impossible requirement to install a
+stable tag that has not been published yet.
+
+After publishing the immutable stable tag, perform a separate fresh stable
+Packagist installation and confirm its runtime behavior before announcing
+success. The post-stable smoke is deliberately not a prerequisite for
+publishing the very same tag. Never claim it passed ahead of publication.
 
 This tool cannot merge branches, publish tags, change packages or upload
 geometry assets. Separate explicit release approval is required.
