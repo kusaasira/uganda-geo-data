@@ -22,4 +22,4 @@ An optional Laravel adapter can be added separately, provided its provider is im
 
 The runtime requires PHP and its JSON extension. Development-only tools should not become production dependencies.
 
-Release validation must include clean installation in standalone PHP, tests across the declared PHP version range and verification of Packagist metadata against the published tag.
+Release validation must include clean installation in standalone PHP, tests across the declared PHP version range and verification of Packagist metadata against the published tag. The branch-specific push workflow runs PHP 8.2 as the lowest permitted version; the separate modern CI matrix introduces PHP 8.3 and 8.4 coverage.
