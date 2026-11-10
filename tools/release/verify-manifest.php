@@ -6,8 +6,8 @@ use Uganda\Release\ArtifactManifest;
 
 require dirname(__DIR__, 2) . '/vendor/autoload.php';
 
-if ($argc !== 3) {
-    fwrite(STDERR, "Usage: php tools/release/verify-manifest.php RELEASE_ROOT manifest.json\n");
+if ($argc < 4) {
+    fwrite(STDERR, "Usage: php tools/release/verify-manifest.php RELEASE_ROOT manifest.json required-file [required-file ...]\n");
     exit(2);
 }
 
@@ -16,7 +16,7 @@ try {
     if (!is_array($manifest)) {
         throw new UnexpectedValueException('Invalid release manifest');
     }
-    (new ArtifactManifest())->verify($argv[1], $manifest);
+    (new ArtifactManifest())->verify($argv[1], $manifest, array_slice($argv, 3));
     fwrite(STDOUT, "All recorded artifact checksums verified\n");
 } catch (Throwable $error) {
     fwrite(STDERR, $error->getMessage() . "\n");
