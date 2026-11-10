@@ -7,7 +7,7 @@ use Uganda\Data\ExplorerIndexBuilder;
 require dirname(__DIR__, 2) . '/vendor/autoload.php';
 
 if (($argc !== 3 && $argc !== 4) || !is_file($argv[1])) {
-    fwrite(STDERR, "Usage: php tools/data/build-explorer.php canonical.json NEW_OUTPUT_DIRECTORY\n");
+    fwrite(STDERR, "Usage: php tools/data/build-explorer.php canonical.json NEW_OUTPUT_DIRECTORY [reviewed-coverage.json]\n");
     exit(2);
 }
 
