@@ -51,6 +51,23 @@ final class PolygonTopologyAuditor
                     }
                 }
             }
+
+            // Distinct interior rings may not intersect or contain one another.
+            // A first-vertex check alone misses crossing holes.
+            for ($first = 1, $count = count($rings); $first < $count; $first++) {
+                for ($second = $first + 1; $second < $count; $second++) {
+                    if ($this->ringsIntersect($rings[$first], $rings[$second])
+                        || $this->contains($rings[$first], $rings[$second][0])
+                        || $this->contains($rings[$second], $rings[$first][0])) {
+                        $issues[] = [
+                            'polygon' => $polygonIndex,
+                            'ring' => $first,
+                            'other_ring' => $second,
+                            'code' => 'hole_overlap',
+                        ];
+                    }
+                }
+            }
         }
 
         return [
