@@ -91,7 +91,7 @@ final class ExplorerCoverageSummary
             'unmapped' => count($missing),
             'source_feature_count' => $sourceCount,
             'unmatched_source_features' => count($unmatched) + count($unresolved),
-            'matching_status' => $report['coverage'],
+            'matching_status' => (string) $report['coverage'],
             'scope' => 'supplied_canonical_snapshot_only',
             'national_coverage' => 'unverified',
         ];
