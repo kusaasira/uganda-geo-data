@@ -49,7 +49,7 @@ final class LocationIndex
         $this->byId[$level][$id] = $unit;
         $this->byName[$level][strtolower(trim($name))][] = $id;
         $this->parentById[$level][$id] = $parentId;
-      }
+    }
 
     public function byId(string $level, int $id): ?object
     {
