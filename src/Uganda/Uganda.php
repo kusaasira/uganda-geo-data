@@ -191,6 +191,18 @@ final class Uganda
         return $this->index()->byName($level, $name, $parentId);
     }
 
+    /** @return array<int, object> */
+    public function childrenOf(string $level, int $parentId): array
+    {
+        return $this->index()->childrenOf($level, $parentId);
+    }
+
+    /** @return array<int, object> */
+    public function ancestorsOf(string $level, int $id): array
+    {
+        return $this->index()->ancestorsOf($level, $id);
+    }
+
     private function index(): LocationIndex
     {
         if ($this->locationIndex === null) {
