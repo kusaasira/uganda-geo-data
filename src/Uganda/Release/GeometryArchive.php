@@ -40,7 +40,9 @@ final class GeometryArchive
         if (!is_array($metadata) || !is_int($metadata['feature_count'] ?? null)
             || $metadata['feature_count'] <= 0
             || !in_array($metadata['publication_rights'] ?? null, ['permitted', 'review_required'], true)
-            || !is_string($metadata['source_sha256'] ?? null)) {
+            || !is_string($metadata['source_sha256'] ?? null)
+            || !preg_match('/^[a-f0-9]{64}$/D', $metadata['source_sha256'])
+            || ($metadata['crs'] ?? null) !== 'EPSG:4326') {
             throw new InvalidArgumentException('Invalid GIS distribution metadata');
         }
         $manifest['package_version'] = $version;
@@ -58,13 +60,17 @@ final class GeometryArchive
                 if (is_link($path) || !$archive->addFile($path, $file)) {
                     throw new RuntimeException('Cannot add release file: ' . $file);
                 }
-                $archive->setMtimeName($file, 315532800);
+                if (!$archive->setMtimeName($file, 315532800)) {
+                    throw new RuntimeException('Unable to normalize archive file timestamp: ' . $file);
+                }
             }
             $json = json_encode($manifest, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n";
             if (!$archive->addFromString('manifest.json', $json)) {
                 throw new RuntimeException('Cannot add archive manifest');
             }
-            $archive->setMtimeName('manifest.json', 315532800);
+            if (!$archive->setMtimeName('manifest.json', 315532800)) {
+                throw new RuntimeException('Unable to normalize archive manifest timestamp');
+            }
             if (!$archive->close()) {
                 throw new RuntimeException('Could not complete GIS archive');
             }
