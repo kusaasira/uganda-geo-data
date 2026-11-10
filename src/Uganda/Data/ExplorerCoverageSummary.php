@@ -18,8 +18,15 @@ final class ExplorerCoverageSummary
      */
     public function summarize(array $index, array $report): array
     {
+        $units = $index['units'] ?? null;
+        if (!is_array($units)) {
+            throw new InvalidArgumentException('Invalid explorer unit inventory');
+        }
         $ids = [];
-        foreach ($index['units'] ?? [] as $unit) {
+        foreach ($units as $unit) {
+            if (!is_array($unit) || !is_string($unit['id'] ?? null)) {
+                throw new InvalidArgumentException('Invalid canonical unit in explorer');
+            }
             if (in_array($unit['level'] ?? null, ['parish', 'ward'], true)) {
                 $ids[$unit['id']] = true;
             }
