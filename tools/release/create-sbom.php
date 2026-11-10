@@ -11,6 +11,7 @@ if ($argc !== 3) {
     exit(2);
 }
 $root = dirname(__DIR__, 2);
+$created = false;
 try {
     if (file_exists($argv[2]) || is_link($argv[2]) || !is_dir(dirname($argv[2]))) {
         throw new RuntimeException('SBOM destination must be unused and its parent must exist');
@@ -24,16 +25,23 @@ try {
     if ($fp === false) {
         throw new RuntimeException('Unable to create SBOM');
     }
+    $created = true;
     try {
-        if (fwrite($fp, $data) !== strlen($data)) {
-            throw new RuntimeException('Incomplete SBOM write');
+        $length = strlen($data);
+        $written = 0;
+        while ($written < $length) {
+            $chunk = fwrite($fp, substr($data, $written));
+            if ($chunk === false || $chunk === 0) {
+                throw new RuntimeException('Incomplete SBOM write');
+            }
+            $written += $chunk;
         }
     } finally {
         fclose($fp);
     }
     fwrite(STDOUT, "Deterministic runtime SBOM generated\n");
 } catch (Throwable $error) {
-    if (is_file($argv[2])) {
+    if ($created && is_file($argv[2])) {
         unlink($argv[2]);
     }
     fwrite(STDERR, $error->getMessage() . "\n");
