@@ -62,5 +62,4 @@ final class GeometryExportFieldsTest extends TestCase
         $this->expectExceptionMessage('DBF limit');
         (new GeometryExportFields())->prepare($collection);
     }
-
 }
