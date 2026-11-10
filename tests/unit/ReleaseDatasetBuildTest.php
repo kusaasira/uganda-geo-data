@@ -52,4 +52,31 @@ final class ReleaseDatasetBuildTest extends TestCase
             rmdir($base);
         }
     }
+    /** @test */
+    public function itRefusesToOverwriteExistingSnapshots(): void
+    {
+        $repo = dirname(__DIR__, 2);
+        $destination = sys_get_temp_dir() . '/uganda-geo-existing-' . bin2hex(random_bytes(6));
+        self::assertTrue(mkdir($destination, 0700));
+        $marker = $destination . '/marker.txt';
+        file_put_contents($marker, 'retained output');
+        try {
+            $lines = [];
+            $status = 0;
+            exec(
+                escapeshellarg(PHP_BINARY) . ' '
+                . escapeshellarg($repo . '/tools/release/build-dataset.php') . ' '
+                . escapeshellarg($repo . '/src/Uganda/Data') . ' '
+                . escapeshellarg($destination) . ' 2>&1',
+                $lines,
+                $status
+            );
+            self::assertSame(2, $status, implode("\n", $lines));
+            self::assertSame('retained output', file_get_contents($marker));
+        } finally {
+            unlink($marker);
+            rmdir($destination);
+        }
+    }
+
 }
