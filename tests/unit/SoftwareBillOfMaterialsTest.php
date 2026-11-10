@@ -36,4 +36,25 @@ final class SoftwareBillOfMaterialsTest extends TestCase
             'require' => ['vendor/external' => '^1'],
         ], null, '2.0.0');
     }
+    /** @test */
+    public function itIncludesTransitiveLockedRuntimeDependencies(): void
+    {
+        $composer = [
+            'name' => 'kusaasira/uganda-geo',
+            'license' => 'MIT',
+            'require' => ['vendor/direct' => '^1'],
+        ];
+        $lock = ['packages' => [
+            ['name' => 'vendor/transitive', 'version' => '1.4.0', 'license' => ['MIT']],
+            ['name' => 'vendor/direct', 'version' => '1.2.0', 'license' => ['MIT']],
+        ], 'packages-dev' => [
+            ['name' => 'vendor/development', 'version' => '9.0.0'],
+        ]];
+        $bom = (new SoftwareBillOfMaterials())->build($composer, $lock, '2.0.0-dev');
+        self::assertSame(
+            ['vendor/direct', 'vendor/transitive'],
+            array_column($bom['components'], 'name')
+        );
+    }
+
 }
