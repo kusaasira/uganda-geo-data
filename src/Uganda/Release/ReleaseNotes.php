@@ -18,11 +18,11 @@ final class ReleaseNotes
         if (!preg_match('/^v2\.0\.0(?:-(?:alpha|beta|rc)\.[1-9][0-9]*)?$/D', $tag)) {
             throw new InvalidArgumentException('Expected a supported immutable Uganda Geo v2 release tag');
         }
+        $sections = $manifest['sections'] ?? null;
         if (($manifest['base_version'] ?? null) !== 'v2.0.0'
-            || !is_array($manifest['sections'] ?? null) || $manifest['sections'] === []) {
+            || !is_array($sections) || $sections === []) {
             throw new InvalidArgumentException('Release-note source requires base_version and sections');
         }
-        $sections = $manifest['sections'];
         $out = ['# Uganda Geo ' . $tag, '', '## Release summary', '',
             'This major release changes the PHP public API and requires migration from the existing v1.0.0 package.', ''];
         $seen = [];
