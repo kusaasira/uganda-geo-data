@@ -1,4 +1,4 @@
-name: Release readiness evidence
+name: Release readiness inventory (nonpublishing)
 
 on:
   pull_request:
@@ -19,7 +19,7 @@ jobs:
           tools: composer:v2
           coverage: none
       - run: composer install --no-interaction --prefer-dist --no-progress
-      - name: Evaluate pending release gates without asserting success
+      - name: Assert pending release inventory is not publication approval
         run: |
           mkdir -p build
           php tools/release/assess-readiness.php resources/releases/readiness-template.json > build/release-readiness.json
