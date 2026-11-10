@@ -1,0 +1,42 @@
+name: Geometry review archive
+
+on:
+  pull_request:
+    branches: [main, next/2.x]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: zip, json
+          tools: composer:v2
+          coverage: none
+      - run: sudo apt-get update && sudo apt-get install -y gdal-bin unzip
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Verify archived artifact contract
+        run: ./vendor/bin/phpunit --filter GeometryArchiveTest
+      - name: Export real polygon and multipolygon fixtures with GDAL
+        run: |
+          set -euo pipefail
+          mkdir -p build/gis/shapefile
+          cp tests/fixtures/geometry-archive-verified.geojson build/gis/parishes.geojson
+          ogr2ogr -f GPKG build/gis/parishes.gpkg build/gis/parishes.geojson -nln parishes -nlt PROMOTE_TO_MULTI -t_srs EPSG:4326
+          ogr2ogr -f "ESRI Shapefile" build/gis/shapefile/parishes.shp build/gis/parishes.geojson -nln parishes -nlt PROMOTE_TO_MULTI -t_srs EPSG:4326 -lco ENCODING=UTF-8
+          php tools/ci/prepare-gis-archive-fixture.php tests/fixtures/geometry-archive-verified.geojson build/gis
+      - name: Package twice and verify complete deterministic GIS archives
+        run: |
+          set -euo pipefail
+          php tools/release/package-geometry.php build/gis v2.0.0-rc.1 build/first.zip
+          php tools/release/package-geometry.php build/gis v2.0.0-rc.1 build/second.zip
+          cmp build/first.zip build/second.zip
+          unzip -t build/first.zip
+          ogrinfo -ro -so -al build/gis/parishes.gpkg
+          ogrinfo -ro -so -al build/gis/shapefile/parishes.shp
