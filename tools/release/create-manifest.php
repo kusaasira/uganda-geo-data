@@ -20,12 +20,23 @@ try {
     if ($handle === false) {
         throw new RuntimeException('Manifest destination already exists or is not writable');
     }
+    $complete = false;
     try {
-        if (fwrite($handle, $json) !== strlen($json)) {
-            throw new RuntimeException('Could not write complete release manifest');
+        $written = 0;
+        $length = strlen($json);
+        while ($written < $length) {
+            $chunk = fwrite($handle, substr($json, $written));
+            if ($chunk === false || $chunk === 0) {
+                throw new RuntimeException('Could not write complete release manifest');
+            }
+            $written += $chunk;
         }
+        $complete = true;
     } finally {
         fclose($handle);
+        if (!$complete) {
+            unlink($argv[2]);
+        }
     }
     fwrite(STDOUT, "Release checksum manifest generated\n");
 } catch (Throwable $error) {
