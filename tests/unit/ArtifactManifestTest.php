@@ -21,7 +21,7 @@ final class ArtifactManifestTest extends TestCase
             $builder = new ArtifactManifest();
             $manifest = $builder->build($root, ['b.json', 'a.json']);
             $this->assertSame(['a.json', 'b.json'], array_column($manifest['artifacts'], 'path'));
-            $builder->verify($root, $manifest);
+            $builder->verify($root, $manifest, ['b.json', 'a.json']);
             file_put_contents($root . '/a.json', '{"a":3}');
             $this->expectException(InvalidArgumentException::class);
             $this->expectExceptionMessage('mismatch');
@@ -42,10 +42,37 @@ final class ArtifactManifestTest extends TestCase
     }
 
     /** @test */
-    public function emptyManifestIsDeterministic(): void
+    public function emptyManifestIsRejected(): void
     {
-        $manifest = (new ArtifactManifest())->build(sys_get_temp_dir(), []);
-        $this->assertSame([], $manifest['artifacts']);
-        $this->assertSame(1, $manifest['schema_version']);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('cannot be empty');
+        (new ArtifactManifest())->build(sys_get_temp_dir(), []);
+    }
+
+    /** @test */
+    public function refusesAnIncompleteReleaseInventory(): void
+    {
+        $root = sys_get_temp_dir() . '/uganda-geo-assets-' . bin2hex(random_bytes(6));
+        mkdir($root);
+        try {
+            file_put_contents($root . '/dataset.json', '{}');
+            $builder = new ArtifactManifest();
+            $manifest = $builder->build($root, ['dataset.json']);
+            $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessage('inventory mismatch');
+            $builder->verify($root, $manifest, ['dataset.json', 'boundaries.geojson']);
+        } finally {
+            unlink($root . '/dataset.json');
+            rmdir($root);
+        }
+    }
+
+    /** @test */
+    public function rejectsAnEmptyManifestPresentedForVerification(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        (new ArtifactManifest())->verify(sys_get_temp_dir(), [
+            'schema_version' => 1, 'hash_algorithm' => 'sha256', 'artifacts' => [],
+        ]);
     }
 }
