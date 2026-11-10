@@ -89,7 +89,7 @@ final class SubCounty
         throw new VillageNotFoundException(sprintf('unable to locate village called %s', $name));
     }
 
-    /** @return array<string, array<string, array<string, array<array<string, int|string>>|int|string>>|int|string> */
+    /** @return array{id: int, name: string, countyId: int, parishes: array<int|string, array<string, mixed>>} */
     public function toArray(): array
     {
         return [
