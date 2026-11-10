@@ -26,9 +26,11 @@ final class SourcePublicationGate
             throw new InvalidArgumentException('Invalid source registry inventory');
         }
         foreach ($entries as $source) {
-            if (is_array($source) && is_string($source['id'] ?? null)) {
-                $sources[$source['id']] = $source;
+            if (!is_array($source) || !is_string($source['id'] ?? null)
+                || isset($sources[$source['id']])) {
+                throw new InvalidArgumentException('Invalid or duplicate publication source identity');
             }
+            $sources[$source['id']] = $source;
         }
         $seen = [];
         foreach ($sourceIds as $id) {
@@ -39,7 +41,8 @@ final class SourcePublicationGate
             $source = $sources[$id] ?? null;
             if ($source === null || ($source['redistribution_status'] ?? null) !== 'permitted'
                 || !is_string($source['license_url'] ?? null)
-                || !str_starts_with($source['license_url'], 'https://')
+                || parse_url($source['license_url'], PHP_URL_SCHEME) !== 'https'
+                || filter_var($source['license_url'], FILTER_VALIDATE_URL) === false
                 || !is_string($source['attribution'] ?? null)
                 || trim($source['attribution']) === '') {
                 throw new InvalidArgumentException('Source has no verified distribution grant: ' . $id);
