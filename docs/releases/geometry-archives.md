@@ -10,8 +10,15 @@ Composer runtime remains framework-independent and does not require ext-zip.
 
 The output ZIP includes GeoJSON, GeoPackage, all five Shapefile sidecars,
 field-name documentation, geometry metadata and an internal checksum
-manifest. The archiver validates every included byte after writing and
-refuses existing output destinations.
+manifest. The archiver validates every included byte after writing, requires
+EPSG:4326 CRS metadata and refuses existing output destinations.
+
+Release CI also builds real GeoPackage and Shapefile files from a controlled
+polygon-with-hole and multipolygon fixture using GDAL, then assembles two
+independent archives and compares their bytes. Unit tests use synthetic file
+content only to exercise the ZIP inventory and fail-closed metadata behavior.
+The integration test proves this local packaging path, not nationwide data
+accuracy or reproducibility across different GDAL versions.
 
 **Do not publish this local review bundle directly.** The checksum
 manifest is not evidence of valid national boundaries, sufficient mapped
