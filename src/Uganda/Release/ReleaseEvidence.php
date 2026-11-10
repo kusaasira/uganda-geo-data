@@ -19,22 +19,24 @@ final class ReleaseEvidence
      */
     public function aggregate(array $canonical, ?array $topology, ?array $coverage): array
     {
+        $countsByLevel = $canonical['counts_by_level'] ?? null;
+        $errors = $canonical['errors'] ?? null;
         if (!is_bool($canonical['valid'] ?? null)
             || !is_int($canonical['total_units'] ?? null)
             || $canonical['total_units'] < 0
-            || !is_array($canonical['counts_by_level'] ?? null)
-            || !is_array($canonical['errors'] ?? null)) {
+            || !is_array($countsByLevel)
+            || !is_array($errors)) {
             throw new InvalidArgumentException('Incomplete canonical integrity evidence');
         }
         $total = 0;
-        foreach ($canonical['counts_by_level'] as $level => $count) {
+        foreach ($countsByLevel as $level => $count) {
             if (!is_string($level) || $level === '' || !is_int($count) || $count < 0) {
                 throw new InvalidArgumentException('Malformed canonical level counts');
             }
             $total += $count;
         }
         if ($total !== $canonical['total_units']
-            || $canonical['valid'] !== ($canonical['errors'] === [])) {
+            || $canonical['valid'] !== ($errors === [])) {
             throw new InvalidArgumentException('Canonical conservation report is self-contradictory');
         }
 
@@ -83,8 +85,8 @@ final class ReleaseEvidence
                 || $coverage['canonical_parish_ward_count'] < $coverage['verified_count']) {
                 throw new InvalidArgumentException('Invalid parish mapping evidence');
             }
-            $canonicalParishes = $canonical['counts_by_level']['parish'] ?? 0;
-            $canonicalWards = $canonical['counts_by_level']['ward'] ?? 0;
+            $canonicalParishes = $countsByLevel['parish'] ?? 0;
+            $canonicalWards = $countsByLevel['ward'] ?? 0;
             if ($coverage['canonical_parish_ward_count'] !== $canonicalParishes + $canonicalWards) {
                 throw new InvalidArgumentException('Coverage report references a different canonical parish/ward inventory');
             }
