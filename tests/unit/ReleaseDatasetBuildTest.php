@@ -78,5 +78,4 @@ final class ReleaseDatasetBuildTest extends TestCase
             rmdir($destination);
         }
     }
-
 }
