@@ -62,4 +62,37 @@ final class CanonicalIntegrityValidatorTest extends TestCase
         $this->assertFalse($result['valid']);
         $this->assertStringContainsString('Duplicate administrative unit ID', implode(' ', $result['errors']));
     }
+    /** @test */
+    public function rejectsMissingEnvelopeAndEmptySnapshots(): void
+    {
+        $result = (new CanonicalIntegrityValidator())->validate(['source_ids' => ['fixture'], 'units' => []]);
+        $this->assertFalse($result['valid']);
+        $this->assertStringContainsString('schema version', implode(' ', $result['errors']));
+        $this->assertStringContainsString('nonempty JSON list', implode(' ', $result['errors']));
+    }
+
+    /** @test */
+    public function rejectsSourceRecordReusedUnderAnotherCanonicalIdentity(): void
+    {
+        $snapshot = $this->fixture();
+        $duplicate = $snapshot['units'][4];
+        $duplicate['id'] = 'fixture:village:another';
+        $snapshot['units'][] = $duplicate;
+        $result = (new CanonicalIntegrityValidator())->validate($snapshot);
+        $this->assertFalse($result['valid']);
+        $this->assertStringContainsString('Duplicate origin record', implode(' ', $result['errors']));
+    }
+
+    /** @test */
+    public function rejectsUnsupportedStatusAndMissingCanonicalFields(): void
+    {
+        $snapshot = $this->fixture();
+        $snapshot['units'][0]['lifecycle_status'] = 'unknown';
+        unset($snapshot['units'][0]['aliases']);
+        $result = (new CanonicalIntegrityValidator())->validate($snapshot);
+        $this->assertFalse($result['valid']);
+        $this->assertStringContainsString('Invalid lifecycle status', implode(' ', $result['errors']));
+        $this->assertStringContainsString('Invalid aliases', implode(' ', $result['errors']));
+    }
+
 }

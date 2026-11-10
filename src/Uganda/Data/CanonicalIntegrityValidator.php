@@ -17,17 +17,37 @@ final class CanonicalIntegrityValidator
     public function validate(array $snapshot, ?array $expectedCountsByLevel = null): array
     {
         $errors = [];
+        if (($snapshot['schema_version'] ?? null) !== 1) {
+            $errors[] = 'Unsupported snapshot schema version';
+        }
+        if (!isset($snapshot['snapshot_id']) || !is_string($snapshot['snapshot_id']) || trim($snapshot['snapshot_id']) === '') {
+            $errors[] = 'Snapshot requires a nonempty snapshot_id';
+        }
         $units = $snapshot['units'] ?? null;
         if (!is_array($units)) {
             return ['valid' => false, 'total_units' => 0, 'counts_by_level' => [], 'errors' => ['Snapshot units must be an array']];
+        }
+        if ($units === [] || array_keys($units) !== array_keys(array_values($units))) {
+            $errors[] = 'Snapshot units must be a nonempty JSON list';
         }
         $sources = $snapshot['source_ids'] ?? null;
         if (!is_array($sources) || $sources === []) {
             $errors[] = 'Snapshot requires nonempty source_ids';
             $sources = [];
+        } else {
+            if (array_keys($sources) !== array_keys(array_values($sources)) ||
+                count($sources) !== count(array_unique($sources, SORT_REGULAR))) {
+                $errors[] = 'Snapshot source_ids must be a list of distinct identifiers';
+            }
+            foreach ($sources as $source) {
+                if (!is_string($source) || trim($source) === '') {
+                    $errors[] = 'Snapshot source_ids must be nonempty strings';
+                }
+            }
         }
 
         $byId = [];
+        $sourceRows = [];
         $counts = [];
         foreach ($units as $index => $unit) {
             if (!is_array($unit)) {
@@ -50,6 +70,27 @@ final class CanonicalIntegrityValidator
             }
             $byId[$id] = $unit;
             $counts[$level] = ($counts[$level] ?? 0) + 1;
+            $sourceRecord = $unit['source_record_id'] ?? null;
+            $sourceId = $unit['source_id'] ?? null;
+            if (is_string($sourceId) && $sourceId !== '' && is_string($sourceRecord) && $sourceRecord !== '') {
+                $origin = $sourceId . ':' . $level . ':' . $sourceRecord;
+                if (isset($sourceRows[$origin])) {
+                    $errors[] = "Duplicate origin record $origin";
+                }
+                $sourceRows[$origin] = true;
+            }
+            if (!in_array($unit['lifecycle_status'] ?? null, ['active', 'retired', 'disputed'], true)) {
+                $errors[] = "Invalid lifecycle status for unit $id";
+            }
+            if (isset($unit['verification_status']) &&
+                !in_array($unit['verification_status'], ['unverified', 'verified', 'disputed'], true)) {
+                $errors[] = "Invalid verification status for unit $id";
+            }
+            foreach (['aliases', 'external_codes'] as $field) {
+                if (!array_key_exists($field, $unit) || !is_array($unit[$field])) {
+                    $errors[] = "Invalid $field for unit $id";
+                }
+            }
             if (!in_array($unit['source_id'] ?? null, $sources, true)) {
                 $errors[] = "Unregistered source for unit $id";
             }
@@ -66,7 +107,12 @@ final class CanonicalIntegrityValidator
             }
             $seen = [];
             $cursor = $id;
+            $depth = 0;
             while (isset($byId[$cursor])) {
+                if (++$depth > 32) {
+                    $errors[] = "Parent chain exceeds maximum depth for unit $id";
+                    break;
+                }
                 if (isset($seen[$cursor])) {
                     $errors[] = "Cycle detected in parent chain from $id";
                     break;
