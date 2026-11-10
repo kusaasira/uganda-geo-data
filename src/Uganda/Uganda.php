@@ -177,8 +177,12 @@ final class Uganda
         $matches = $this->searchByName($level, $name);
         if (count($matches) > 1) {
             throw new AmbiguousAdministrativeNameException(
-                sprintf('Ambiguous %s name "%s" matched %d records; use a scoped search or canonical ID',
-                    $level, $name, count($matches))
+                sprintf(
+                    'Ambiguous %s name "%s" matched %d records; use a scoped search or canonical ID',
+                    $level,
+                    $name,
+                    count($matches)
+                )
             );
         }
         return $matches[0] ?? null;
