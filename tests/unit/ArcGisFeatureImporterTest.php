@@ -75,5 +75,4 @@ final class ArcGisFeatureImporterTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         (new ArcGisFeatureImporter())->parsePage($page, 'FID');
     }
-
 }
