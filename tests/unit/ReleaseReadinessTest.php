@@ -64,5 +64,4 @@ final class ReleaseReadinessTest extends TestCase
         self::assertContains('unexpected_gate_attestation', $report['blocked_by']);
         self::assertFalse($report['release_ready']);
     }
-
 }
