@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
+use Uganda\Data\CanonicalIntegrityValidator;
 use Uganda\Geo\ArcGisFeatureImporter;
 use Uganda\Geo\ParishBoundaryMatcher;
 
 $root = dirname(__DIR__, 2);
+require_once $root . '/src/Uganda/Data/CanonicalIntegrityValidator.php';
 require_once $root . '/src/Uganda/Geo/GeometryContract.php';
 require_once $root . '/src/Uganda/Geo/ArcGisFeatureImporter.php';
 require_once $root . '/src/Uganda/Geo/ParishBoundaryMatcher.php';
@@ -27,6 +29,10 @@ try {
     if (!is_array($snapshot) || !is_array($decisions) ||
         array_keys($decisions) !== array_keys(array_values($decisions))) {
         throw new RuntimeException('Snapshot must be an object and decisions must be a list');
+    }
+    $validation = (new CanonicalIntegrityValidator())->validate($snapshot);
+    if (!$validation['valid']) {
+        throw new RuntimeException('Canonical snapshot failed integrity validation');
     }
     $report = (new ParishBoundaryMatcher())->match($features, $snapshot, $decisions);
     fwrite(STDOUT, json_encode($report, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n");
