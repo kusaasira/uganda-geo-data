@@ -15,3 +15,5 @@ The command imports source rows without name-key deduplication, then emits the s
 The reference manifest is `resources/data/ubos-2024-reference.json`. It records publication-specific classifications and URLs. The report deliberately sets `classification_verified=false` and `record_level_match_verified=false`. Those flags require dated unit-level source data, exact parent-aware matching, independent identifier verification and explicit reviewer decisions.
 
 This report does **not** alter source JSON files, infer boundary changes or assign UBOS codes to legacy IDs.
+
+The NPHC Final Report URL points directly to the official UBOS census portal, rather than a third-party government mirror. Source hosting does not independently resolve differences in administrative scope or legal effective dates.
