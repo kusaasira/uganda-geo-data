@@ -130,4 +130,29 @@ final class JsonDatasetLoaderTest extends TestCase
         $this->expectExceptionMessage('Orphan village');
         new Uganda($this->directory);
     }
+    /** @test */
+    public function rejectsIdsThatWouldOverflowNativeIntegerStorage(): void
+    {
+        $path = $this->directory . '/rows.json';
+        $oversized = (string) PHP_INT_MAX . '0';
+        file_put_contents($path, json_encode([
+            ['id' => $oversized, 'name' => 'Overflow'],
+        ], JSON_THROW_ON_ERROR));
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Invalid numeric ID');
+        (new JsonDatasetLoader())->load($path);
+    }
+
+    /** @test */
+    public function rejectsOverflowingAdministrativeParentIdentifiers(): void
+    {
+        $path = $this->directory . '/villages.json';
+        $oversized = (string) PHP_INT_MAX . '0';
+        file_put_contents($path, json_encode([
+            ['id' => '1', 'name' => 'Example', 'parish' => $oversized],
+        ], JSON_THROW_ON_ERROR));
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Invalid parish parent ID');
+        (new JsonDatasetLoader())->load($path);
+    }
 }
