@@ -30,7 +30,7 @@ final class ReleaseReadinessTest extends TestCase
             'parish_geometry_identity_and_topology', 'gis_format_roundtrip',
             'geometry_redistribution_rights', 'standalone_and_laravel_consumer_install',
             'snapshot_and_asset_checksums', 'release_notes_and_migration',
-            'maintainer_release_approval', 'published_tag_install_smoke',
+            'maintainer_release_approval', 'prerelease_tag_install_smoke',
         ] as $key) {
             $gates[$key] = ['status' => 'verified', 'evidence_url' => 'https://example.org/check'];
         }
