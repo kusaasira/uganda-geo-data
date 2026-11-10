@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "description": "Public boundary endpoint inventory. Endpoint accessibility is not a grant of redistribution rights.",
+  "endpoints": [
+    {
+      "id": "arcgis-parishes-2024",
+      "source_id": "arcgis-uganda-parishes-2024",
+      "url": "https://services1.arcgis.com/49FlB10KwAxJa07X/ArcGIS/rest/services/Map_2_June_WFL1/FeatureServer/1",
+      "kind": "arcgis_feature_layer",
+      "label": "Uganda_2024_Parishes",
+      "geometry_type": "esriGeometryPolygon",
+      "source_crs": "EPSG:3857",
+      "requested_crs": "EPSG:4326",
+      "object_id_field": "FID",
+      "max_record_count": 2000,
+      "authority": "third_party_unverified",
+      "redistribution_status": "unverified",
+      "expected_fields": [
+        "FID",
+        "dcode2024",
+        "dname2024",
+        "ccode2024",
+        "cname2024",
+        "sccode2024",
+        "scname2024",
+        "pcode2024",
+        "pname2024"
+      ]
+    }
+  ]
+}
