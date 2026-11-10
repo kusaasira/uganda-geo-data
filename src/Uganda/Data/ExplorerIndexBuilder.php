@@ -17,8 +17,11 @@ final class ExplorerIndexBuilder
      */
     public function build(array $snapshot): array
     {
-        if (!isset($snapshot['units']) || !is_array($snapshot['units'])) {
-            throw new InvalidArgumentException('Canonical snapshot must contain a units list');
+        if (($snapshot['schema_version'] ?? null) !== 1
+            || !is_string($snapshot['snapshot_id'] ?? null)
+            || trim($snapshot['snapshot_id']) === ''
+            || !isset($snapshot['units']) || !is_array($snapshot['units'])) {
+            throw new InvalidArgumentException('Expected a versioned canonical snapshot with non-empty identity and units');
         }
         $index = [];
         foreach ($snapshot['units'] as $unit) {
@@ -40,10 +43,30 @@ final class ExplorerIndexBuilder
                 'parent_id' => $parent,
             ];
         }
+        // Prevent a "complete hierarchy" screen from displaying silently
+        // truncated chains when parents are missing or cyclic.
+        foreach ($index as $id => $unit) {
+            $parentId = $unit['parent_id'];
+            if ($parentId === null) {
+                continue;
+            }
+            if ($parentId === '' || !isset($index[$parentId])) {
+                throw new InvalidArgumentException('Missing canonical parent for unit ' . $id);
+            }
+            $visited = [$id => true];
+            while ($parentId !== null) {
+                if (isset($visited[$parentId])) {
+                    throw new InvalidArgumentException('Cyclic canonical ancestry at unit ' . $id);
+                }
+                $visited[$parentId] = true;
+                $parentId = $index[$parentId]['parent_id'];
+            }
+        }
         ksort($index, SORT_STRING);
 
         return [
-            'snapshot_id' => is_string($snapshot['snapshot_id'] ?? null) ? $snapshot['snapshot_id'] : 'unspecified',
+            'snapshot_id' => $snapshot['snapshot_id'],
+            'reference_date' => is_string($snapshot['reference_date'] ?? null) ? $snapshot['reference_date'] : null,
             'unit_count' => count($index),
             'units' => array_values($index),
             'limitations' => 'The indexed source snapshot may not reflect current legal or geospatial boundaries.',
