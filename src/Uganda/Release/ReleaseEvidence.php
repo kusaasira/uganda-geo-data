@@ -44,6 +44,7 @@ final class ReleaseEvidence
             $indices = [];
             foreach ($results as $result) {
                 if (!is_array($result) || !is_int($result['feature_index'] ?? null)
+                    || $result['feature_index'] < 0 || $result['feature_index'] >= $topology['feature_count']
                     || isset($indices[$result['feature_index']])
                     || !is_array($result['audit'] ?? null)
                     || !in_array($result['audit']['status'] ?? null, ['passed', 'failed'], true)
@@ -118,9 +119,10 @@ final class ReleaseEvidence
                 }
                 $unmatchedIds[$id] = true;
             }
-            if ($coverage['coverage'] === 'complete' && ($unmapped !== [] || $unmatched !== []
-                || $unresolved !== [] || $matches === [])) {
-                throw new InvalidArgumentException('Complete parish coverage claim contradicts unresolved data');
+            $fullyMapped = $matches !== [] && $unmapped === []
+                && $unmatched === [] && $unresolved === [];
+            if (($coverage['coverage'] === 'complete') !== $fullyMapped) {
+                throw new InvalidArgumentException('Parish coverage status contradicts matching evidence');
             }
             $coverageStatus = $coverage['coverage'] === 'complete' ? 'reported_complete' : 'incomplete';
         }
