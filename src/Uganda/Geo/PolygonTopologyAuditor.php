@@ -70,6 +70,20 @@ final class PolygonTopologyAuditor
             }
         }
 
+        // Check independent parts of a MultiPolygon without treating a
+        // boundary-only corner contact as an interior overlap.
+        for ($first = 0, $total = count($polygons); $first < $total; $first++) {
+            for ($second = $first + 1; $second < $total; $second++) {
+                if ($this->polygonsOverlap($polygons[$first], $polygons[$second])) {
+                    $issues[] = [
+                        'polygon' => $first,
+                        'other_polygon' => $second,
+                        'code' => 'multipart_overlap',
+                    ];
+                }
+            }
+        }
+
         return [
             'status' => $issues === [] ? 'passed' : 'failed',
             'polygon_count' => count($polygons),
@@ -77,6 +91,59 @@ final class PolygonTopologyAuditor
             'issues' => $issues,
             'limitations' => 'Planar diagnostic in longitude/latitude degrees, not a survey-grade area calculation or sibling overlap/gap audit.',
         ];
+    }
+
+    /**
+     * @param array<int, array<int, array<int, int|float>>> $a
+     * @param array<int, array<int, array<int, int|float>>> $b
+     */
+    private function polygonsOverlap(array $a, array $b): bool
+    {
+        foreach ($a[0] as $point) {
+            if ($this->insideFilledRegion($point, $b)) {
+                return true;
+            }
+        }
+        foreach ($b[0] as $point) {
+            if ($this->insideFilledRegion($point, $a)) {
+                return true;
+            }
+        }
+
+        // Crossing exterior edges imply invalid overlapping polygon interiors.
+        $shellA = $a[0];
+        $shellB = $b[0];
+        for ($i = 0, $maxA = count($shellA) - 1; $i < $maxA; $i++) {
+            for ($j = 0, $maxB = count($shellB) - 1; $j < $maxB; $j++) {
+                $abC = $this->cross($shellA[$i], $shellA[$i + 1], $shellB[$j]);
+                $abD = $this->cross($shellA[$i], $shellA[$i + 1], $shellB[$j + 1]);
+                $cdA = $this->cross($shellB[$j], $shellB[$j + 1], $shellA[$i]);
+                $cdB = $this->cross($shellB[$j], $shellB[$j + 1], $shellA[$i + 1]);
+                if ($abC * $abD < 0 && $cdA * $cdB < 0) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array<int, int|float> $point
+     * @param array<int, array<int, array<int, int|float>>> $rings
+     */
+    private function insideFilledRegion(array $point, array $rings): bool
+    {
+        if (!$this->contains($rings[0], $point)) {
+            return false;
+        }
+        foreach (array_slice($rings, 1) as $hole) {
+            if ($this->contains($hole, $point)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /** @param array<int, array<int, float|int>> $ring */
