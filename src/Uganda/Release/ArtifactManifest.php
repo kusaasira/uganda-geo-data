@@ -18,11 +18,13 @@ final class ArtifactManifest
             throw new InvalidArgumentException('Release inventory cannot be empty');
         }
         $entries = [];
+        $physicalPaths = [];
         foreach ($files as $relative) {
             $path = $this->resolve($root, $relative);
-            if (isset($entries[$relative])) {
+            if (isset($entries[$relative]) || isset($physicalPaths[$path])) {
                 throw new InvalidArgumentException('Duplicate artifact path ' . $relative);
             }
+            $physicalPaths[$path] = true;
             $hash = hash_file('sha256', $path);
             $bytes = filesize($path);
             if ($hash === false || $bytes === false) {
@@ -78,13 +80,16 @@ final class ArtifactManifest
     {
         if ($relative === '' || str_starts_with($relative, '/') || str_contains($relative, '\\')
             || !preg_match('/^[A-Za-z0-9._\/-]+$/D', $relative)
-            || in_array('..', explode('/', $relative), true)) {
+            || in_array('..', explode('/', $relative), true)
+            || in_array('.', explode('/', $relative), true)
+            || in_array('', explode('/', $relative), true)) {
             throw new InvalidArgumentException('Unsafe artifact path');
         }
 
         $directory = realpath($root);
         $path = $directory === false ? false : realpath($directory . '/' . $relative);
-        if ($directory === false || $path === false || !str_starts_with($path, $directory . DIRECTORY_SEPARATOR)
+        if ($directory === false || $path === false
+            || !str_starts_with($path, rtrim($directory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR)
             || !is_file($path) || !is_readable($path)) {
             throw new InvalidArgumentException('Artifact outside release root or unreadable: ' . $relative);
         }
