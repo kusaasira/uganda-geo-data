@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Uganda;
 
+use Uganda\Exceptions\AmbiguousAdministrativeNameException;
 use Uganda\Exceptions\CountyNotFoundException;
 use Uganda\Exceptions\DistrictNotFoundException;
 use Uganda\Exceptions\ParishNotFoundException;
@@ -17,9 +18,13 @@ final class Uganda
      */
     private array $districts;
 
+    /** @var array<string, array<string, array<int, array{unit: object, parent_id: int|null}>>> */
+    private array $nameIndex = [];
+
     public function __construct()
     {
         $this->districts = $this->generateTree();
+        $this->indexNames();
     }
 
     /**
@@ -35,10 +40,9 @@ final class Uganda
      */
     public function district(string $name): District
     {
-        foreach ($this->districts as $district) {
-            if (strtolower($district->name()) === strtolower($name)) {
-                return $district;
-            }
+        $unit = $this->uniqueNameMatch('district', $name);
+        if ($unit instanceof District) {
+            return $unit;
         }
 
         throw new DistrictNotFoundException(sprintf('unable to locate district called %s', $name));
@@ -61,12 +65,9 @@ final class Uganda
      */
     public function county(string $name): County
     {
-        foreach ($this->districts() as $district) {
-            try {
-                return $district->county($name);
-            } catch (CountyNotFoundException $exception) {
-                continue;
-            }
+        $unit = $this->uniqueNameMatch('county', $name);
+        if ($unit instanceof County) {
+            return $unit;
         }
 
         throw new CountyNotFoundException();
@@ -87,12 +88,9 @@ final class Uganda
      */
     public function subCounty(string $name): SubCounty
     {
-        foreach ($this->counties() as $county) {
-            try {
-                return $county->subCounty($name);
-            } catch (SubCountyNotFoundException $exception) {
-                continue;
-            }
+        $unit = $this->uniqueNameMatch('subcounty', $name);
+        if ($unit instanceof SubCounty) {
+            return $unit;
         }
 
         throw new SubCountyNotFoundException();
@@ -113,13 +111,9 @@ final class Uganda
      */
     public function parish(string $name): Parish
     {
-        $name = strtolower($name);
-        foreach ($this->subCounties() as $subCounty) {
-            try {
-                return $subCounty->parish($name);
-            } catch (ParishNotFoundException $exception) {
-                continue;
-            }
+        $unit = $this->uniqueNameMatch('parish', $name);
+        if ($unit instanceof Parish) {
+            return $unit;
         }
 
         throw new ParishNotFoundException();
@@ -140,15 +134,80 @@ final class Uganda
      */
     public function village(string $name): Village
     {
-        foreach ($this->parishes() as $parish) {
-            try {
-                return $parish->village($name);
-            } catch (VillageNotFoundException $exception) {
-                continue;
-            }
+        $unit = $this->uniqueNameMatch('village', $name);
+        if ($unit instanceof Village) {
+            return $unit;
         }
 
         throw new VillageNotFoundException();
+    }
+
+    /**
+     * Return every matching administrative unit, optionally constrained to its
+     * immediate parent. A name is a search term, never an identity.
+     *
+     * @return array<int, District|County|SubCounty|Parish|Village>
+     */
+    public function searchByName(string $level, string $name, ?int $parentId = null): array
+    {
+        if (!in_array($level, ['district', 'county', 'subcounty', 'parish', 'village'], true)) {
+            throw new \InvalidArgumentException('Unsupported administrative level: ' . $level);
+        }
+        $key = strtolower(trim($name));
+        if ($key === '') {
+            return [];
+        }
+        $entries = $this->nameIndex[$level][$key] ?? [];
+        $matches = [];
+        foreach ($entries as $entry) {
+            if ($parentId === null || $parentId === $entry['parent_id']) {
+                $unit = $entry['unit'];
+                if ($unit instanceof District || $unit instanceof County || $unit instanceof SubCounty ||
+                    $unit instanceof Parish || $unit instanceof Village) {
+                    $matches[] = $unit;
+                }
+            }
+        }
+        return $matches;
+    }
+
+    /** @return District|County|SubCounty|Parish|Village|null */
+    private function uniqueNameMatch(string $level, string $name)
+    {
+        $matches = $this->searchByName($level, $name);
+        if (count($matches) > 1) {
+            throw new AmbiguousAdministrativeNameException(
+                sprintf('Ambiguous %s name "%s" matched %d records; use a scoped search or canonical ID',
+                    $level, $name, count($matches))
+            );
+        }
+        return $matches[0] ?? null;
+    }
+
+    private function indexNames(): void
+    {
+        foreach ($this->districts() as $unit) {
+            $this->indexUnit('district', $unit, null);
+        }
+        foreach ($this->counties() as $unit) {
+            $this->indexUnit('county', $unit, $unit->districtId());
+        }
+        foreach ($this->subCounties() as $unit) {
+            $this->indexUnit('subcounty', $unit, $unit->countyId());
+        }
+        foreach ($this->parishes() as $unit) {
+            $this->indexUnit('parish', $unit, $unit->subCountyId());
+        }
+        foreach ($this->villages() as $unit) {
+            $this->indexUnit('village', $unit, $unit->parishId());
+        }
+    }
+
+    /** @param District|County|SubCounty|Parish|Village $unit */
+    private function indexUnit(string $level, $unit, ?int $parentId): void
+    {
+        $key = strtolower(trim($unit->name()));
+        $this->nameIndex[$level][$key][] = ['unit' => $unit, 'parent_id' => $parentId];
     }
 
     /** @return array<int, District> */
