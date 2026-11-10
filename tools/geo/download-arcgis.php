@@ -8,7 +8,8 @@ $root = dirname(__DIR__, 2);
 require_once $root . '/src/Uganda/Geo/GeometryContract.php';
 require_once $root . '/src/Uganda/Geo/ArcGisFeatureImporter.php';
 
-function fetchArcGisJson(string $url, int $maxBytes): string
+/** @return array{body: string, headers: array<int, string>} */
+function fetchArcGisJson(string $url, int $maxBytes): array
 {
     $host = parse_url($url, PHP_URL_HOST);
     if (parse_url($url, PHP_URL_SCHEME) !== 'https' ||
@@ -20,13 +21,13 @@ function fetchArcGisJson(string $url, int $maxBytes): string
         'timeout' => 25,
         'follow_location' => 0,
         'ignore_errors' => false,
-        'header' => 'Accept: application/json',
+        'header' => "Accept: application/json\r\nUser-Agent: UgandaGeo-SourceAcquisition/2.x",
     ]]);
     $body = @file_get_contents($url, false, $context, 0, $maxBytes + 1);
     if ($body === false || strlen($body) > $maxBytes) {
         throw new RuntimeException('ArcGIS request failed or exceeded the permitted response size');
     }
-    return $body;
+    return ['body' => $body, 'headers' => $http_response_header ?? []];
 }
 
 function writeImmutableFile(string $file, string $contents): void
@@ -65,7 +66,8 @@ try {
 
     $base = $endpoint['url'] . '/query';
     $idQuery = http_build_query(['where' => '1=1', 'returnIdsOnly' => 'true', 'f' => 'json'], '', '&', PHP_QUERY_RFC3986);
-    $idsPayload = fetchArcGisJson($base . '?' . $idQuery, 4000000);
+    $idResponse = fetchArcGisJson($base . '?' . $idQuery, 4000000);
+    $idsPayload = $idResponse['body'];
     $idsResponse = json_decode($idsPayload, true, 512, JSON_THROW_ON_ERROR);
     $objectIds = $idsResponse['objectIds'] ?? null;
     if (!is_array($objectIds) || $objectIds === [] || isset($idsResponse['error']) ||
@@ -101,7 +103,8 @@ try {
             'f' => 'geojson',
         ];
         $url = $base . '?' . http_build_query($params, '', '&', PHP_QUERY_RFC3986);
-        $raw = fetchArcGisJson($url, 50000000);
+        $pageResponse = fetchArcGisJson($url, 50000000);
+        $raw = $pageResponse['body'];
         $features = $reader->parsePage($raw, $endpoint['object_id_field']);
         $expected = array_map('strval', $chunk);
         $actual = array_map('strval', array_keys($features));
@@ -121,10 +124,12 @@ try {
         $pages[] = [
             'file' => $file,
             'request_url' => $url,
+            'response_headers' => $pageResponse['headers'],
             'object_ids' => $chunk,
             'sha256' => hash('sha256', $raw),
             'byte_count' => strlen($raw),
         ];
+        usleep(150000);
     }
     if (count($seen) !== count($ids) || $pages === []) {
         throw new RuntimeException('Fetched feature inventory does not match source object ID count');
@@ -140,6 +145,7 @@ try {
         'redistribution_status' => $endpoint['redistribution_status'],
         'object_id_inventory_file' => 'object-ids.json',
         'object_id_inventory_url' => $base . '?' . $idQuery,
+        'object_id_inventory_headers' => $idResponse['headers'],
         'object_id_inventory_sha256' => hash('sha256', $idsPayload),
         'pages' => $pages,
     ];
