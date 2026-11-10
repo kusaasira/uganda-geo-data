@@ -50,8 +50,11 @@ final class OfficialSourceReview
                 $date = $source[$dateKey] ?? null;
                 if ($date !== null && (!is_string($date) ||
                     !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) ||
-                    !checkdate((int) substr($date, 5, 2), (int) substr($date, 8, 2),
-                        (int) substr($date, 0, 4)))) {
+                    !checkdate(
+                        (int) substr($date, 5, 2),
+                        (int) substr($date, 8, 2),
+                        (int) substr($date, 0, 4)
+                    ))) {
                     throw new InvalidArgumentException("Invalid $dateKey for $id");
                 }
             }
