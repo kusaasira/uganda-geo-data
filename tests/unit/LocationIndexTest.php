@@ -49,4 +49,16 @@ final class LocationIndexTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         (new LocationIndex($this->sample()))->byName('province', 'unknown');
     }
+    /** @test */
+    public function nameAndIdentityLookupsReuseTheExactSameLocationObjects(): void
+    {
+        $index = new LocationIndex($this->sample());
+        $matches = $index->byName('county', 'lower madi');
+
+        $this->assertCount(2, $matches);
+        $this->assertSame($index->byId('county', 8), $matches[0]);
+        $this->assertSame($index->byId('county', 309), $matches[1]);
+        $this->assertSame([$matches[1]], $index->byName('county', 'Lower Madi', 2));
+        $this->assertSame([], $index->byName('county', 'Lower Madi', 9000));
+    }
 }

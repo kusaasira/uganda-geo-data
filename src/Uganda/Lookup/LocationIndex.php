@@ -12,8 +12,11 @@ final class LocationIndex
     /** @var array<string, array<int, object>> */
     private array $byId = [];
 
-    /** @var array<string, array<string, array<int, array{unit: object, parent_id: int|null}>>> */
+    /** @var array<string, array<string, array<int, int>>> */
     private array $byName = [];
+
+    /** @var array<string, array<int, int|null>> */
+    private array $parentById = [];
 
     /** @param array<int, District> $districts */
     public function __construct(array $districts)
@@ -41,7 +44,8 @@ final class LocationIndex
             throw new InvalidArgumentException("Duplicate $level identifier $id");
         }
         $this->byId[$level][$id] = $unit;
-        $this->byName[$level][strtolower(trim($name))][] = ['unit' => $unit, 'parent_id' => $parentId];
+        $this->byName[$level][strtolower(trim($name))][] = $id;
+        $this->parentById[$level][$id] = $parentId;
     }
 
     public function byId(string $level, int $id): ?object
@@ -55,9 +59,9 @@ final class LocationIndex
     {
         $this->assertLevel($level);
         $result = [];
-        foreach ($this->byName[$level][strtolower(trim($name))] ?? [] as $candidate) {
-            if ($parentId === null || $candidate['parent_id'] === $parentId) {
-                $result[] = $candidate['unit'];
+        foreach ($this->byName[$level][strtolower(trim($name))] ?? [] as $id) {
+            if ($parentId === null || ($this->parentById[$level][$id] ?? null) === $parentId) {
+                $result[] = $this->byId[$level][$id];
             }
         }
 
