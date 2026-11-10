@@ -4,13 +4,15 @@ This check installs a copy of Uganda Geo into a disposable consumer project
 using a Composer path repository with symlinks disabled. It verifies the package
 installation and autoload contract instead of relying on development autoloading.
 
-Run in an environment with Composer 2 and PHP 8.4:
+Run in an environment with Composer 2 and a supported PHP runtime (8.2–8.5):
 
     php tools/ci/consumer-install.php
     php tools/ci/consumer-install.php --laravel
 
 The Laravel variant installs the Laravel 12 framework and resolves the SDK
-through its container without inventing a service provider. Both commands exit
+through its container without inventing a service provider. This validates
+container interoperability, not a complete booted Laravel application or
+package auto-discovery. CI covers the supported PHP 8.2–8.5 runtime matrix. Both commands exit
 nonzero on failure and clean up the disposable consumer directory.
 
 This validates the branch as a local path package, not a stable Packagist tag.
