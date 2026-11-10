@@ -49,6 +49,21 @@ final class HierarchyNavigationTest extends TestCase
     }
 
     /** @test */
+    public function repeatedChildNamesArePreservedAndTheLazyIndexIsReusable(): void
+    {
+        $first = new County(2, 'Central', 1, []);
+        $second = new County(9, 'Central', 1, []);
+        $index = new LocationIndex([1 => new District(1, 'Parent', [2 => $first, 9 => $second])]);
+
+        $this->assertSame([2, 9], array_map(static function ($unit): int {
+            return $unit->id();
+        }, $index->childrenOf('county', 1)));
+        $this->assertSame($first, $index->childrenOf('county', 1)[0]);
+        $this->assertSame($second, $index->childrenOf('county', 1)[1]);
+        $this->assertCount(2, $index->byName('county', 'Central', 1));
+    }
+
+    /** @test */
     public function rootCannotBeQueriedAsAChildOfAnUnknownParent(): void
     {
         $this->expectException(InvalidArgumentException::class);
