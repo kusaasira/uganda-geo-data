@@ -41,4 +41,17 @@ final class OfficialSourceReviewTest extends TestCase
             'publication_date' => '2025-02-30', 'unit_level_identity_verified' => false,
         ]]]);
     }
+    /** @test */
+    public function missingOptionalLegalDateDoesNotProduceFalseIdentityReadiness(): void
+    {
+        $report = (new OfficialSourceReview())->review(['publications' => [[
+            'id' => 'report', 'publisher' => 'UBOS', 'title' => 'Report',
+            'url' => 'https://www.ubos.org/', 'scope' => '2024 reporting',
+            'status' => 'official', 'reference_year' => 2024,
+            'unit_level_identity_verified' => true,
+        ]]]);
+        $this->assertSame(0, $report['identity_ready_sources']);
+        $this->assertFalse($report['publications'][0]['unit_identity_ready']);
+        $this->assertNull($report['publications'][0]['legal_effective_date']);
+    }
 }
