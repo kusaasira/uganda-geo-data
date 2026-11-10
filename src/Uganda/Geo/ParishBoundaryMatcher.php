@@ -102,7 +102,7 @@ final class ParishBoundaryMatcher
         usort($matches, static function (array $left, array $right): int {
             return strcmp($left['unit_id'], $right['unit_id']);
         });
-        $unmatchedFeatures = array_values(array_diff(array_keys($featureIndex), array_keys($byObject)));
+        $unmatchedFeatures = array_map('strval', array_values(array_diff(array_keys($featureIndex), array_keys($byObject))));
         $unmatchedUnits = array_values(array_diff(array_keys($units), array_keys($byUnit)));
         sort($unmatchedFeatures, SORT_STRING);
         sort($unmatchedUnits, SORT_STRING);
@@ -114,7 +114,7 @@ final class ParishBoundaryMatcher
             'matches' => $matches,
             'unmatched_source_object_ids' => $unmatchedFeatures,
             'unmatched_canonical_unit_ids' => $unmatchedUnits,
-            'status' => $unmatchedFeatures === [] && $unmatchedUnits === [] ? 'complete' : 'incomplete',
+            'status' => $featureIndex !== [] && $units !== [] && $unmatchedFeatures === [] && $unmatchedUnits === [] ? 'complete' : 'incomplete',
         ];
     }
 }
