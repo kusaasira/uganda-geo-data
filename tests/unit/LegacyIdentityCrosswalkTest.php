@@ -71,4 +71,14 @@ final class LegacyIdentityCrosswalkTest extends TestCase
             'reviewer' => 'reviewer',
         ]]);
     }
+    /** @test */
+    public function rejectsMalformedHttpsEvidenceEvenWithTheExpectedPrefix(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        (new LegacyIdentityCrosswalk())->build($this->snapshot(), [[
+            'legacy_id' => 'legacy:parish:4', 'canonical_id' => 'canonical:parish:1',
+            'evidence_url' => 'https://', 'evidence_date' => '2024-12-31',
+            'reviewer' => 'human-reviewer',
+        ]]);
+    }
 }
