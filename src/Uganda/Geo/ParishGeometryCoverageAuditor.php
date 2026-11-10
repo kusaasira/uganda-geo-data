@@ -21,7 +21,11 @@ final class ParishGeometryCoverageAuditor
     public function audit(array $features, array $snapshot, array $decisions, array $unresolvedSourceIds = []): array
     {
         $mapping = (new ParishBoundaryMatcher())->match($features, $snapshot, $decisions);
-        $unmatched = array_fill_keys($mapping['unmatched_source_object_ids'], true);
+        $sourceIds = $mapping['unmatched_source_object_ids'];
+        if (!is_array($sourceIds)) {
+            throw new InvalidArgumentException('Matcher returned an invalid source inventory');
+        }
+        $unmatched = array_fill_keys($sourceIds, true);
         $unresolved = [];
         foreach ($unresolvedSourceIds as $index => $id) {
             if (!is_string($id) || !ctype_digit($id) || !isset($unmatched[$id]) ||
