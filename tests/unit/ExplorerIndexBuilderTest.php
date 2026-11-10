@@ -13,16 +13,18 @@ final class ExplorerIndexBuilderTest extends TestCase
     /** @test */
     public function retainsDuplicateNamesByDistinctCanonicalIdentity(): void
     {
-        $snapshot = ['schema_version' => 1, 'snapshot_id' => 'test-v1', 'units' => [
-            ['id' => 'parish:2', 'name' => 'Central', 'level' => 'parish', 'parent_id' => 'subcounty:2', 'confidential' => 'omit'],
-            ['id' => 'parish:1', 'name' => 'Central', 'level' => 'parish', 'parent_id' => 'subcounty:1'],
-            ['id' => 'subcounty:1', 'name' => 'North', 'level' => 'subcounty', 'parent_id' => null],
-            ['id' => 'subcounty:2', 'name' => 'South', 'level' => 'subcounty', 'parent_id' => null],
+        $snapshot = ['schema_version' => 1, 'snapshot_id' => 'test-v1', 'source_ids' => ['test-fixture'], 'units' => [
+            ['id' => 'parish:2', 'name' => 'Central', 'level' => 'parish', 'parent_id' => 'subcounty:2', 'confidential' => 'omit', 'source_id' => 'test-fixture'],
+            ['id' => 'parish:1', 'name' => 'Central', 'level' => 'parish', 'parent_id' => 'subcounty:1', 'source_id' => 'test-fixture'],
+            ['id' => 'subcounty:1', 'name' => 'North', 'level' => 'subcounty', 'parent_id' => 'county:1', 'source_id' => 'test-fixture'],
+            ['id' => 'subcounty:2', 'name' => 'South', 'level' => 'subcounty', 'parent_id' => 'county:1', 'source_id' => 'test-fixture'],
+            ['id' => 'county:1', 'name' => 'County', 'level' => 'county', 'parent_id' => 'district:1', 'source_id' => 'test-fixture'],
+            ['id' => 'district:1', 'name' => 'District', 'level' => 'district', 'parent_id' => null, 'source_id' => 'test-fixture'],
         ]];
         $index = (new ExplorerIndexBuilder())->build($snapshot);
-        $this->assertSame(4, $index['unit_count']);
-        $this->assertSame(['parish:1', 'parish:2', 'subcounty:1', 'subcounty:2'], array_column($index['units'], 'id'));
-        $this->assertArrayNotHasKey('confidential', $index['units'][1]);
+        $this->assertSame(6, $index['unit_count']);
+        $this->assertSame(['county:1', 'district:1', 'parish:1', 'parish:2', 'subcounty:1', 'subcounty:2'], array_column($index['units'], 'id'));
+        $this->assertArrayNotHasKey('confidential', $index['units'][3]);
         $this->assertSame('test-v1', $index['snapshot_id']);
     }
 
@@ -30,7 +32,7 @@ final class ExplorerIndexBuilderTest extends TestCase
     public function rejectsDuplicateIdsInsteadOfOverwriting(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        (new ExplorerIndexBuilder())->build(['schema_version' => 1, 'snapshot_id' => 'test', 'units' => [
+        (new ExplorerIndexBuilder())->build(['schema_version' => 1, 'snapshot_id' => 'test', 'source_ids' => ['test-fixture'], 'units' => [
             ['id' => 'village:1', 'name' => 'First', 'level' => 'village'],
             ['id' => 'village:1', 'name' => 'Second', 'level' => 'village'],
         ]]);
@@ -40,8 +42,8 @@ final class ExplorerIndexBuilderTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Missing canonical parent');
-        (new ExplorerIndexBuilder())->build(['schema_version' => 1, 'snapshot_id' => 'test', 'units' => [
-            ['id' => 'parish:1', 'name' => 'Central', 'level' => 'parish', 'parent_id' => 'subcounty:404'],
+        (new ExplorerIndexBuilder())->build(['schema_version' => 1, 'snapshot_id' => 'test', 'source_ids' => ['test-fixture'], 'units' => [
+            ['id' => 'parish:1', 'name' => 'Central', 'level' => 'parish', 'parent_id' => 'subcounty:404', 'source_id' => 'test-fixture'],
         ]]);
     }
 
@@ -50,9 +52,9 @@ final class ExplorerIndexBuilderTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Cyclic canonical ancestry');
-        (new ExplorerIndexBuilder())->build(['schema_version' => 1, 'snapshot_id' => 'test', 'units' => [
-            ['id' => 'a', 'name' => 'A', 'level' => 'parish', 'parent_id' => 'b'],
-            ['id' => 'b', 'name' => 'B', 'level' => 'subcounty', 'parent_id' => 'a'],
+        (new ExplorerIndexBuilder())->build(['schema_version' => 1, 'snapshot_id' => 'test', 'source_ids' => ['test-fixture'], 'units' => [
+            ['id' => 'a', 'name' => 'A', 'level' => 'parish', 'parent_id' => 'b', 'source_id' => 'test-fixture'],
+            ['id' => 'b', 'name' => 'B', 'level' => 'subcounty', 'parent_id' => 'a', 'source_id' => 'test-fixture'],
         ]]);
     }
 
@@ -60,6 +62,6 @@ final class ExplorerIndexBuilderTest extends TestCase
     public function itRejectsAnUnidentifiedSnapshot(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        (new ExplorerIndexBuilder())->build(['schema_version' => 1, 'units' => []]);
+        (new ExplorerIndexBuilder())->build(['schema_version' => 1, 'source_ids' => ['test-fixture'], 'units' => []]);
     }
 }
