@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Uganda;
 
+use Uganda\Exceptions\AmbiguousLocationException;
+
 use Uganda\Exceptions\CountyNotFoundException;
 use Uganda\Exceptions\ParishNotFoundException;
 use Uganda\Exceptions\SubCountyNotFoundException;
@@ -53,10 +55,21 @@ final class District
      */
     public function county(string $name): County
     {
-        foreach ($this->counties as $child) {
-            if (strtolower($child->name()) === strtolower($name)) {
-                return $child;
+        $matches = [];
+        foreach ($this->counties() as $candidate) {
+            if (strtolower(trim($candidate->name())) === strtolower(trim($name))) {
+                $matches[] = $candidate;
             }
+        }
+        if (count($matches) > 1) {
+            throw new AmbiguousLocationException(sprintf(
+                'multiple county records match %s; use an ID or parent-scoped lookup',
+                $name
+            ));
+        }
+
+        if (isset($matches[0])) {
+            return $matches[0];
         }
 
         throw new CountyNotFoundException(sprintf('unable to locate county called %s', $name));
@@ -77,12 +90,21 @@ final class District
      */
     public function subCounty(string $name): SubCounty
     {
-        foreach ($this->counties() as $county) {
-            try {
-                return $county->subCounty($name);
-            } catch (SubCountyNotFoundException $exception) {
-                continue;
+        $matches = [];
+        foreach ($this->subCounties() as $candidate) {
+            if (strtolower(trim($candidate->name())) === strtolower(trim($name))) {
+                $matches[] = $candidate;
             }
+        }
+        if (count($matches) > 1) {
+            throw new AmbiguousLocationException(sprintf(
+                'multiple sub county records match %s; use an ID or parent-scoped lookup',
+                $name
+            ));
+        }
+
+        if (isset($matches[0])) {
+            return $matches[0];
         }
 
         throw new SubCountyNotFoundException(sprintf('unable to locate sub county called %s', $name));
@@ -103,12 +125,21 @@ final class District
      */
     public function parish(string $name): Parish
     {
-        foreach ($this->subCounties() as $subCounty) {
-            try {
-                return $subCounty->parish($name);
-            } catch (ParishNotFoundException $exception) {
-                continue;
+        $matches = [];
+        foreach ($this->parishes() as $candidate) {
+            if (strtolower(trim($candidate->name())) === strtolower(trim($name))) {
+                $matches[] = $candidate;
             }
+        }
+        if (count($matches) > 1) {
+            throw new AmbiguousLocationException(sprintf(
+                'multiple parish records match %s; use an ID or parent-scoped lookup',
+                $name
+            ));
+        }
+
+        if (isset($matches[0])) {
+            return $matches[0];
         }
 
         throw new ParishNotFoundException(sprintf('unable to locate parish called %s', $name));
@@ -129,12 +160,21 @@ final class District
      */
     public function village(string $name): Village
     {
-        foreach ($this->parishes() as $parish) {
-            try {
-                return $parish->village($name);
-            } catch (VillageNotFoundException $exception) {
-                continue;
+        $matches = [];
+        foreach ($this->villages() as $candidate) {
+            if (strtolower(trim($candidate->name())) === strtolower(trim($name))) {
+                $matches[] = $candidate;
             }
+        }
+        if (count($matches) > 1) {
+            throw new AmbiguousLocationException(sprintf(
+                'multiple village records match %s; use an ID or parent-scoped lookup',
+                $name
+            ));
+        }
+
+        if (isset($matches[0])) {
+            return $matches[0];
         }
 
         throw new VillageNotFoundException(sprintf('unable to locate village called %s', $name));
