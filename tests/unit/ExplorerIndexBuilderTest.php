@@ -102,5 +102,4 @@ final class ExplorerIndexBuilderTest extends TestCase
             'units' => [],
         ]);
     }
-
 }
