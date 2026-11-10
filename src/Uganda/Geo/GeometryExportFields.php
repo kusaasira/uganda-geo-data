@@ -17,8 +17,10 @@ final class GeometryExportFields
      */
     public function prepare(array $collection): array
     {
+        $metadata = $collection['metadata'] ?? null;
         if (($collection['type'] ?? null) !== 'FeatureCollection'
-            || ($collection['metadata']['verification_scope'] ?? null) !== 'canonical_identity_and_parent_only'
+            || !is_array($metadata)
+            || ($metadata['verification_scope'] ?? null) !== 'canonical_identity_and_parent_only'
             || !isset($collection['features']) || !is_array($collection['features'])
             || $collection['features'] === []) {
             throw new InvalidArgumentException('Expected reviewed GeoJSON features with identity verification');
