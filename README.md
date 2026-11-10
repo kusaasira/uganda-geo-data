@@ -1,6 +1,6 @@
 # Uganda Geo Data
 
-This is a PHP package that retrieves Uganda's districts with their respective counties, sub counties, parishes and villages in Uganda. This data has been scrapped off [Uganda's passport's official portal](https://passports.go.ug).
+Uganda Geo is a framework-independent PHP library for administrative location data. It preserves distinct source IDs for districts, counties, subcounties, parishes and villages while exposing explicitly scoped searches. The historical bundled data was originally sourced from the Uganda passport portal. Official UBOS snapshots and source provenance are reviewed separately.
 
 # Description
 
@@ -21,12 +21,12 @@ This package gives you the leverage to access all sub levels ranging from distri
 
 In order to run this project, ensure that you have installed;
 
-- PHP 7.4 or later
+- PHP 8.2 or later for the planned v2 release (the currently published v1 tag has different requirements)
 - Composer
 
 ## Installation
 
-This project using composer.
+Install with Composer. **Important:** the currently published stable tag, `v1.0.0`, exposes the older `Uganda\\Geo` API. The `Uganda\\Uganda` examples below describe the development branch and must not be presented as installation instructions for that stable tag. Do not migrate production consumers until a compatible v2 tag is available.
 
 ```
 $ composer require kusaasira/uganda-geo
@@ -112,12 +112,12 @@ $subCounty = $uganda->subCounty('Namasale Town Council');
 
 # Retrieve all parishes in a particular sub county
 $parishes = $uganda
-    ->county('Namasale Town Council')
+    ->subCounty('Namasale Town Council')
     ->parishes();
 
 # Retrieve all villages in a particular sub county
 $villages = $uganda
-    ->county('Namasale Town Council')
+    ->subCounty('Namasale Town Council')
     ->villages();
 ```
 
@@ -136,7 +136,7 @@ $parish = $uganda->parish('Bunamwamba');
 
 # Retrieve all villages in a particular parish
 $villages = $uganda
-    ->county('Bunamwamba')
+    ->parish('Bunamwamba')
     ->villages();
 ```
 
@@ -151,12 +151,24 @@ $uganda = new Uganda();
 $villages = $uganda->villages();
 
 # Retrieve specific village
-$subCounty = $uganda->village('Ayeye');
+$village = $uganda->village('Ayeye');
 ```
+
+## Identity-safe queries (development branch)
+
+Use source IDs for identity and parent-scoped searches for repeated place names:
+
+```php
+$district = $uganda->district('Mukono');
+$sameDistrict = $uganda->findById('district', $district->id());
+$parishes = $uganda->searchByName('parish', 'Central', $subCountyId);
+```
+
+Name-only global lookups can raise `AmbiguousLocationException`. Collection keys in the next major release are source IDs rather than normalized place names. The historical numeric IDs are not established official UBOS codes. See [v1-to-v2 migration](docs/migration/v1-to-v2.md).
 
 ## Credits
 
-The data used in this package has been scrapped off This data has been scrapped off [Uganda's passport's official portal](https://passports.go.ug) as there is no updated geo data source since 2018 published anywhere.
+The original package dataset was derived from [Uganda's passport portal](https://passports.go.ug). Administrative counts in dated UBOS publications can differ from this legacy snapshot. See [official source review](docs/data/official-source-review.md) and [source registry](docs/data/sources.md) before treating a record as current or legally authoritative.
 
 ## Collaborators ✨
 
