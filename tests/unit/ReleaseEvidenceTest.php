@@ -59,4 +59,65 @@ final class ReleaseEvidenceTest extends TestCase
             null
         );
     }
+    /** @test */
+    public function itRejectsFakePassingTopologyCounts(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('contradicts');
+        (new ReleaseEvidence())->aggregate(
+            ['valid' => true, 'total_units' => 1],
+            ['feature_count' => 1, 'failed_count' => 0, 'results' => [
+                ['feature_index' => 0, 'audit' => [
+                    'status' => 'failed', 'issues' => [['code' => 'self_intersection']],
+                ]],
+            ]],
+            null
+        );
+    }
+
+    /** @test */
+    public function itRejectsCompleteCoverageClaimsWithUnmappedUnits(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Complete parish');
+        (new ReleaseEvidence())->aggregate(
+            ['valid' => true, 'total_units' => 2],
+            null,
+            [
+                'coverage' => 'complete',
+                'verified_count' => 1,
+                'canonical_parish_ward_count' => 2,
+                'source_feature_count' => 1,
+                'verified_matches' => [['unit_id' => 'p1', 'source_object_id' => '10']],
+                'unmapped_canonical_unit_ids' => ['p2'],
+                'unmatched_source_object_ids' => [],
+                'unresolved_source_object_ids' => [],
+            ]
+        );
+    }
+
+    /** @test */
+    public function itRejectsDuplicateUnitMappingsDespiteMatchingTotals(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('duplicate verified parish');
+        (new ReleaseEvidence())->aggregate(
+            ['valid' => true, 'total_units' => 2],
+            null,
+            [
+                'coverage' => 'complete',
+                'verified_count' => 2,
+                'canonical_parish_ward_count' => 2,
+                'source_feature_count' => 2,
+                'verified_matches' => [
+                    ['unit_id' => 'p1', 'source_object_id' => '10'],
+                    ['unit_id' => 'p1', 'source_object_id' => '11'],
+                ],
+                'unmapped_canonical_unit_ids' => [],
+                'unmatched_source_object_ids' => [],
+                'unresolved_source_object_ids' => [],
+            ]
+        );
+    }
+
 }
