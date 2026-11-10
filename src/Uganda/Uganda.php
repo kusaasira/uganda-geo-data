@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Uganda;
 
+use Uganda\Data\JsonDatasetLoader;
 use Uganda\Exceptions\CountyNotFoundException;
 use Uganda\Exceptions\DistrictNotFoundException;
 use Uganda\Exceptions\ParishNotFoundException;
@@ -17,8 +18,11 @@ final class Uganda
      */
     private array $districts;
 
-    public function __construct()
+    private string $sourceDirectory;
+
+    public function __construct(?string $sourceDirectory = null)
     {
+        $this->sourceDirectory = $sourceDirectory ?? __DIR__ . '/Data';
         $this->districts = $this->generateTree();
     }
 
@@ -155,19 +159,19 @@ final class Uganda
     private function generateTree(): array
     {
         /** @var array<int, array<string, string>> $villages */
-        $villages = $this->getFileContents(__DIR__ . '/Data/villages.json');
+        $villages = $this->getFileContents($this->sourceDirectory . '/villages.json');
 
         /** @var array<int, array<string, string>> $parishes */
-        $parishes = $this->getFileContents(__DIR__ . '/Data/parishes.json');
+        $parishes = $this->getFileContents($this->sourceDirectory . '/parishes.json');
 
         /** @var array<int, array<string, string>> $subCounties */
-        $subCounties = $this->getFileContents(__DIR__ . '/Data/sub_counties.json');
+        $subCounties = $this->getFileContents($this->sourceDirectory . '/sub_counties.json');
 
         /** @var array<int, array<string, string>> $counties */
-        $counties = $this->getFileContents(__DIR__ . '/Data/counties.json');
+        $counties = $this->getFileContents($this->sourceDirectory . '/counties.json');
 
         /** @var array<int, array<string, string>> $districts */
-        $districts = $this->getFileContents(__DIR__ . '/Data/districts.json');
+        $districts = $this->getFileContents($this->sourceDirectory . '/districts.json');
 
         // Keep the source identity distinct from the display name.
         // Reject duplicate IDs rather than silently overwriting records.
@@ -253,21 +257,9 @@ final class Uganda
         return $mappedDistrict;
     }
 
-    /** @return array<string, string> */
+    /** @return array<int, array<string, int|string>> */
     private function getFileContents(string $filePath): array
     {
-        try {
-            /** @var array<string, string> $response */
-            $response = (array) json_decode(
-                (string) file_get_contents($filePath),
-                true,
-                512,
-                JSON_THROW_ON_ERROR
-            );
-        } catch (\JsonException $jsonException) {
-            return [];
-        }
-
-        return $response;
+        return (new JsonDatasetLoader())->load($filePath);
     }
 }
