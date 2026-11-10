@@ -25,6 +25,13 @@ final class VerifiedGeoJsonBuilder
 
         // Never accept a caller-supplied "verified" result. Re-evaluate every
         // decision against the canonical units and actual source features.
+        /** @var array{
+         *   matches: array<int, array<string, mixed>>,
+         *   status: string,
+         *   unmatched_source_object_ids: array<int, string>,
+         *   unmatched_canonical_unit_ids: array<int, string>
+         * } $report
+         */
         $report = (new ParishBoundaryMatcher())->match($features, $snapshot, $decisions);
 
         $output = [];
