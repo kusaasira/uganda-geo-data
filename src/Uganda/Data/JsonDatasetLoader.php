@@ -35,12 +35,31 @@ final class JsonDatasetLoader
             throw new RuntimeException('Expected a nonempty list of dataset records: ' . $path);
         }
 
+        $requiredParents = [
+            'villages.json' => 'parish',
+            'parishes.json' => 'subcounty',
+            'sub_counties.json' => 'county',
+            'counties.json' => 'district',
+        ];
+        $parentKey = $requiredParents[basename($path)] ?? null;
+
         foreach ($rows as $index => $row) {
             if (!is_array($row) || !isset($row['id'], $row['name']) ||
                 (!is_string($row['id']) && !is_int($row['id'])) ||
                 (string) $row['id'] === '' ||
                 !is_string($row['name']) || trim($row['name']) === '') {
                 throw new RuntimeException("Invalid dataset record at index $index in $path");
+            }
+
+            if (!ctype_digit((string) $row['id']) || (int) $row['id'] < 1) {
+                throw new RuntimeException("Invalid numeric ID at index $index in $path");
+            }
+            if ($parentKey !== null) {
+                $parent = $row[$parentKey] ?? null;
+                if ((!is_string($parent) && !is_int($parent)) ||
+                    !ctype_digit((string) $parent) || (int) $parent < 1) {
+                    throw new RuntimeException("Invalid $parentKey parent ID at index $index in $path");
+                }
             }
 
             foreach ($row as $value) {

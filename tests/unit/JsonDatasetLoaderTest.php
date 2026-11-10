@@ -87,4 +87,23 @@ final class JsonDatasetLoaderTest extends TestCase
         $this->expectExceptionMessage('Invalid JSON in');
         new Uganda($this->directory);
     }
+    /** @test */
+    public function refusesNonNumericSourceIdsBeforeCastingThem(): void
+    {
+        $path = $this->directory . '/rows.json';
+        file_put_contents($path, '[{"id":"not-a-number","name":"Example"}]');
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Invalid numeric ID');
+        (new JsonDatasetLoader())->load($path);
+    }
+
+    /** @test */
+    public function rejectsMissingParentIdsForHierarchyTables(): void
+    {
+        $path = $this->directory . '/villages.json';
+        file_put_contents($path, '[{"id":"1","name":"Example"}]');
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Invalid parish parent ID');
+        (new JsonDatasetLoader())->load($path);
+    }
 }
