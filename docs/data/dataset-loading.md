@@ -11,7 +11,7 @@ The default constructor still uses the bundled `src/Uganda/Data` files and does 
 
 ```php
 try {
-    $uganda = new \\Uganda\\Uganda();
+    $uganda = new \Uganda\Uganda();
 } catch (\\RuntimeException $exception) {
     // Surface the error and repair the dataset; do not claim there are zero districts.
 }
