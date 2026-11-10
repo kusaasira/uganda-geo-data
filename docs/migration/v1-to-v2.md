@@ -4,13 +4,13 @@ This guide describes the proposed next major API. It is not an announcement that
 
 ## Why the major-version change?
 
-The published `v1.0.0` package exposes `Uganda\\Geo`. The development branch exposes `Uganda\\Uganda`, retains records by numeric source ID and rejects ambiguous single-result lookups instead of returning a potentially incorrect first match.
+The published `v1.0.0` package exposes `Uganda\Geo`. The development branch exposes `Uganda\Uganda`, retains records by numeric source ID and rejects ambiguous single-result lookups instead of returning a potentially incorrect first match.
 
 | Concern | Published v1 | Proposed v2 |
 | --- | --- | --- |
-| Root API | `Uganda\\Geo` | `Uganda\\Uganda` |
-| Nested collection keys | Names in prior tree versions | Distinct source IDs |
-| Duplicate-name behavior | Potential overwrite or first match | All records preserved; ambiguities explicit |
+| Root API | `Uganda\Geo` | `Uganda\Uganda` |
+| Return shape | Chainable lookup methods returning JSON through `all()` | Typed location model objects and ID-keyed maps |
+| Duplicate-name behavior | Singular chains may select the first match | All records preserved; ambiguities explicit |
 | Source ID meaning | Legacy dataset identifiers | Legacy dataset identifiers, not verified official UBOS codes |
 | Installation | Stable 1.0.0 available | New stable tag required before production migration |
 
