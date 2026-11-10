@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "ubos-bec-2025-geographic-denominators",
+  "publisher": "Uganda Bureau of Statistics",
+  "study_year": 2025,
+  "publication_date": "2026-09-21",
+  "portal_url": "https://statistics.ubos.org/bec/dashboard.php",
+  "report_url": "https://www.ubos.org/2026/09/21/baseline-education-census-bec-report-2025/",
+  "geography_basis": "Education coverage dashboard denominators, not a legal gazette of administrative creations or retirements",
+  "counts": {
+    "parish_education_scope": 10867,
+    "subcounty_education_scope": 2209,
+    "district_city_combined": 146
+  },
+  "units_from_reference": "Parishes covered by at least one primary school: 9488/10867; subcounties with secondary schools: 1698/2209",
+  "source_record_ids_available": false,
+  "administrative_code_crosswalk_verified": false
+}

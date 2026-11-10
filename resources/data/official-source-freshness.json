@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "methodology": "These sources document observed census or statistical reporting geographies, not a continuously updated legal administrative register. Missing reference/effective dates remain null.",
+  "publications": [
+    {
+      "id": "ubos-nphc-2024",
+      "publisher": "Uganda Bureau of Statistics",
+      "title": "National Population and Housing Census 2024 (NPHC)",
+      "url": "https://statistics.ubos.org/nphc/report",
+      "reference_year": 2024,
+      "publication_date": null,
+      "scope": "Census geography for district, county, subcounty and parish statistics",
+      "status": "official_aggregate",
+      "unit_level_identity_verified": false,
+      "legal_effective_date": null
+    },
+    {
+      "id": "ubos-abstract-2024",
+      "publisher": "Uganda Bureau of Statistics",
+      "title": "Annual Statistical Abstract 2024",
+      "url": "https://www.ubos.org/wp-content/uploads/publications/The-Annual-Statistical-Abstract-2024.pdf",
+      "reference_year": 2024,
+      "publication_date": null,
+      "scope": "National administrative summary tables with separate classification definitions",
+      "status": "official_aggregate",
+      "unit_level_identity_verified": false,
+      "legal_effective_date": null
+    },
+    {
+      "id": "ubos-bec-2025",
+      "publisher": "Uganda Bureau of Statistics",
+      "title": "Baseline Education Census 2025",
+      "url": "https://www.ubos.org/2026/09/21/baseline-education-census-bec-report-2025/",
+      "reference_year": 2025,
+      "publication_date": "2026-09-21",
+      "scope": "Education-statistics geographies down to parish, not a definitive legal unit register",
+      "status": "contextual_aggregate",
+      "unit_level_identity_verified": false,
+      "legal_effective_date": null
+    },
+    {
+      "id": "ubos-uganda-profile",
+      "publisher": "Uganda Bureau of Statistics",
+      "title": "Uganda Profile: Administrative Units",
+      "url": "https://www.ubos.org/uganda-profile/",
+      "reference_year": null,
+      "publication_date": null,
+      "scope": "Undated public profile counts, not necessarily aligned with a census geography freeze",
+      "status": "undated_profile",
+      "unit_level_identity_verified": false,
+      "legal_effective_date": null
+    }
+  ]
+}

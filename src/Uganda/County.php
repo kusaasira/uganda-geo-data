@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Uganda;
 
+use Uganda\Exceptions\AmbiguousLocationException;
+
 use Uganda\Exceptions\ParishNotFoundException;
 use Uganda\Exceptions\SubCountyNotFoundException;
 use Uganda\Exceptions\VillageNotFoundException;
@@ -16,14 +18,14 @@ final class County
 
     private int $districtId;
 
-    /** @var array<string, SubCounty> */
+    /** @var array<int|string, SubCounty> */
     private array $subCounties;
 
     /**
      * @param int $id
      * @param string $name
      * @param int $districtId
-     * @param array<string, SubCounty> $subCounties
+     * @param array<int|string, SubCounty> $subCounties
      */
     public function __construct(int $id, string $name, int $districtId, array $subCounties = [])
     {
@@ -53,14 +55,27 @@ final class County
      */
     public function subCounty(string $name): SubCounty
     {
-        if (!array_key_exists(strtolower($name), $this->subCounties)) {
-            throw new SubCountyNotFoundException(sprintf('unable to locate sub county called %s', $name));
+        $matches = [];
+        foreach ($this->subCounties() as $candidate) {
+            if (strtolower(trim($candidate->name())) === strtolower(trim($name))) {
+                $matches[] = $candidate;
+            }
+        }
+        if (count($matches) > 1) {
+            throw new AmbiguousLocationException(sprintf(
+                'multiple sub county records match %s; use an ID or parent-scoped lookup',
+                $name
+            ));
         }
 
-        return $this->subCounties[strtolower($name)];
+        if (isset($matches[0])) {
+            return $matches[0];
+        }
+
+        throw new SubCountyNotFoundException(sprintf('unable to locate sub county called %s', $name));
     }
 
-    /** @return array<string, SubCounty> */
+    /** @return array<int|string, SubCounty> */
     public function subCounties(): array
     {
         return $this->subCounties;
@@ -81,12 +96,21 @@ final class County
      */
     public function parish(string $name): Parish
     {
-        foreach ($this->subCounties() as $subCounty) {
-            try {
-                return $subCounty->parish($name);
-            } catch (ParishNotFoundException $exception) {
-                continue;
+        $matches = [];
+        foreach ($this->parishes() as $candidate) {
+            if (strtolower(trim($candidate->name())) === strtolower(trim($name))) {
+                $matches[] = $candidate;
             }
+        }
+        if (count($matches) > 1) {
+            throw new AmbiguousLocationException(sprintf(
+                'multiple parish records match %s; use an ID or parent-scoped lookup',
+                $name
+            ));
+        }
+
+        if (isset($matches[0])) {
+            return $matches[0];
         }
 
         throw new ParishNotFoundException(sprintf('unable to locate parish called %s', $name));
@@ -107,18 +131,27 @@ final class County
      */
     public function village(string $name): Village
     {
-        foreach ($this->parishes() as $parish) {
-            try {
-                return $parish->village($name);
-            } catch (VillageNotFoundException $exception) {
-                continue;
+        $matches = [];
+        foreach ($this->villages() as $candidate) {
+            if (strtolower(trim($candidate->name())) === strtolower(trim($name))) {
+                $matches[] = $candidate;
             }
+        }
+        if (count($matches) > 1) {
+            throw new AmbiguousLocationException(sprintf(
+                'multiple village records match %s; use an ID or parent-scoped lookup',
+                $name
+            ));
+        }
+
+        if (isset($matches[0])) {
+            return $matches[0];
         }
 
         throw new VillageNotFoundException(sprintf('unable to locate village called %s', $name));
     }
 
-    /** @return array<string, array<string, array<string, array<string,array<string, array<array<string, int|string>>|int|string>>|int|string>>|int|string> */
+    /** @return array{id: int, name: string, districtId: int, subCounties: array<int|string, array<string, mixed>>} */
     public function toArray(): array
     {
         return [

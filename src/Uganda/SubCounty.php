@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Uganda;
 
+use Uganda\Exceptions\AmbiguousLocationException;
+
 use Uganda\Exceptions\ParishNotFoundException;
 use Uganda\Exceptions\VillageNotFoundException;
 
@@ -15,13 +17,13 @@ final class SubCounty
 
     private int $countyId;
 
-    /** @var array<string, Parish> */
+    /** @var array<int|string, Parish> */
     private array $parishes;
 
     /**
      * @param int $id
      * @param string $name
-     * @param array<string, Parish> $parishes
+     * @param array<int|string, Parish> $parishes
      */
     public function __construct(int $id, string $name, int $countyId, array $parishes = [])
     {
@@ -46,7 +48,7 @@ final class SubCounty
         return $this->countyId;
     }
 
-    /** @return array<string, Parish> */
+    /** @return array<int|string, Parish> */
     public function parishes(): array
     {
         return $this->parishes;
@@ -54,11 +56,24 @@ final class SubCounty
 
     public function parish(string $name): Parish
     {
-        if (!array_key_exists(strtolower($name), $this->parishes)) {
-            throw new ParishNotFoundException(sprintf('unable to locate parish called %s', $name));
+        $matches = [];
+        foreach ($this->parishes() as $candidate) {
+            if (strtolower(trim($candidate->name())) === strtolower(trim($name))) {
+                $matches[] = $candidate;
+            }
+        }
+        if (count($matches) > 1) {
+            throw new AmbiguousLocationException(sprintf(
+                'multiple parish records match %s; use an ID or parent-scoped lookup',
+                $name
+            ));
         }
 
-        return $this->parishes[strtolower($name)];
+        if (isset($matches[0])) {
+            return $matches[0];
+        }
+
+        throw new ParishNotFoundException(sprintf('unable to locate parish called %s', $name));
     }
 
     /** @return array<int, Village> */
@@ -76,18 +91,27 @@ final class SubCounty
      */
     public function village(string $name): Village
     {
-        foreach ($this->parishes() as $parish) {
-            try {
-                return $parish->village($name);
-            } catch (VillageNotFoundException $exception) {
-                continue;
+        $matches = [];
+        foreach ($this->villages() as $candidate) {
+            if (strtolower(trim($candidate->name())) === strtolower(trim($name))) {
+                $matches[] = $candidate;
             }
+        }
+        if (count($matches) > 1) {
+            throw new AmbiguousLocationException(sprintf(
+                'multiple village records match %s; use an ID or parent-scoped lookup',
+                $name
+            ));
+        }
+
+        if (isset($matches[0])) {
+            return $matches[0];
         }
 
         throw new VillageNotFoundException(sprintf('unable to locate village called %s', $name));
     }
 
-    /** @return array<string, array<string, array<string, array<array<string, int|string>>|int|string>>|int|string> */
+    /** @return array{id: int, name: string, countyId: int, parishes: array<int|string, array<string, mixed>>} */
     public function toArray(): array
     {
         return [
