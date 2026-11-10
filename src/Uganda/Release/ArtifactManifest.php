@@ -49,6 +49,7 @@ final class ArtifactManifest
             throw new InvalidArgumentException('Unsupported or incomplete release manifest');
         }
         $paths = [];
+        $physicalPaths = [];
         foreach ($manifest['artifacts'] as $entry) {
             if (!is_array($entry) || !isset($entry['path'], $entry['sha256'], $entry['bytes'])
                 || !is_string($entry['path']) || !is_string($entry['sha256']) || !is_int($entry['bytes'])
@@ -57,6 +58,10 @@ final class ArtifactManifest
             }
             $paths[$entry['path']] = true;
             $path = $this->resolve($root, $entry['path']);
+            if (isset($physicalPaths[$path])) {
+                throw new InvalidArgumentException('Duplicate physical release artifact');
+            }
+            $physicalPaths[$path] = true;
             if (!hash_equals($entry['sha256'], (string) hash_file('sha256', $path))
                 || filesize($path) !== $entry['bytes']) {
                 throw new InvalidArgumentException('Release artifact mismatch: ' . $entry['path']);
