@@ -10,9 +10,11 @@ the supplied snapshot. Verified and unmapped identity sets must partition the
 snapshot's parish/ward inventory. A mismatch fails the build rather than
 displaying a misleading percentage.
 
-Only the reviewed count, denominator and unmapped count are exposed to the
-browser. Private reviewer names, evidence URLs and raw source features are
-never included in the generated index.
+Only aggregate reviewed unit counts, canonical denominators and unmatched
+source-polygon counts are exposed to the browser. The publisher verifies
+that source features partition into reviewed, unmatched and unresolved sets.
+Private reviewer names, evidence URLs and raw source identifiers are never
+included in the generated index.
 
 If no report is supplied, the explorer states that reviewed geometry coverage
 was not provided. All coverage describes **the supplied canonical snapshot**,
