@@ -1,42 +1,53 @@
-# Pull Request Description
+## Background / Problem
 
-This PR aims to do something (detailed description).
+Explain the user-visible, developer-facing or data-integrity problem that makes this change necessary. Link the underlying code or dated source evidence.
 
-## Type (Feature, Fix, Config, etc)
+## Root Cause
 
-- [ ] Bug fix 🐞
-- [ ] New feature ✨
-- [ ] Breaking change 🔩
-- [ ] This change requires a documentation update 📙
-- [ ] Improvement 🌠
-- [ ] Refactor 🔄
-- [ ] Add Test Specs 🚦
+Describe why the current behavior occurs and the constraints that make the change necessary.
 
-# Tests
+## What Changed
 
-Tests description
+Describe the implemented changes with enough detail for an independent reviewer to understand the design.
 
-- [ ] Fetching Districts.
-- [ ] Fetching counties in under a district.
-- [ ] Fetching sub-counties in under a district->county.
-- [ ] Fetching parishes in under a district->countty->subcounty.
-- [ ] Fetching parishes in under a district->countty->subcounty.
-- [ ] Fetching vilages in under a district->countty->subcounty->parish.
+## Behavior: Before vs After
 
-**Tests configurations and running**:
+| Area | Before | After |
+| --- | --- | --- |
+| | | |
 
-- PHP Unit
+## Files Changed
 
-```
-vendor/bin/phpunit
-```
+Identify the substantive files or modules and their responsibilities.
 
-# Checklist:
+## Test Coverage Added / Updated
 
-- [ ] My code follows the style guidelines of this project
-- [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
-- [ ] My changes generate no new warnings
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing unit tests pass locally with my changes
+Include regression scenarios, edge cases, source-record conservation and any GIS validation appropriate to this change.
+
+## Verification Performed
+
+State commands, PHP versions, check results and artifact checksums. Separate completed verification from untested claims.
+
+## Backward Compatibility
+
+Document public API changes, dataset identifier stability, Composer constraints and any required migration.
+
+## Risk Assessment
+
+Include correctness, security, legal data use, rollback and unresolved coverage limitations when relevant.
+
+## Operational Impact
+
+Describe installation, dependency, performance, build, deployment or release effects. Use “None” when justified.
+
+## Security and Privacy
+
+Explain whether network requests, public data endpoints, credentials or personal information are affected.
+
+## Performance
+
+Provide measured results or explicitly explain why performance is unchanged.
+
+## Invariants
+
+Identify the properties that must remain true, especially source-row conservation, ID identity and no fabricated administrative matches.
