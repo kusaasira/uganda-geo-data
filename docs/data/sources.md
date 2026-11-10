@@ -15,8 +15,8 @@ The bundled `src/Uganda/Data/*.json` tables form a legacy reference snapshot. Th
 ## Rules for new sources
 
 1. Assign a stable catalogue ID, the exact source URL, the actual publisher and a reference label.
-2. Preserve unknown dates as `null`; never manufacture collection or effective dates.
-3. Keep `redistribution_status` at `unverified` until source-specific terms are documented.
+2. Preserve unknown dates as `null`; never manufacture collection or effective dates. Known reference dates use strict `YYYY-MM-DD` and retrieval timestamps use UTC `YYYY-MM-DDTHH:MM:SSZ`.
+3. Keep `redistribution_status` at `unverified` until source-specific terms are documented. Marking a source `permitted` requires an HTTPS `license_url` and a nonempty `attribution` statement.
 4. A publicly accessible endpoint can be used for technical discovery and reproducible acquisition, subject to its published access rules. Public accessibility alone is not a license to redistribute bundled polygons.
 5. Record the retrieval timestamp, SHA-256 digest, content type, byte count and original source headers **when downloading**, not while merely cataloguing the endpoint.
 6. Keep raw inputs immutable. Document schema transformations, all unmatched records and the authority of external identifiers.

@@ -17,6 +17,12 @@ final class CanonicalSnapshotContractTest extends TestCase
         $fixture = json_decode((string) file_get_contents($root . '/tests/fixtures/canonical-snapshot.json'), true, 512, JSON_THROW_ON_ERROR);
 
         $this->assertSame(1, $fixture['schema_version']);
+        $this->assertSame(
+            'https://raw.githubusercontent.com/kusaasira/uganda-geo-data/next/2.x/resources/schemas/administrative-unit.schema.json',
+            $schema['$id']
+        );
+        $this->assertSame('administrative-unit.schema.json', $snapshotSchema['properties']['units']['items']['$ref']);
+        $this->assertSame('object', $schema['properties']['external_codes']['type']);
         $this->assertSame(1, $snapshotSchema['properties']['schema_version']['const']);
         $this->assertContains('parish', $schema['properties']['level']['enum']);
         $this->assertContains('ward', $schema['properties']['level']['enum']);
