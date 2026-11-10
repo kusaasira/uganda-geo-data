@@ -68,7 +68,7 @@ final class SoftwareBillOfMaterials
             $components[] = $component;
         }
         usort($components, static function (array $left, array $right): int {
-            return strcmp($left['name'], $right['name']);
+            return strcmp((string) $left['name'], (string) $right['name']);
         });
 
         return [
