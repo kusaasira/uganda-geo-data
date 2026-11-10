@@ -1,149 +1,230 @@
-# Uganda Geo Data
+# Uganda Geo
 
-Uganda Geo is a framework-independent PHP library for administrative location data. It preserves distinct source IDs for districts, counties, subcounties, parishes and villages while exposing explicitly scoped searches. The historical bundled data was originally sourced from the Uganda passport portal. Official UBOS snapshots and source provenance are reviewed separately.
+**Identity-safe administrative geography for Uganda, built for modern PHP.**
 
-# Description
+[![CI](https://github.com/kusaasira/uganda-geo-data/actions/workflows/ci.yml/badge.svg)](https://github.com/kusaasira/uganda-geo-data/actions/workflows/ci.yml)
+[![Packagist Version](https://img.shields.io/packagist/v/kusaasira/uganda-geo?label=stable)](https://packagist.org/packages/kusaasira/uganda-geo)
+[![PHP](https://img.shields.io/badge/PHP-8.2%2B-777bb4)](composer.json)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-This package gives you the leverage to access all sub levels ranging from districts, counties, subcounties, parishes to villages in Uganda. You can also access the different mentioned areas independently.
+Uganda Geo is an **open-source, framework-independent PHP library** for navigating districts, counties, subcounties, parishes and villages. Version **2.0.0** introduces ID-keyed collections, explicit ambiguity handling, deterministic source validation and separate tools for administrative-data review and geospatial processing.
 
-## Versions and requirements
+> **Data scope:** The default PHP API uses a historical bundled administrative snapshot. Its capture date and current completeness have not been independently established. Official statistics from the **Uganda Bureau of Statistics (UBOS)** are credited as comparison and reconciliation sources, not automatically substituted into the runtime dataset. See [Data sources and attribution](#data-sources-and-attribution).
 
-The currently published stable package is **v1.0.0**. It exposes the chainable `Uganda\Geo` class. The forthcoming **v2.0.0** release is not published yet and introduces a different `Uganda\Uganda` object model.
+## At a glance
 
-- **Stable v1:** Follow the requirements and API of the existing immutable v1.0.0 tag.
-- **Development v2:** Minimum PHP **8.2** and Composer 2. The PHP 8.2 branch reaches upstream end of security maintenance on 31 December 2026, so consumer deployments should plan an upgrade.
+| | Uganda Geo 2.0 |
+| --- | --- |
+| Package | [kusaasira/uganda-geo](https://packagist.org/packages/kusaasira/uganda-geo) |
+| Language | PHP 8.2+ with JSON extension |
+| Dependencies | No mandatory framework or spatial extension |
+| API | Typed administrative models and ID-based lookups |
+| Coverage | District → county → subcounty → parish → village, as represented in the bundled snapshot |
+| Data integrity | Preserves duplicate names by distinct source IDs |
+| Integrations | Plain PHP and optional Laravel container use |
+| GIS tools | Optional public endpoint acquisition, reviewed polygon matching, topology checks and local GeoJSON/Shapefile/GeoPackage export |
+| Versioning | SemVer for code, separately identified source snapshots for data |
+| License | [MIT](LICENSE) for the package code; third-party dataset rights may differ |
+
+## Why 2.0?
+
+Administrative place names are **not unique identifiers**. Two different parishes may share the same name, even within a larger area. A name-keyed collection can hide legitimate records if one name overwrites another.
+
+Version 2 changes that contract:
+
+- **Preserves identity:** Districts and their descendants are indexed by source IDs, not normalized names.
+- **Handles ambiguity:** Global singular name lookups reject multiple matches. Parent-scoped searches let callers choose the intended locality.
+- **Navigates ancestry:** Find a unit, retrieve its direct children or resolve its complete chain of administrative parents.
+- **Fails loudly:** Invalid or missing packaged data raises an exception rather than pretending the dataset is empty.
+- **Audits changes:** Optional import and reconciliation tools preserve source provenance, detect broken parent relationships and produce reproducible data manifests.
+- **Keeps GIS optional:** No GDAL, Laravel or geospatial extension is required just to use administrative lookups.
 
 ## Installation
 
-### Published stable v1
+Install the **stable 2.x** package from Packagist:
 
-```bash
-composer require "kusaasira/uganda-geo:^1.0"
-```
+\`\`\`bash
+composer require "kusaasira/uganda-geo:^2.0"
+\`\`\`
 
-```php
+Requirements: PHP **8.2 or newer**, Composer **2** and PHP's JSON extension. Release-specific install availability can be checked on [Packagist](https://packagist.org/packages/kusaasira/uganda-geo).
+
+Version 2 is a **breaking upgrade** from v1. Read the [migration guide](docs/migration/v1-to-v2.md) before upgrading an existing integration.
+
+## Quick start
+
+\`\`\`php
 <?php
 
-require 'vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
 
-use Uganda\Geo;
+use Uganda\Uganda;
 
-// The v1 API is chainable and returns JSON using all().
-$json = (new Geo())->districts('Mukono')->counties()->all();
-echo $json;
-```
+$geo = new Uganda();
 
-### Upcoming v2
+// Obtain a typed district model.
+$district = $geo->district('Mukono');
 
-After a stable v2 release is published, install it with:
+echo $district->id() . ': ' . $district->name() . PHP_EOL;
 
-```bash
-composer require "kusaasira/uganda-geo:^2.0"
-```
+// Look up that exact district by source identity.
+$exact = $geo->findById('district', $district->id());
 
-Until then, the examples below apply only to a checkout of the `next/2.x` integration branch with Composer dependencies installed. They are **not** compatible with the published v1 package.
+// Navigate direct child units.
+$counties = $geo->childrenOf('county', $district->id());
 
-## Development v2 API
+// A name can match several places. Do not discard candidates.
+$matches = $geo->searchByName('parish', 'Central');
 
-```php
+foreach ($matches as $parish) {
+    echo $parish->id() . ' - ' . $parish->name() . PHP_EOL;
+}
+\`\`\`
+
+Or execute the versioned example in a local repository checkout:
+
+\`\`\`bash
+composer install
+php examples/standalone-v2.php
+\`\`\`
+
+### Resolve an ambiguous place safely
+
+\`\`\`php
+<?php
+
+use Uganda\Uganda;
+use Uganda\Exceptions\AmbiguousLocationException;
+
+$geo = new Uganda();
+
+try {
+    $parish = $geo->parish('Central');
+} catch (AmbiguousLocationException $exception) {
+    // Ask the caller to select the intended parent or a source ID.
+    $candidates = $geo->searchByName('parish', 'Central');
+}
+
+// Scope by the actual parent subcounty ID when known.
+$parishes = $geo->searchByName('parish', 'Central', $subcountyId);
+\`\`\`
+
+An ID is meaningful **within its administrative level and source snapshot**. Numeric package source IDs are **not** guaranteed to be official UBOS administrative codes. Use a verified crosswalk when matching IDs from external systems.
+
+### Navigate parents and children
+
+\`\`\`php
 <?php
 
 use Uganda\Uganda;
 
-$uganda = new Uganda();
+$geo = new Uganda();
 
-// Access a district by name when the name is unambiguous.
-$district = $uganda->district('Mukono');
-$districtId = $district->id();
+$county = $geo->county('Kampala'); // Only succeeds if exactly one county matches.
+$subcounties = $geo->childrenOf('subcounty', $county->id());
 
-// Recover the same model using its stable package identity.
-$matchingDistrict = $uganda->findById('district', $districtId);
-assert($matchingDistrict === $district);
-
-// Traverse direct descendants using the actual parent model.
-foreach ($district->counties() as $county) {
-    foreach ($county->subCounties() as $subCounty) {
-        foreach ($subCounty->parishes() as $parish) {
-            foreach ($parish->villages() as $village) {
-                // Each model carries an ID and a name.
-                echo $village->id(), ': ', $village->name(), PHP_EOL;
-                break 4; // Show one representative record, not the entire district.
-            }
-        }
-    }
+foreach ($subcounties as $subcounty) {
+    $ancestors = $geo->ancestorsOf('subcounty', $subcounty->id());
+    echo $subcounty->name() . ' has ' . count($ancestors) . " ancestors\n";
 }
+\`\`\`
 
-// Lookups by name can have more than one result.
-$matches = $uganda->searchByName('parish', 'Central');
+For examples that must work regardless of a particular source name, use [examples/standalone-v2.php](examples/standalone-v2.php).
 
-// Scope a search using an actual parent from the known district hierarchy.
-foreach ($district->counties() as $county) {
-    foreach ($county->subCounties() as $subCounty) {
-        $localParishes = $uganda->searchByName('parish', 'Central', $subCounty->id());
-        break 2;
-    }
-}
-```
+## API reference
 
-Global singular name methods such as `$uganda->parish($name)` throw an `AmbiguousLocationException` if multiple source units share that name. Use an ID or parent-scoped result set rather than accepting an arbitrary first match. Legacy numeric identifiers are **package source IDs**, not proven official government codes.
+| Method | Behavior |
+| --- | --- |
+| \`districts()\`, \`counties()\`, \`subCounties()\`, \`parishes()\`, \`villages()\` | Collect each level from the bundled hierarchy |
+| \`district($name)\`, \`county($name)\`, \`subCounty($name)\`, \`parish($name)\`, \`village($name)\` | Return a unique named unit or throw |
+| \`findById($level, $id)\` | Find an exact level-specific integer ID or return \`null\` |
+| \`searchByName($level, $name, $parentId = null)\` | Return every exact normalized-name match, optionally scoped to a parent |
+| \`childrenOf($childLevel, $parentId)\` | Return direct children of a known parent |
+| \`ancestorsOf($level, $id)\` | Return ancestors from root to immediate parent |
 
-See the [v1-to-v2 migration guide](docs/migration/v1-to-v2.md) and [official source review](docs/data/official-source-review.md) for data provenance, breaking changes and known limitations.
+Supported levels: \`district\`, \`county\`, \`subcounty\`, \`parish\` and \`village\`. A name is a display property, **never a globally unique lookup key**.
 
-## Credits
+See the [complete v2 API reference](docs/api/v2-reference.md) for return contracts, errors and more examples.
 
-The original package dataset was derived from [Uganda's passport portal](https://passports.go.ug). Administrative counts in dated UBOS publications can differ from this legacy snapshot. See [official source review](docs/data/official-source-review.md) and [source registry](docs/data/sources.md) before treating a record as current or legally authoritative.
+## Laravel integration
 
-## Collaborators ✨
+The production library has **no Illuminate dependency** and does not register a service provider. Use it directly through Composer autoloading:
 
-<!-- readme: collaborators -start -->
-<table>
-<tr>
-    <td align="center">
-        <a href="https://github.com/timek">
-            <img src="https://avatars.githubusercontent.com/u/2828143?v=4" width="100;" alt="timek"/>
-            <br />
-            <sub><b>Tim3k</b></sub>
-        </a>
-    </td>
-    <td align="center">
-        <a href="https://github.com/kusaasira">
-            <img src="https://avatars.githubusercontent.com/u/10392992?v=4" width="100;" alt="kusaasira"/>
-            <br />
-            <sub><b>Joshua Kusaasira</b></sub>
-        </a>
-    </td>
-    <td align="center">
-        <a href="https://github.com/Marshud">
-            <img src="https://avatars.githubusercontent.com/u/63245157?v=4" width="100;" alt="Marshud"/>
-            <br />
-            <sub><b>Marshud</b></sub>
-        </a>
-    </td></tr>
-</table>
-<!-- readme: collaborators -end -->
+\`\`\`php
+use Uganda\Uganda;
 
-## Contributors ✨
+$geo = app(Uganda::class);
+$districts = $geo->districts();
+\`\`\`
 
-<!-- readme: contributors -start -->
-<table>
-<tr>
-    <td align="center">
-        <a href="https://github.com/kusaasira">
-            <img src="https://avatars.githubusercontent.com/u/10392992?v=4" width="100;" alt="kusaasira"/>
-            <br />
-            <sub><b>Joshua Kusaasira</b></sub>
-        </a>
-    </td>
-    <td align="center">
-        <a href="https://github.com/RoadSigns">
-            <img src="https://avatars.githubusercontent.com/u/5822139?v=4" width="100;" alt="RoadSigns"/>
-            <br />
-            <sub><b>Zack</b></sub>
-        </a>
-    </td></tr>
-</table>
-<!-- readme: contributors -end -->
+Laravel container integration is covered by independent consumer smoke tests. No service-provider configuration or auto-discovery is required.
 
-## License
+## Data sources and attribution
 
-This package is free software distributed under the terms of the MIT license.
+**UBOS is the official publisher of the 2024 census and statistical references** used to evaluate administrative-geography currency. We acknowledge and credit the [Uganda Bureau of Statistics](https://www.ubos.org/) for those publications.
+
+| Source | Role | What it establishes |
+| --- | --- | --- |
+| [Uganda passport portal](https://passports.go.ug/) | Reported original source of the legacy bundled package data | Historical package locality rows; capture date not verified |
+| [UBOS NPHC 2024 reports](https://statistics.ubos.org/nphc/report) | Official census geography and statistical reference | 2024 census classifications and dated published counts |
+| [UBOS 2024 Statistical Abstract](https://www.ubos.org/wp-content/uploads/publications/The-Annual-Statistical-Abstract-2024.pdf) | Official published administrative statistics | Its own reference-date and classification context |
+| [UBOS 2025 Statistical Abstract](https://www.ubos.org/2026/10/27/2025-statistical-abstract/) | Updated official reference publication | Newer reported indicators, subject to each indicator's reference period |
+| [Public ArcGIS parish feature layer](https://services1.arcgis.com/49FlB10KwAxJa07X/ArcGIS/rest/services/Map_2_June_WFL1/FeatureServer/1) | Candidate optional polygon source | Public GIS service; UBOS ownership and redistribution permission **not established** |
+
+The NPHC 2024 reports identify **135 districts and 11 cities**, **312 counties**, **2,191 subcounty/division/town-council units** and **10,717 parishes/wards** for the census reference. These are **official census figures**, not counts certified for the package's historical JSON snapshot and not automatically equivalent to current legal administrative units.
+
+We credit UBOS for UBOS-authored publications without misattributing the passport-derived legacy dataset or unrelated third-party ArcGIS polygons. See [source inventory](docs/data/sources.md), [official-source assessment](docs/data/official-source-review.md) and [public GIS endpoints](docs/geospatial/public-endpoints.md).
+
+## Optional geospatial tooling
+
+The repository includes tooling to inspect and acquire public polygon endpoints, reconcile parish identities against a canonical snapshot, validate geometry and export reviewed data to GIS formats.
+
+The **PHP runtime does not ship a verified national parish boundary archive**. GIS tooling requires separately acquired source data and, for format conversion, **GDAL**. Example operator commands:
+
+\`\`\`bash
+# Inspect the catalogued public feature service.
+php tools/geo/inspect-arcgis.php arcgis-parishes-2024
+
+# Download a provenance-aware copy to a NEW local directory.
+php tools/geo/download-arcgis.php arcgis-parishes-2024 ./build/arcgis-2024
+
+# After human-reviewed identity matching, export verified GeoJSON to a NEW directory.
+php tools/geo/export-formats.php reviewed-parishes.geojson ./build/parish-formats
+\`\`\`
+
+The generated local formats include **GeoJSON**, **GeoPackage** and an ESRI Shapefile set with \`.shp\`, \`.shx\`, \`.dbf\`, \`.prj\` and \`.cpg\`.
+
+**Publication distinction:** Public access is enough to discover and ingest an endpoint under applicable access terms. It does not by itself grant redistribution rights. Local GIS conversion and sample topology tests do not prove nationwide completeness. Unverified third-party geometry files are **not attached** to the v2.0.0 source release.
+
+Read [public endpoint guidance](docs/geospatial/public-endpoints.md), [coverage audit](docs/geospatial/parish-coverage-audit.md) and [geometry archive policy](docs/releases/geometry-archives.md).
+
+## Development and verification
+
+\`\`\`bash
+composer install
+composer test
+composer cs-test
+./vendor/bin/phpstan analyse src --level 9
+php examples/standalone-v2.php
+\`\`\`
+
+CI covers PHP **8.2, 8.3, 8.4 and 8.5**, the lowest-supported dependency set, standalone/Laravel consumers, data validation and optional GIS workflows. Test fixtures prove code behavior, not external administrative currentness or source publication rights.
+
+Security reporting: [SECURITY.md](SECURITY.md). Contributions and data corrections: [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Versioning, releases and migration
+
+- [v2.0.0 release](https://github.com/kusaasira/uganda-geo-data/releases/tag/v2.0.0): stable major release with public API breaking changes.
+- [CHANGELOG.md](CHANGELOG.md): historical release notes and versioned changes.
+- [Migration guide](docs/migration/v1-to-v2.md): required v1-to-v2 upgrade steps.
+- [Source attribution and licenses](docs/data/sources.md): provenance and redistribution boundaries.
+
+Package versions describe the **software release**. Administrative datasets require their own reference dates, source identities and checksums. A newer Composer tag does not mean every included geographic name is current.
+
+## Credits and license
+
+Created and maintained by [Joshua Kusaasira](https://github.com/kusaasira). Thanks to all [contributors](https://github.com/kusaasira/uganda-geo-data/graphs/contributors).
+
+Administrative statistical references are credited to the **Uganda Bureau of Statistics (UBOS)**. The historical packaged locality dataset was originally attributed to Uganda's passport portal. Third-party geometry sources retain their own rights and attribution requirements.
+
+The **package source code** is released under the [MIT License](LICENSE). This license does not automatically cover externally sourced administrative publications or GIS feature datasets.
