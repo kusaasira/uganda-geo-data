@@ -64,6 +64,13 @@ try {
         $sources[$level] = ['path' => $name, 'bytes' => strlen($bytes), 'sha256' => hash('sha256', $bytes)];
     }
     $snapshot = (new LegacyJsonImporter())->import($source);
+    // The importer reads the files independently. Detect changes between
+    // source inventory hashing and import rather than publishing false hashes.
+    foreach ($files as $level => $name) {
+        if (hash_file('sha256', $source . '/' . $name) !== $sources[$level]['sha256']) {
+            throw new RuntimeException('Source changed while importing: ' . $name);
+        }
+    }
     $report = (new CanonicalIntegrityValidator())->validate($snapshot, $expected);
     if (!$report['valid']) {
         throw new RuntimeException('Canonical snapshot failed record-conservation validation: '
@@ -86,8 +93,8 @@ try {
         throw new RuntimeException('Unable to complete checksum manifest');
     }
     (new ArtifactManifest())->verify($stage, $manifest, ['canonical.json', 'qa.json']);
-    if (!rename($stage, $output)) {
-        throw new RuntimeException('Unable to publish complete staged release');
+    if (file_exists($output) || is_link($output) || !rename($stage, $output)) {
+        throw new RuntimeException('Release output path became unavailable');
     }
     fwrite(STDOUT, "Reproducible canonical dataset generated and verified\n");
 } catch (Throwable $error) {
