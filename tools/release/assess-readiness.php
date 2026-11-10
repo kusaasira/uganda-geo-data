@@ -7,7 +7,7 @@ use Uganda\Release\ReleaseReadiness;
 require dirname(__DIR__, 2) . '/vendor/autoload.php';
 
 if ($argc < 2 || $argc > 3 || (isset($argv[2]) && $argv[2] !== '--require-attestations')) {
-    fwrite(STDERR, "Usage: php tools/release/assess-readiness.php EVIDENCE.json [--enforce]\n");
+    fwrite(STDERR, "Usage: php tools/release/assess-readiness.php EVIDENCE.json [--require-attestations]\n");
     exit(2);
 }
 try {
