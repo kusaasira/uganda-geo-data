@@ -19,7 +19,7 @@ final class AdministrativeNameSearchTest extends TestCase
         $matches = $uganda->searchByName('parish', $fixture['name']);
         $this->assertGreaterThanOrEqual(2, count($matches));
 
-        $this->expectException(AmbiguousAdministrativeNameException::class);
+        $this->expectException(AmbiguousLocationException::class);
         $uganda->parish($fixture['name']);
     }
 
