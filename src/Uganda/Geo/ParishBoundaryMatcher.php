@@ -22,6 +22,9 @@ final class ParishBoundaryMatcher
         if (!isset($snapshot['units']) || !is_array($snapshot['units'])) {
             throw new InvalidArgumentException('Canonical snapshot requires a units list');
         }
+        if (array_keys($decisions) !== array_keys(array_values($decisions))) {
+            throw new InvalidArgumentException('Boundary decisions must be an indexed list');
+        }
         $units = [];
         foreach ($snapshot['units'] as $index => $unit) {
             if (!is_array($unit) || !isset($unit['id'], $unit['level']) ||
