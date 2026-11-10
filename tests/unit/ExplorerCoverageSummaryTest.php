@@ -21,7 +21,10 @@ final class ExplorerCoverageSummaryTest extends TestCase
         $report = [
             'canonical_parish_ward_count' => 2,
             'verified_count' => 1,
-            'verified_matches' => [['unit_id' => 'p1', 'reviewer' => 'private name']],
+            'verified_matches' => [['unit_id' => 'p1', 'source_object_id' => '10', 'reviewer' => 'private name']],
+            'source_feature_count' => 2,
+            'unmatched_source_object_ids' => ['11'],
+            'unresolved_source_object_ids' => [],
             'unmapped_canonical_unit_ids' => ['p2'],
             'coverage' => 'incomplete',
         ];
@@ -29,6 +32,7 @@ final class ExplorerCoverageSummaryTest extends TestCase
         self::assertSame(1, $result['reviewed']);
         self::assertSame(2, $result['total']);
         self::assertSame('unverified', $result['national_coverage']);
+        self::assertSame(1, $result['unmatched_source_features']);
         self::assertArrayNotHasKey('verified_matches', $result);
         self::assertArrayNotHasKey('reviewer', $result);
     }
