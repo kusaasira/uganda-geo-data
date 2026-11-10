@@ -16,7 +16,7 @@ Dataset snapshots are versioned separately. An updated census reference or renam
 
 ## Maintenance
 
-Supported PHP versions and release branches are documented with each stable release. Old major versions may require consumers to upgrade. No fixed security response time or support duration is promised without a published maintainer commitment.
+Supported PHP versions and release branches are documented with each stable release. The historical v1.0.0 release has no guaranteed security maintenance window. Old major versions may require consumers to upgrade. No fixed security response time or support duration is promised without a published maintainer commitment.
 
 ## Distribution
 
