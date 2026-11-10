@@ -5,7 +5,7 @@ Locations are identified by IDs. Display names are **not unique** across Uganda 
 Use `Uganda::searchByName($level, $name, $parentId = null)` to retrieve all matches, ordered by their original administrative source list. Supported levels are `district`, `county`, `subcounty`, `parish` and `village`.
 
 ```php
-$uganda = new \\Uganda\\Uganda();
+$uganda = new \Uganda\Uganda();
 $matches = $uganda->searchByName('parish', 'Example Parish');
 $withinSubcounty = $uganda->searchByName('parish', 'Example Parish', $subCountyId);
 $parish = $uganda->findById('parish', $parishId);
