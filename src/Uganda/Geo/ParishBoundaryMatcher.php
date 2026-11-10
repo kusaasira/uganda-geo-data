@@ -39,8 +39,7 @@ final class ParishBoundaryMatcher
 
         $featureIndex = [];
         foreach ($features as $sourceId => $feature) {
-            if ((!is_string($sourceId) && !is_int($sourceId)) ||
-                !ctype_digit((string) $sourceId) || !is_array($feature)) {
+            if (!ctype_digit((string) $sourceId)) {
                 throw new InvalidArgumentException('Feature index must use numeric source object IDs');
             }
             $id = (string) $sourceId;
@@ -80,9 +79,11 @@ final class ParishBoundaryMatcher
             if (strpos($decision['evidence_url'], 'https://') !== 0 ||
                 trim($decision['reviewer']) === '' ||
                 !preg_match('/^\d{4}-\d{2}-\d{2}$/', $decision['evidence_date']) ||
-                !checkdate((int) substr($decision['evidence_date'], 5, 2),
+                !checkdate(
+                    (int) substr($decision['evidence_date'], 5, 2),
                     (int) substr($decision['evidence_date'], 8, 2),
-                    (int) substr($decision['evidence_date'], 0, 4))) {
+                    (int) substr($decision['evidence_date'], 0, 4)
+                )) {
                 throw new InvalidArgumentException("Mapping for $unitId requires valid dated HTTPS evidence");
             }
 
