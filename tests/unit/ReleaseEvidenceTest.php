@@ -79,7 +79,7 @@ final class ReleaseEvidenceTest extends TestCase
     public function itRejectsCompleteCoverageClaimsWithUnmappedUnits(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Complete parish');
+        $this->expectExceptionMessage('Parish coverage status contradicts matching evidence');
         (new ReleaseEvidence())->aggregate(
             ['valid' => true, 'total_units' => 2],
             null,
