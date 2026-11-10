@@ -57,7 +57,8 @@ final class ReleaseNotes
         $out[] = '## Release qualification';
         $out[] = '';
         $out[] = 'Release notes describe implemented features, not verification of national administrative accuracy, geometry coverage or redistribution permissions.';
-        $out[] = 'Publish only after independent release gates and the exact-tag Packagist installation pass.';
+        $out[] = 'Before stable publication, verify the prerelease tag can be installed through Packagist and complete independent release gates.';
+        $out[] = 'After publishing the stable tag, perform a fresh stable Packagist installation before announcing success.';
         $out[] = '';
         return implode("\n", $out);
     }
