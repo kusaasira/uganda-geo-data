@@ -1,0 +1,36 @@
+{
+  "base_version": "v2.0.0",
+  "sections": {
+    "Added": [
+      "Identity-safe lookup by source ID and parent-scoped administrative searches.",
+      "Canonical administrative snapshot validation and reproducible source-change reports.",
+      "Optional offline exploration of administrative hierarchy with provenance labels."
+    ],
+    "Changed": [
+      "Minimum supported PHP version is 8.2.",
+      "The v2 public API uses the Uganda\\Uganda object model instead of the published v1 Uganda\\Geo API."
+    ],
+    "Fixed": [
+      "Prevent duplicate place names from silently replacing distinct records.",
+      "Reject malformed JSON and invalid hierarchy references explicitly."
+    ],
+    "Data": [
+      "Treat legacy numeric IDs as package-local identifiers, not verified government codes.",
+      "Maintain dated UBOS evidence separately from the bundled historical source snapshot."
+    ],
+    "Geometry": [
+      "Provide opt-in public-feature acquisition and reviewed polygon matching without inventing boundaries.",
+      "Release geometry assets only when matching, topology, completeness and source reuse gates are verified."
+    ],
+    "Security": [
+      "Validate release asset hashes and reject unsafe paths or incomplete inventories."
+    ],
+    "Documentation": [
+      "Document v1-to-v2 migration, data provenance and known administrative limitations."
+    ],
+    "Upgrade": [
+      "Migrate callers from Uganda\\Geo chains to Uganda\\Uganda lookups and explicit ambiguity handling.",
+      "Verify a real Composer installation from the published v2.0.0 tag before deploying production consumers."
+    ]
+  }
+}
