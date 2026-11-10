@@ -51,13 +51,12 @@ final class JsonDatasetLoader
                 throw new RuntimeException("Invalid dataset record at index $index in $path");
             }
 
-            if (!ctype_digit((string) $row['id']) || (int) $row['id'] < 1) {
+            if (!$this->isPositiveNativeId($row['id'])) {
                 throw new RuntimeException("Invalid numeric ID at index $index in $path");
             }
             if ($parentKey !== null) {
                 $parent = $row[$parentKey] ?? null;
-                if ((!is_string($parent) && !is_int($parent)) ||
-                    !ctype_digit((string) $parent) || (int) $parent < 1) {
+                if (!$this->isPositiveNativeId($parent)) {
                     throw new RuntimeException("Invalid $parentKey parent ID at index $index in $path");
                 }
             }
@@ -70,5 +69,26 @@ final class JsonDatasetLoader
         }
 
         return $rows;
+    }
+
+    /**
+     * PHP model identifiers are native integers. Reject overflow before casting,
+     * otherwise multiple distinct source IDs may collapse into PHP_INT_MAX.
+     *
+     * @param mixed $value
+     */
+    private function isPositiveNativeId($value): bool
+    {
+        if ((!is_int($value) && !is_string($value)) || !ctype_digit((string) $value)) {
+            return false;
+        }
+        $decimal = ltrim((string) $value, '0');
+        if ($decimal === '') {
+            return false;
+        }
+
+        $max = (string) PHP_INT_MAX;
+        return strlen($decimal) < strlen($max) ||
+            (strlen($decimal) === strlen($max) && strcmp($decimal, $max) <= 0);
     }
 }
