@@ -90,4 +90,37 @@ final class GeometryRoundTripVerifierTest extends TestCase
         $this->expectExceptionMessage('hole count');
         (new GeometryRoundTripVerifier())->verify($source, $roundTrip);
     }
+    /** @test */
+    public function itRejectsRelocatedHolesEvenWhenOverallAreaAndExtentAreUnchanged(): void
+    {
+        $source = $this->reviewed();
+        $source['features'][0]['geometry']['coordinates'][] = [
+            [32.002, 0.002],
+            [32.004, 0.002],
+            [32.004, 0.004],
+            [32.002, 0.004],
+            [32.002, 0.002],
+        ];
+        $roundTrip = $source;
+        foreach ($roundTrip['features'][0]['geometry']['coordinates'][1] as &$point) {
+            $point[0] += 0.001;
+        }
+        unset($point);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('polygon edges');
+        (new GeometryRoundTripVerifier())->verify($source, $roundTrip);
+    }
+
+    /** @test */
+    public function itAcceptsDriverChangesToPolygonRingDirection(): void
+    {
+        $source = $this->reviewed();
+        $roundTrip = $source;
+        $roundTrip['features'][0]['geometry']['coordinates'][0] = array_reverse(
+            $roundTrip['features'][0]['geometry']['coordinates'][0]
+        );
+        (new GeometryRoundTripVerifier())->verify($source, $roundTrip);
+        self::assertTrue(true);
+    }
+
 }
