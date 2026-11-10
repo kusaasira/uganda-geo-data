@@ -39,7 +39,13 @@ final class VerifiedGeoJsonBuilder
         $usedFeatures = [];
         foreach ($report['matches'] as $match) {
             if (!is_array($match) || !isset($match['source_object_id'], $match['unit_id'],
-                $match['parent_unit_id'], $match['evidence_url'], $match['evidence_date'], $match['reviewer'])) {
+                $match['parent_unit_id'], $match['evidence_url'], $match['evidence_date'], $match['reviewer'])
+                || !is_string($match['source_object_id'])
+                || !is_string($match['unit_id'])
+                || !is_string($match['parent_unit_id'])
+                || !is_string($match['evidence_url'])
+                || !is_string($match['evidence_date'])
+                || !is_string($match['reviewer'])) {
                 throw new InvalidArgumentException('Incomplete verified source match');
             }
 
