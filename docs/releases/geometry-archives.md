@@ -3,7 +3,7 @@
 Once reviewed GeoJSON has been converted to validated ESRI Shapefile and
 GeoPackage output, package the prepared layer in a self-checking ZIP:
 
-    php tools/release/package-geometry.php build/parish-formats v2.0.0-rc.1 build/parishes-review.zip
+    php tools/release/package-geometry.php build/parish-formats v2.0.0 build/parishes-review.zip
 
 Requires the optional PHP zip extension at release-build time. The
 Composer runtime remains framework-independent and does not require ext-zip.
