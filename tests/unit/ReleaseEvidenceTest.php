@@ -119,4 +119,28 @@ final class ReleaseEvidenceTest extends TestCase
             ]
         );
     }
+    /** @test */
+    public function itRejectsClaimedValidCanonicalEvidenceWithMissingRows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('self-contradictory');
+        (new ReleaseEvidence())->aggregate([
+            'valid' => true,
+            'total_units' => 3,
+            'counts_by_level' => ['district' => 2],
+            'errors' => [],
+        ], null, null);
+    }
+
+    /** @test */
+    public function itRejectsCanonicalEvidenceWithoutErrorInventory(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Incomplete canonical integrity evidence');
+        (new ReleaseEvidence())->aggregate([
+            'valid' => true,
+            'total_units' => 1,
+            'counts_by_level' => ['district' => 1],
+        ], null, null);
+    }
 }
