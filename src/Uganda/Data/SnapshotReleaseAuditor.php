@@ -17,6 +17,7 @@ final class SnapshotReleaseAuditor
     public function audit(array $before, array $after): array
     {
         $report = (new CanonicalSnapshotDiffer())->compare($before, $after);
+        /** @var array<string, array<int, array{id: string, field: string, before: mixed, after: mixed}>> $groups */
         $groups = [
             'renamed' => [],
             'reparented' => [],
@@ -24,10 +25,17 @@ final class SnapshotReleaseAuditor
             'provenance_changed' => [],
         ];
 
-        foreach ($report['changes'] as $change) {
-            if (($change['kind'] ?? '') !== 'modified') {
+        $changes = $report['changes'];
+        if (!is_array($changes)) {
+            throw new \UnexpectedValueException('Canonical diff returned an invalid change list');
+        }
+        foreach ($changes as $change) {
+            if (!is_array($change) || ($change['kind'] ?? '') !== 'modified' ||
+                !is_array($change['fields'] ?? null) || !is_string($change['id'] ?? null)) {
                 continue;
             }
+            $fields = $change['fields'];
+            $id = $change['id'];
             foreach ([
                 'name' => 'renamed',
                 'parent_id' => 'reparented',
@@ -35,15 +43,15 @@ final class SnapshotReleaseAuditor
                 'source_id' => 'provenance_changed',
                 'source_record_id' => 'provenance_changed',
             ] as $field => $category) {
-                if (!isset($change['fields'][$field])) {
+                if (!isset($fields[$field]) || !is_array($fields[$field])) {
                     continue;
                 }
-                $values = $change['fields'][$field];
+                $values = $fields[$field];
                 $groups[$category][] = [
-                    'id' => $change['id'],
+                    'id' => $id,
                     'field' => $field,
-                    'before' => $values['before'],
-                    'after' => $values['after'],
+                    'before' => $values['before'] ?? null,
+                    'after' => $values['after'] ?? null,
                 ];
             }
         }
