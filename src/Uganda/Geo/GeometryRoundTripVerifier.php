@@ -70,6 +70,10 @@ final class GeometryRoundTripVerifier
             if (abs($before['area'] - $after['area']) > $tolerance) {
                 throw new InvalidArgumentException('GIS conversion changed polygon area for ' . $id);
             }
+            if ($this->edgeFingerprint($expected[$id]['geometry'])
+                !== $this->edgeFingerprint($feature['geometry'])) {
+                throw new InvalidArgumentException('GIS conversion changed polygon edges for ' . $id);
+            }
         }
     }
 
@@ -116,4 +120,45 @@ final class GeometryRoundTripVerifier
             'area' => $area,
         ];
     }
+    /**
+     * Ring start, ring winding and multipart ordering may vary by driver.
+     * Compare undirected polygon edges rounded to 7 decimal places instead,
+     * preserving hole placement and all boundaries at approximately 1 cm.
+     *
+     * @param array<string, mixed> $geometry
+     */
+    private function edgeFingerprint(array $geometry): string
+    {
+        /** @var array<int, array<int, array<int, array<int, int|float>>>> $polygons */
+        $polygons = $geometry['type'] === 'Polygon'
+            ? [$geometry['coordinates']]
+            : $geometry['coordinates'];
+        $polygonsOut = [];
+        foreach ($polygons as $polygon) {
+            $rings = [];
+            foreach ($polygon as $ring) {
+                $edges = [];
+                for ($i = 0, $end = count($ring) - 1; $i < $end; $i++) {
+                    $coords = [];
+                    foreach ([$ring[$i], $ring[$i + 1]] as $point) {
+                        $lon = round((float) $point[0], 7);
+                        $lat = round((float) $point[1], 7);
+                        $coords[] = sprintf('%.7F,%.7F', $lon === 0.0 ? 0.0 : $lon, $lat === 0.0 ? 0.0 : $lat);
+                    }
+                    $edges[] = strcmp($coords[0], $coords[1]) < 0
+                        ? $coords[0] . '|' . $coords[1]
+                        : $coords[1] . '|' . $coords[0];
+                }
+                sort($edges, SORT_STRING);
+                $rings[] = hash('sha256', json_encode($edges, JSON_THROW_ON_ERROR));
+            }
+            $shell = array_shift($rings);
+            sort($rings, SORT_STRING);
+            $polygonsOut[] = $shell . ':' . implode(':', $rings);
+        }
+        sort($polygonsOut, SORT_STRING);
+
+        return hash('sha256', json_encode($polygonsOut, JSON_THROW_ON_ERROR));
+    }
+
 }
