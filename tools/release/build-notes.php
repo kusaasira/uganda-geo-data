@@ -10,6 +10,7 @@ if ($argc !== 4) {
     fwrite(STDERR, "Usage: php tools/release/build-notes.php SOURCE.json RELEASE_TAG OUTPUT.md\n");
     exit(2);
 }
+$created = false;
 try {
     if (file_exists($argv[3]) || is_link($argv[3]) || !is_dir(dirname($argv[3]))) {
         throw new RuntimeException('Release notes must be written to an unused path');
@@ -23,6 +24,7 @@ try {
     if ($handle === false) {
         throw new RuntimeException('Cannot create release notes');
     }
+    $created = true;
     try {
         $length = strlen($rendered);
         $done = 0;
@@ -38,6 +40,9 @@ try {
     }
     fwrite(STDOUT, "Deterministic release notes generated\n");
 } catch (Throwable $error) {
+    if ($created && is_file($argv[3])) {
+        unlink($argv[3]);
+    }
     fwrite(STDERR, $error->getMessage() . "\n");
     exit(1);
 }
