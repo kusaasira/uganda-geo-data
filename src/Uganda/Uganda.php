@@ -13,7 +13,7 @@ use Uganda\Exceptions\VillageNotFoundException;
 final class Uganda
 {
     /**
-     * @var array<string, District>
+     * @var array<int, District>
      */
     private array $districts;
 
@@ -23,7 +23,7 @@ final class Uganda
     }
 
     /**
-     * @return array<string, District>
+     * @return array<int, District>
      */
     public function districts(): array
     {
@@ -35,11 +35,13 @@ final class Uganda
      */
     public function district(string $name): District
     {
-        if (!array_key_exists(strtolower($name), $this->districts)) {
-            throw new DistrictNotFoundException(sprintf('unable to locate district called %s', $name));
+        foreach ($this->districts as $district) {
+            if (strtolower($district->name()) === strtolower($name)) {
+                return $district;
+            }
         }
 
-        return $this->districts[strtolower($name)];
+        throw new DistrictNotFoundException(sprintf('unable to locate district called %s', $name));
     }
 
     /**
@@ -149,7 +151,7 @@ final class Uganda
         throw new VillageNotFoundException();
     }
 
-    /** @return array<string, District> */
+    /** @return array<int, District> */
     private function generateTree(): array
     {
         /** @var array<int, array<string, string>> $villages */
@@ -167,20 +169,33 @@ final class Uganda
         /** @var array<int, array<string, string>> $districts */
         $districts = $this->getFileContents(__DIR__ . '/Data/districts.json');
 
-        /** @var array<string, array<string, Village>> $mappedVillages */
+        // Keep the source identity distinct from the display name.
+        // Reject duplicate IDs rather than silently overwriting records.
+        $seenIds = [];
+        /** @var array<int, array<int, Village>> $mappedVillages */
         $mappedVillages = [];
         foreach ($villages as $village) {
-            $mappedVillages[$village['parish']][strtolower($village['name'])] = new Village(
+            $id = (int) $village['id'];
+            if (isset($seenIds['village'][$id])) {
+                throw new \UnexpectedValueException('Duplicate village ID: ' . $id);
+            }
+            $seenIds['village'][$id] = true;
+            $mappedVillages[$village['parish']][$id] = new Village(
                 (int) $village['id'],
                 $village['name'],
                 (int) $village['parish']
             );
         }
 
-        /** @var array<string, array<string, Parish>> $mappedParishes */
+        /** @var array<int, array<int, Parish>> $mappedParishes */
         $mappedParishes = [];
         foreach ($parishes as $parish) {
-            $mappedParishes[$parish['subcounty']][strtolower($parish['name'])] = new Parish(
+            $id = (int) $parish['id'];
+            if (isset($seenIds['parish'][$id])) {
+                throw new \UnexpectedValueException('Duplicate parish ID: ' . $id);
+            }
+            $seenIds['parish'][$id] = true;
+            $mappedParishes[$parish['subcounty']][$id] = new Parish(
                 (int) $parish['id'],
                 ucfirst($parish['name']),
                 (int) $parish['subcounty'],
@@ -188,10 +203,15 @@ final class Uganda
             );
         }
 
-        /** @var array<string, array<string, SubCounty>> $mappedSubCounties */
+        /** @var array<int, array<int, SubCounty>> $mappedSubCounties */
         $mappedSubCounties = [];
         foreach ($subCounties as $subCounty) {
-            $mappedSubCounties[$subCounty['county']][strtolower($subCounty['name'])] = new SubCounty(
+            $id = (int) $subCounty['id'];
+            if (isset($seenIds['subCounty'][$id])) {
+                throw new \UnexpectedValueException('Duplicate subCounty ID: ' . $id);
+            }
+            $seenIds['subCounty'][$id] = true;
+            $mappedSubCounties[$subCounty['county']][$id] = new SubCounty(
                 (int) $subCounty['id'],
                 ucfirst($subCounty['name']),
                 (int) $subCounty['county'],
@@ -199,10 +219,15 @@ final class Uganda
             );
         }
 
-        /** @var array<string, array<string, County>> $mappedCounties */
+        /** @var array<int, array<int, County>> $mappedCounties */
         $mappedCounties = [];
         foreach ($counties as $county) {
-            $mappedCounties[$county['district']][strtolower($county['name'])] = new County(
+            $id = (int) $county['id'];
+            if (isset($seenIds['county'][$id])) {
+                throw new \UnexpectedValueException('Duplicate county ID: ' . $id);
+            }
+            $seenIds['county'][$id] = true;
+            $mappedCounties[$county['district']][$id] = new County(
                 (int) $county['id'],
                 ucfirst($county['name']),
                 (int) $county['district'],
@@ -210,10 +235,15 @@ final class Uganda
             );
         }
 
-        /** @var array<string, District> $mappedDistrict */
+        /** @var array<int, District> $mappedDistrict */
         $mappedDistrict = [];
         foreach ($districts as $district) {
-            $mappedDistrict[strtolower($district['name'])] = new District(
+            $id = (int) $district['id'];
+            if (isset($seenIds['district'][$id])) {
+                throw new \UnexpectedValueException('Duplicate district ID: ' . $id);
+            }
+            $seenIds['district'][$id] = true;
+            $mappedDistrict[$id] = new District(
                 (int) $district['id'],
                 ucfirst($district['name']),
                 $mappedCounties[$district['id']] ?? []

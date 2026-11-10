@@ -16,14 +16,14 @@ final class County
 
     private int $districtId;
 
-    /** @var array<string, SubCounty> */
+    /** @var array<int|string, SubCounty> */
     private array $subCounties;
 
     /**
      * @param int $id
      * @param string $name
      * @param int $districtId
-     * @param array<string, SubCounty> $subCounties
+     * @param array<int|string, SubCounty> $subCounties
      */
     public function __construct(int $id, string $name, int $districtId, array $subCounties = [])
     {
@@ -53,14 +53,16 @@ final class County
      */
     public function subCounty(string $name): SubCounty
     {
-        if (!array_key_exists(strtolower($name), $this->subCounties)) {
-            throw new SubCountyNotFoundException(sprintf('unable to locate sub county called %s', $name));
+        foreach ($this->subCounties as $child) {
+            if (strtolower($child->name()) === strtolower($name)) {
+                return $child;
+            }
         }
 
-        return $this->subCounties[strtolower($name)];
+        throw new SubCountyNotFoundException(sprintf('unable to locate sub county called %s', $name));
     }
 
-    /** @return array<string, SubCounty> */
+    /** @return array<int|string, SubCounty> */
     public function subCounties(): array
     {
         return $this->subCounties;
@@ -118,7 +120,7 @@ final class County
         throw new VillageNotFoundException(sprintf('unable to locate village called %s', $name));
     }
 
-    /** @return array<string, array<string, array<string, array<string,array<string, array<array<string, int|string>>|int|string>>|int|string>>|int|string> */
+    /** @return array{id: int, name: string, districtId: int, subCounties: array<int|string, array<string, mixed>>} */
     public function toArray(): array
     {
         return [
