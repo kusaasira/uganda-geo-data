@@ -45,6 +45,24 @@ final class CanonicalIntegrityValidatorTest extends TestCase
     }
 
     /** @test */
+    public function itRejectsWrongLevelParentsInTheKnownLegacyHierarchy(): void
+    {
+        $snapshot = $this->fixture();
+        $snapshot['source_ids'] = ['legacy-bundled'];
+        foreach ($snapshot['units'] as &$unit) {
+            $unit['source_id'] = 'legacy-bundled';
+        }
+        unset($unit);
+
+        // This county exists, but a legacy village must have a parish parent.
+        $snapshot['units'][4]['parent_id'] = 'fixture:county:1';
+
+        $result = (new CanonicalIntegrityValidator())->validate($snapshot);
+        $this->assertFalse($result['valid']);
+        $this->assertStringContainsString('Invalid legacy parent level', implode(' ', $result['errors']));
+    }
+
+    /** @test */
     public function detectsMissingRowsComparedWithOriginalCounts(): void
     {
         $snapshot = $this->fixture();
