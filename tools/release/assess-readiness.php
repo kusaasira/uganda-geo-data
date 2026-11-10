@@ -6,7 +6,7 @@ use Uganda\Release\ReleaseReadiness;
 
 require dirname(__DIR__, 2) . '/vendor/autoload.php';
 
-if ($argc < 2 || $argc > 3 || (isset($argv[2]) && $argv[2] !== '--enforce')) {
+if ($argc < 2 || $argc > 3 || (isset($argv[2]) && $argv[2] !== '--require-attestations')) {
     fwrite(STDERR, "Usage: php tools/release/assess-readiness.php EVIDENCE.json [--enforce]\n");
     exit(2);
 }
@@ -21,13 +21,16 @@ try {
     }
     $head = [];
     $status = 0;
-    exec('git rev-parse HEAD 2>&1', $head, $status);
+    $projectRoot = dirname(__DIR__, 2);
+    exec('git -C ' . escapeshellarg($projectRoot) . ' rev-parse HEAD 2>&1', $head, $status);
     if ($status !== 0 || !isset($head[0])) {
         throw new RuntimeException('Unable to resolve the exact reviewed Git commit');
     }
     $report = (new ReleaseReadiness())->assess($attestation, trim($head[0]));
     fwrite(STDOUT, json_encode($report, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n");
-    if (isset($argv[2]) && $argv[2] === '--enforce' && $report['status'] === 'blocked') {
+    // This option enforces structural completeness only; it cannot verify
+    // the truth of linked evidence or grant release approval.
+    if (isset($argv[2]) && $argv[2] === '--require-attestations' && $report['status'] === 'blocked') {
         exit(1);
     }
 } catch (Throwable $error) {
