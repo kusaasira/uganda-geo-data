@@ -10,7 +10,7 @@ mkdir -p build/geometry
 php tools/geo/download-arcgis.php arcgis-parishes-2024 build/geometry/arcgis-parishes-2024
 ```
 
-The target directory must not exist. Acquisition first requests the complete object-ID list, then downloads at most 100 features per GeoJSON page. Using stable object-ID chunks avoids offset pagination differences and protects against the published 2,000-record-per-query limit.
+The target directory must not exist. Acquisition rejects an empty object-ID inventory, saves the original inventory as `object-ids.json` and records each request URL alongside the original page checksum. It then downloads at most 100 features per GeoJSON page. Using stable object-ID chunks avoids offset pagination differences and protects against the published 2,000-record-per-query limit.
 
 ## Validation and invariants
 

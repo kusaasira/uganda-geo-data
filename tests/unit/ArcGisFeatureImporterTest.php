@@ -55,4 +55,25 @@ final class ArcGisFeatureImporterTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         (new ArcGisFeatureImporter())->parsePage($page, 'FID');
     }
+    /** @test */
+    public function rejectsConflictingFeatureAndObjectIdentifiers(): void
+    {
+        $feature = $this->feature(1);
+        $feature['id'] = 2;
+        $page = json_encode(['type' => 'FeatureCollection', 'features' => [$feature]], JSON_THROW_ON_ERROR);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Conflicting');
+        (new ArcGisFeatureImporter())->parsePage($page, 'FID');
+    }
+
+    /** @test */
+    public function rejectsAFeatureMissingItsObjectIdentifier(): void
+    {
+        $feature = $this->feature(1);
+        unset($feature['properties']['FID']);
+        $page = json_encode(['type' => 'FeatureCollection', 'features' => [$feature]], JSON_THROW_ON_ERROR);
+        $this->expectException(InvalidArgumentException::class);
+        (new ArcGisFeatureImporter())->parsePage($page, 'FID');
+    }
+
 }

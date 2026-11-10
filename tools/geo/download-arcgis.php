@@ -68,15 +68,16 @@ try {
     $idsPayload = fetchArcGisJson($base . '?' . $idQuery, 4000000);
     $idsResponse = json_decode($idsPayload, true, 512, JSON_THROW_ON_ERROR);
     $objectIds = $idsResponse['objectIds'] ?? null;
-    if (!is_array($objectIds) || isset($idsResponse['error'])) {
-        throw new RuntimeException('ArcGIS did not return an object ID inventory');
+    if (!is_array($objectIds) || $objectIds === [] || isset($idsResponse['error']) ||
+        array_keys($objectIds) !== array_keys(array_values($objectIds))) {
+        throw new RuntimeException('ArcGIS returned an empty or invalid object ID inventory');
     }
     foreach ($objectIds as $oid) {
-        if ((!is_int($oid) && !is_string($oid)) || !ctype_digit((string) $oid)) {
-            throw new RuntimeException('Invalid ArcGIS object ID inventory');
+        if (!is_int($oid) || $oid < 0) {
+            throw new RuntimeException('Invalid ArcGIS integer object ID');
         }
     }
-    $ids = array_map('intval', $objectIds);
+    $ids = $objectIds;
     sort($ids, SORT_NUMERIC);
     if (count($ids) !== count(array_unique($ids))) {
         throw new RuntimeException('Duplicate object IDs in service inventory');
@@ -87,6 +88,7 @@ try {
         throw new RuntimeException('Unable to create staging directory');
     }
 
+    writeImmutableFile($stage . '/object-ids.json', $idsPayload);
     $seen = [];
     $pages = [];
     $reader = new ArcGisFeatureImporter();
@@ -118,12 +120,13 @@ try {
         writeImmutableFile($stage . '/' . $file, $raw);
         $pages[] = [
             'file' => $file,
+            'request_url' => $url,
             'object_ids' => $chunk,
             'sha256' => hash('sha256', $raw),
             'byte_count' => strlen($raw),
         ];
     }
-    if (count($seen) !== count($ids)) {
+    if (count($seen) !== count($ids) || $pages === []) {
         throw new RuntimeException('Fetched feature inventory does not match source object ID count');
     }
     $manifest = [
@@ -135,6 +138,8 @@ try {
         'source_crs' => $endpoint['source_crs'],
         'output_crs' => 'EPSG:4326',
         'redistribution_status' => $endpoint['redistribution_status'],
+        'object_id_inventory_file' => 'object-ids.json',
+        'object_id_inventory_url' => $base . '?' . $idQuery,
         'object_id_inventory_sha256' => hash('sha256', $idsPayload),
         'pages' => $pages,
     ];

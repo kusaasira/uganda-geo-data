@@ -35,6 +35,10 @@ final class ArcGisFeatureImporter
                 throw new InvalidArgumentException("Malformed GeoJSON feature at index $index");
             }
 
+            if (isset($feature['properties'][$objectIdField], $feature['id']) &&
+                (string) $feature['properties'][$objectIdField] !== (string) $feature['id']) {
+                throw new InvalidArgumentException("Conflicting GeoJSON feature identifiers at index $index");
+            }
             $rawId = $feature['properties'][$objectIdField] ?? $feature['id'] ?? null;
             if ((!is_int($rawId) && !is_string($rawId)) || !ctype_digit((string) $rawId)) {
                 throw new InvalidArgumentException("Feature at index $index has no numeric object ID");
