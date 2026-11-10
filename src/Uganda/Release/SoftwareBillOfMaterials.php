@@ -52,10 +52,13 @@ final class SoftwareBillOfMaterials
                 ];
                 continue;
             }
-            $package = $resolved[$dependency] ?? null;
-            if ($package === null) {
+            if (!isset($resolved[$dependency])) {
                 throw new InvalidArgumentException('Unresolved production dependency: ' . $dependency);
             }
+        }
+        // Composer's locked "packages" section includes transitive runtime
+        // dependencies. Excluding them would produce an incomplete SBOM.
+        foreach ($resolved as $dependency => $package) {
             $component = ['type' => 'library', 'name' => $dependency, 'version' => $package['version']];
             if (is_array($package['license'] ?? null) && $package['license'] !== []) {
                 $component['licenses'] = array_map(static function (string $id): array {
