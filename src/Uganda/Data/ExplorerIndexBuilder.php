@@ -22,6 +22,7 @@ final class ExplorerIndexBuilder
             || trim($snapshot['snapshot_id']) === ''
             || !isset($snapshot['source_ids']) || !is_array($snapshot['source_ids'])
             || $snapshot['source_ids'] === []
+            || count(array_unique($snapshot['source_ids'])) !== count($snapshot['source_ids'])
             || !isset($snapshot['units']) || !is_array($snapshot['units'])) {
             throw new InvalidArgumentException('Expected a versioned canonical snapshot with non-empty identity and units');
         }
