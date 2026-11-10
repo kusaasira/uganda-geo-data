@@ -3,7 +3,7 @@
 Hierarchy collections are now indexed by **numeric source IDs** rather than lowercased place names. The change prevents duplicate-name siblings from silently replacing each other or hiding entire descendant branches.
 
 ```php
-$uganda = new \\Uganda\\Uganda();
+$uganda = new \Uganda\Uganda();
 $district = $uganda->district('Bukomansimbi');
 $byId = $uganda->districts()[$district->id()];
 ```

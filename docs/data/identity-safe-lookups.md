@@ -5,7 +5,7 @@
 Supported levels: `district`, `county`, `subcounty`, `parish` and `village`.
 
 ```php
-$uganda = new \\Uganda\\Uganda();
+$uganda = new \Uganda\Uganda();
 $candidates = $uganda->searchByName('county', 'Lower Madi');
 $byLegacyId = $uganda->findById('county', 309);
 $scoped = $uganda->searchByName('county', 'Lower Madi', $districtId);
@@ -14,3 +14,5 @@ $scoped = $uganda->searchByName('county', 'Lower Madi', $districtId);
 Singular methods on the root and on nested levels now raise `AmbiguousLocationException` when more than one record matches. They retain their existing not-found exception classes on zero matches. This **changes the previous arbitrary-first-match behavior** and requires major-version migration for ambiguous callers.
 
 Search indexes are built lazily. Names are normalized for exact matching by case and surrounding whitespace, but never used as identity keys. Numeric IDs are legacy package source identifiers and not verified UBOS codes.
+
+The name index stores numeric IDs instead of duplicating per-record arrays holding object references. Parent IDs are held in a separate compact lookup. The public `byName` and `byId` semantics remain unchanged. Use `php tools/benchmarks/location-index.php` to record constructor time, index warm-up time and memory usage with the full packaged hierarchy.
