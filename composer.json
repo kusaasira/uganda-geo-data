@@ -3,10 +3,10 @@
     "description": "Find districts, counties, sub counties, parishes and villages in Uganda",
     "type": "library",
     "require": {
-        "php": ">=7.4",
+        "php": "^8.2",
         "ext-json": "*"
     },
-    "license": "proprietary",
+    "license": "MIT",
     "authors": [
         {
             "name": "Joshua Kusaasira",
@@ -17,16 +17,6 @@
     "autoload": {
         "psr-4": {
             "Uganda\\": "src/Uganda/"
-        },
-        "files": [
-          "src/Uganda/Uganda.php"
-        ]
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "Uganda\\GeoServiceProvider"
-            ]
         }
     },
     "require-dev": {
