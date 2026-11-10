@@ -9,7 +9,7 @@ The canonical administrative ID and geometry ID are separate: boundaries can be 
 ## Polygon handling
 
 - Accept GeoJSON `Polygon` and `MultiPolygon` with non-empty rings and closed exterior/interior rings.
-- Reject missing, nonnumeric, nonfinite and out-of-range coordinate positions.
+- Reject missing, nonnumeric, nonfinite and out-of-range coordinate positions as well as rings with fewer than three distinct locations.
 - Preserve coordinate ordering, polygon parts, interior holes, raw source attributes and acquisition source feature ID.
 - Perform full topology tests (ring self-intersection, winding direction, sibling overlap, gaps, parent containment and repair audit) separately before an asset is marked verified.
 - Treat border points, overlaps and missing source geometry as explicit edge cases for spatial lookup; do not infer a parish from a nearest centroid.

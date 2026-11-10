@@ -1,5 +1,7 @@
 # Public Uganda administrative boundary endpoints
 
+This catalogue documents the **verified publicly described candidate layer**. An unverified historical comparison endpoint has been excluded until its ownership and actual service metadata can be established. Its omission does not imply it is invalid.
+
 This catalogue documents **candidate** boundary services. The fact that an ArcGIS FeatureServer permits anonymous queries is sufficient to begin careful technical acquisition. It is not evidence that the layer is produced by UBOS or that its geometry may be republished in a public software release.
 
 ## Current parish layer
@@ -10,6 +12,7 @@ This catalogue documents **candidate** boundary services. The fact that an ArcGI
 - Query formats advertised: Esri JSON and GeoJSON.
 - Object ID: `FID`; reported maximum record count: 2,000.
 - Administrative keys: `dcode2024`, `ccode2024`, `sccode2024`, `pcode2024` plus matching name fields.
+- The metadata inspector checks the advertised layer identity, object ID field, required administrative columns and native CRS before reporting a match.
 - Provenance risk: publisher identity, reference methodology, source collection date and redistribution license remain unverified. Field names alone do not establish that these are national government-issued immutable identifiers.
 
 The 2024 UBOS census is an independently published statistical benchmark, not automatically the custodian of every GIS service tagged `2024`. Do not merge these sources solely by a same-name match.

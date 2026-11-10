@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace unit;
 
 use PHPUnit\Framework\TestCase;
+use Uganda\Data\SourceRegistryValidator;
 
 final class SourceRegistryTest extends TestCase
 {
@@ -24,5 +25,24 @@ final class SourceRegistryTest extends TestCase
             $this->assertNotContains($source['id'], $ids);
             $ids[] = $source['id'];
         }
+    }
+    /** @test */
+    public function rejectsInvalidCalendarDatesAndDuplicateSourceIdentifiers(): void
+    {
+        $registry = json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/resources/sources.json'), true, 512, JSON_THROW_ON_ERROR);
+        $registry['sources'][0]['reference_date'] = '2026-02-31';
+        $registry['sources'][1]['id'] = $registry['sources'][0]['id'];
+        $errors = (new SourceRegistryValidator())->errors($registry);
+        $this->assertStringContainsString('invalid reference_date', implode(' ', $errors));
+        $this->assertStringContainsString('Duplicate source identifier', implode(' ', $errors));
+    }
+
+    /** @test */
+    public function doesNotAcceptRedistributionWithoutLicenseAndAttribution(): void
+    {
+        $registry = json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/resources/sources.json'), true, 512, JSON_THROW_ON_ERROR);
+        $registry['sources'][0]['redistribution_status'] = 'permitted';
+        $errors = (new SourceRegistryValidator())->errors($registry);
+        $this->assertStringContainsString('requires license URL and attribution', implode(' ', $errors));
     }
 }
