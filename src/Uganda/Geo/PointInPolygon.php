@@ -17,6 +17,7 @@ final class PointInPolygon
         GeometryContract::assertLonLat([$longitude, $latitude]);
         GeometryContract::assertGeometry($geometry);
 
+        /** @var array<int, array<int, array<int, array<int, int|float>>>> $polygons */
         $polygons = $geometry['type'] === 'Polygon' ? [$geometry['coordinates']] : $geometry['coordinates'];
         $boundary = false;
 
