@@ -30,11 +30,12 @@ final class VerifiedGeoJsonBuilderTest extends TestCase
         $this->assertCount(1, $result['features']);
         $this->assertSame('parish:2', $result['features'][0]['id']);
         $this->assertSame('12', $result['features'][0]['properties']['source_object_id']);
-        $this->assertSame('incomplete', $result['metadata']['coverage_status']);
+        $this->assertSame('incomplete', $result['metadata']['input_mapping_status']);
         $this->assertSame('review_required', $result['metadata']['publication_rights']);
         $this->assertSame('not_checked', $result['metadata']['topology_status']);
         $this->assertSame(1, $result['metadata']['unmatched_source_feature_count']);
         $this->assertArrayNotHasKey('reviewer', $result['features'][0]['properties']);
+        $this->assertArrayNotHasKey('evidence_url', $result['features'][0]['properties']);
     }
 
     /** @test */
