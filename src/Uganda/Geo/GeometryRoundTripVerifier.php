@@ -160,5 +160,4 @@ final class GeometryRoundTripVerifier
 
         return hash('sha256', json_encode($polygonsOut, JSON_THROW_ON_ERROR));
     }
-
 }
