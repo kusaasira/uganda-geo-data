@@ -37,6 +37,7 @@ final class ExplorerCoverageSummary
         $unmatched = $report['unmatched_source_object_ids'] ?? null;
         $unresolved = $report['unresolved_source_object_ids'] ?? null;
         $sourceCount = $report['source_feature_count'] ?? null;
+        $mappingStatus = $report['coverage'] ?? null;
         if (!is_int($sourceCount) || $sourceCount < 0
             || !is_array($unmatched) || !is_array($unresolved)) {
             throw new InvalidArgumentException('Incomplete source-side geometry coverage evidence');
@@ -45,7 +46,7 @@ final class ExplorerCoverageSummary
             || $total !== $report['canonical_parish_ward_count']
             || !is_int($report['verified_count'] ?? null)
             || !is_array($matches) || !is_array($unmapped)
-            || !in_array($report['coverage'] ?? null, ['complete', 'incomplete'], true)) {
+            || (!is_string($mappingStatus) || !in_array($mappingStatus, ['complete', 'incomplete'], true))) {
             throw new InvalidArgumentException('Coverage report does not match canonical parish/ward inventory');
         }
         $verified = [];
@@ -80,7 +81,7 @@ final class ExplorerCoverageSummary
         if (count($verified) !== $report['verified_count']
             || count($verified) + count($missing) !== $total
             || count($sourceIds) !== $sourceCount
-            || ($report['coverage'] === 'complete' &&
+            || ($mappingStatus === 'complete' &&
                 ($missing !== [] || $unmatched !== [] || $unresolved !== [] || $verified === []))) {
             throw new InvalidArgumentException('Inconsistent geometry coverage partition');
         }
@@ -91,7 +92,7 @@ final class ExplorerCoverageSummary
             'unmapped' => count($missing),
             'source_feature_count' => $sourceCount,
             'unmatched_source_features' => count($unmatched) + count($unresolved),
-            'matching_status' => (string) $report['coverage'],
+            'matching_status' => $mappingStatus,
             'scope' => 'supplied_canonical_snapshot_only',
             'national_coverage' => 'unverified',
         ];
