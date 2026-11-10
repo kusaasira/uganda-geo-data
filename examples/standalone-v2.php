@@ -3,13 +3,14 @@
 declare(strict_types=1);
 
 use Uganda\Uganda;
+use Uganda\District;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 $geo = new Uganda();
 $districts = $geo->districts();
 $district = reset($districts);
-if (!$district instanceof Uganda\District) {
+if (!$district instanceof District) {
     throw new RuntimeException('The administrative dataset has no districts');
 }
 $byId = $geo->findById('district', $district->id());
