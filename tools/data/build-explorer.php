@@ -12,6 +12,7 @@ if ($argc !== 3 || !is_file($argv[1])) {
 }
 
 $staging = null;
+$exitCode = 0;
 try {
     $output = rtrim($argv[2], '/');
     if ($output === '' || file_exists($output) || is_link($output)) {
@@ -54,7 +55,7 @@ try {
     fwrite(STDOUT, 'Built offline explorer for ' . $index['unit_count'] . " locations\n");
 } catch (Throwable $error) {
     fwrite(STDERR, $error->getMessage() . "\n");
-    exit(2);
+    $exitCode = 2;
 } finally {
     if ($staging !== null && is_dir($staging)) {
         foreach (['index.html', 'data.json', 'assets/app.js', 'assets/style.css'] as $name) {
@@ -68,3 +69,5 @@ try {
         rmdir($staging);
     }
 }
+
+exit($exitCode);
