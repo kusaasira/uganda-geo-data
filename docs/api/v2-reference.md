@@ -1,11 +1,10 @@
 # Uganda Geo v2 public API reference
 
-The current next/2.x branch targets PHP 8.2+ and is not the published
-v1.0.0 package. See the migration guide before upgrading consumers.
+The stable **v2.0.0** package requires PHP 8.2+. It is not API-compatible with the historical v1.0.0 release. See the migration guide before upgrading existing consumers.
 
 ## Installation
 
-After the v2 stable release is available:
+Install the published v2 stable release:
 
     composer require "kusaasira/uganda-geo:^2.0"
 

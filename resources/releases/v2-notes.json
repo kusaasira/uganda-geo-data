@@ -45,19 +45,21 @@
       "Reject unsafe release asset paths, incomplete archives, mismatched file inventories and invalid artifact hashes.",
       "Produce a software bill of materials for resolved runtime dependencies and explicit source publication checks.",
       "Keep release workflows nonpublishing and read-only until independently reviewed authorization is provided.",
-      "Validate correction evidence and administrative parent identity before treating submitted data as canonical."
+      "Validate correction evidence and administrative parent identity before treating submitted data as canonical.",
+      "Verify the exact published Composer tag independently from Packagist across PHP 8.2 through 8.5 and Laravel 12 consumers."
     ],
     "Documentation": [
       "Provide the v1-to-v2 migration guide, current public API reference and usage examples with verified hierarchy semantics.",
       "Document source provenance, reference dates, canonical identity, data trust limitations and correction submissions.",
       "Explain public endpoint acquisition, parish boundary review, topology diagnostics, geospatial formats and release qualification.",
-      "Publish developer contribution, support, security and pull request review conventions."
+      "Publish developer contribution, support, security and pull request review conventions.",
+      "Provide stable-release installation instructions, source-correct UBOS attribution and a complete versioned changelog."
     ],
     "Upgrade": [
       "Read docs/migration/v1-to-v2.md and update code using Uganda\\Geo chains to the Uganda\\Uganda model, explicit IDs and scoped searches.",
       "Handle AmbiguousLocationException where a location name can refer to several administrative units.",
       "Run standalone PHP or Laravel consumer smoke tests against an immutable prerelease and verify your persisted legacy IDs before migration.",
-      "Install the stable 2.0 release from Packagist only after it is actually published and its exact tagged behavior has been independently verified."
+      "Install Uganda Geo 2.0.0 from Packagist with composer require kusaasira/uganda-geo:^2.0 and verify migrated consumers before rollout."
     ]
   }
 }

@@ -1,17 +1,60 @@
 # Changelog
 
-All notable developer-facing changes, compatibility changes and published dataset snapshots should be recorded here.
+All notable public API changes, maintenance improvements and source-data releases are recorded here. Package versions use [Semantic Versioning](https://semver.org/). Dataset reference dates and source identities are tracked independently from Composer versions.
 
 ## Unreleased
 
+No unreleased changes recorded.
+
+## [2.0.0] - 2026-11-10
+
+**Major release.** Requires PHP 8.2+ and Composer 2. Version 2 is **not API-compatible with v1.0.0**. See [the migration guide](docs/migration/v1-to-v2.md).
+
+### Added
+
+- Identity-preserving district, county, subcounty, parish and village object hierarchy.
+- Level-specific numeric ID lookup, parent-scoped name search, multi-match results and root-to-parent ancestry traversal.
+- Canonical administrative snapshot format, provenance-aware importers and deterministic data integrity checks.
+- Immutable input inventories, record-conservation reports, data change summaries and identity crosswalk tooling.
+- Public endpoint inspection and optional GeoJSON acquisition with captured source URLs, HTTP metadata and SHA-256 hashes.
+- Reviewed parish-to-polygon matching, topology diagnostics and spatial containment tools.
+- Optional GDAL-backed GeoJSON, GeoPackage and complete Shapefile export with format round-trip verification.
+- Self-contained static administrative explorer with explicit source and geometry-coverage disclaimers.
+- PHP CI matrix covering PHP 8.2 through 8.5, lowest-dependency verification, PHPStan, ECS and PHPUnit.
+- Independent plain PHP/Laravel consumer checks, deterministic release-note generation, software bill of materials and release-readiness evidence tooling.
+
 ### Changed
 
-- Prepare the next major version with identity-safe administrative lookups and independently versioned source snapshots.
+- Public entry point changes from v1's `Uganda\Geo` to v2's `Uganda\Uganda` model API.
+- Identity-sensitive collections use source IDs instead of display-name associative keys.
+- Ambiguous singular name lookups raise `Uganda\Exceptions\AmbiguousLocationException` rather than selecting an arbitrary record.
+- Minimum PHP version increases to 8.2.
+- Bundled historical data, official UBOS statistical references and candidate GIS boundaries are documented as distinct sources with their own reference periods.
 
-### Compatibility
+### Fixed
 
-- The current development branch differs from published `v1.0.0`. Consumers should continue using the documented API for their installed release until a new stable tag is published.
+- Distinct records with identical normalized names are no longer silently overwritten.
+- Missing or invalid packaged datasets produce explicit errors rather than apparently legitimate empty responses.
+- Duplicate source IDs, broken parent references and incorrect known legacy parent levels are rejected.
+- An empty canonical snapshot cannot generate a falsely usable static explorer.
+- Composer license metadata reflects MIT and the nonexistent framework auto-discovery provider is no longer advertised.
 
-## 1.0.0 - 2022-04-24
+### Data and geography
 
-Initial published stable release. See its immutable Git tag for the exact API and bundled data.
+- **No automatic replacement of the historical runtime tables is claimed.** Their original capture date and current national completeness remain unverified.
+- Official **Uganda Bureau of Statistics (UBOS)** NPHC 2024 and statistical abstract references provide independently sourced comparison baselines. They do not automatically establish that older package IDs correspond to current government codes.
+- Publicly reachable third-party parish geometry can be inspected for optional tooling. Publication of a verified national polygon distribution is a **separate source-identity, coverage and rights decision**.
+- No unverified third-party shapefiles are included in the source-code release.
+
+### Upgrade and security
+
+- Consumers must replace v1 chainable JSON access with v2 typed model and identity-safe query APIs.
+- Review persistent location identifiers and retain source context before migrating stored records.
+- Read [v1-to-v2 migration guidance](docs/migration/v1-to-v2.md), [source provenance](docs/data/sources.md) and the [security policy](SECURITY.md).
+
+## [1.0.0] - 2022-04-24
+
+Initial stable release with the historical `Uganda\Geo` chainable API and the original packaged administrative records.
+
+[2.0.0]: https://github.com/kusaasira/uganda-geo-data/releases/tag/v2.0.0
+[1.0.0]: https://github.com/kusaasira/uganda-geo-data/releases/tag/1.0.0

@@ -1,6 +1,6 @@
 {
     "name": "kusaasira/uganda-geo",
-    "description": "Find districts, counties, sub counties, parishes and villages in Uganda",
+    "description": "Identity-safe Uganda administrative geography for PHP, with district-to-village lookups and optional GIS tooling",
     "type": "library",
     "require": {
         "php": "^8.2",
@@ -32,5 +32,22 @@
         "cs-test": "ecs check src tests",
         "cs-fix": "ecs check src tests --fix",
         "test": "phpunit"
+    },
+    "keywords": [
+        "uganda",
+        "geography",
+        "administrative-areas",
+        "districts",
+        "counties",
+        "subcounties",
+        "parishes",
+        "villages",
+        "geospatial"
+    ],
+    "homepage": "https://github.com/kusaasira/uganda-geo-data",
+    "support": {
+        "issues": "https://github.com/kusaasira/uganda-geo-data/issues",
+        "source": "https://github.com/kusaasira/uganda-geo-data",
+        "docs": "https://github.com/kusaasira/uganda-geo-data/blob/main/README.md"
     }
 }

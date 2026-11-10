@@ -2,7 +2,7 @@
 
 ## Supported releases
 
-Uganda Geo v1.0.0 is a historical published version without a guaranteed ongoing security support window. Development and pre-release versions are for evaluation and do not carry a separate support commitment. Supported release branches and maintenance windows will be explicitly identified when a new stable release is published.
+Uganda Geo **2.0.x** is the current maintained stable major line. The historical **v1.0.0** API is not part of the active maintenance line. No fixed response-time SLA or indefinite support guarantee is offered. Security fixes are published as new immutable patch or major versions when required.
 
 ## Private vulnerability reporting
 

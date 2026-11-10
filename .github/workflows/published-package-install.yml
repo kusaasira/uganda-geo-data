@@ -1,0 +1,64 @@
+name: Verify published Composer tags
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Existing published tag to install from Packagist'
+        required: true
+        type: choice
+        options:
+          - v2.0.0-rc.1
+          - v2.0.0
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  consumer:
+    name: Packagist / PHP ${{ matrix.php }} / ${{ matrix.consumer }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4', '8.5']
+        consumer: [standalone, laravel]
+    env:
+      TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.version }}
+      CONSUMER: ${{ matrix.consumer }}
+    steps:
+      - name: Verify supported 2.0 release tag
+        run: |
+          case "$TAG" in
+            v2.0.0-rc.1|v2.0.0) ;;
+            *) echo "Unsupported release version: $TAG" >&2; exit 2 ;;
+          esac
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: json
+          tools: composer:v2
+          coverage: none
+      - name: Install exact published version from Packagist
+        run: |
+          set -euo pipefail
+          mkdir published-consumer
+          cd published-consumer
+          printf '%s\n' '{"name":"uganda-geo/published-consumer","type":"project","require":{},"config":{"allow-plugins":false}}' > composer.json
+          if [ "$CONSUMER" = "laravel" ]; then
+            composer require --no-interaction --no-progress --no-plugins --no-scripts --prefer-dist "kusaasira/uganda-geo:$TAG" "laravel/framework:^12.0"
+          else
+            composer require --no-interaction --no-progress --no-plugins --no-scripts --prefer-dist "kusaasira/uganda-geo:$TAG"
+          fi
+      - name: Verify lockfile version and production autoload
+        working-directory: published-consumer
+        run: |
+          php -r '$lock=json_decode(file_get_contents("composer.lock"),true,512,JSON_THROW_ON_ERROR); $found=false; foreach($lock["packages"] as $package){if($package["name"]==="kusaasira/uganda-geo"){if($package["version"]!==getenv("TAG")){fwrite(STDERR,"Unexpected installed version\n");exit(3);} $found=true; }} if(!$found){fwrite(STDERR,"Package absent from lockfile\n");exit(4);}'
+          php -r 'require "vendor/autoload.php"; $geo=new \Uganda\Uganda(); $districts=$geo->districts(); $district=reset($districts); if (!$district instanceof \Uganda\District || $geo->findById("district",$district->id())!==$district) {fwrite(STDERR,"Installed administrative lookup failed\n");exit(5);} echo "Published tag installed and lookup verified\n";'
+      - name: Verify Laravel container integration
+        if: matrix.consumer == 'laravel'
+        working-directory: published-consumer
+        run: |
+          php -r 'require "vendor/autoload.php"; $container=new \Illuminate\Container\Container(); if(!$container->make(\Uganda\Uganda::class) instanceof \Uganda\Uganda){fwrite(STDERR,"Laravel consumer failed\n");exit(6);} echo "Laravel container verified\n";'
