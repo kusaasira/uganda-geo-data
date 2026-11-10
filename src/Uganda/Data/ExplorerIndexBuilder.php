@@ -17,9 +17,12 @@ final class ExplorerIndexBuilder
      */
     public function build(array $snapshot): array
     {
+        $snapshotId = $snapshot['snapshot_id'] ?? null;
+        if (!is_string($snapshotId)) {
+            throw new InvalidArgumentException('Canonical snapshot identity must be a string');
+        }
         if (($snapshot['schema_version'] ?? null) !== 1
-            || !is_string($snapshot['snapshot_id'] ?? null)
-            || trim($snapshot['snapshot_id']) === ''
+            || trim($snapshotId) === ''
             || !isset($snapshot['source_ids']) || !is_array($snapshot['source_ids'])
             || $snapshot['source_ids'] === []
             || !isset($snapshot['units']) || !is_array($snapshot['units'])) {
