@@ -81,4 +81,14 @@ final class LegacyIdentityCrosswalkTest extends TestCase
             'reviewer' => 'human-reviewer',
         ]]);
     }
+    /** @test */
+    public function cannotPresentHistoricalPackageIdsAsVerifiedCanonicalIds(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        (new LegacyIdentityCrosswalk())->build($this->snapshot(), [[
+            'legacy_id' => 'legacy:parish:4', 'canonical_id' => 'legacy:parish:4',
+            'evidence_url' => 'https://www.ubos.org/example', 'evidence_date' => '2024-12-31',
+            'reviewer' => 'human-reviewer',
+        ]]);
+    }
 }

@@ -57,7 +57,8 @@ final class LegacyIdentityCrosswalk
             if (isset($byLegacy[$legacy])) {
                 throw new InvalidArgumentException("Conflicting decisions for $legacy");
             }
-            if (!preg_match('/^[A-Za-z0-9:_-]+$/', $canonical) || $canonical === '') {
+            if (!preg_match('/^[A-Za-z0-9:_-]+$/', $canonical) || $canonical === '' ||
+                strpos($canonical, 'legacy:') === 0) {
                 throw new InvalidArgumentException("Invalid canonical identifier for $legacy");
             }
             if (isset($seenTargets[$canonical])) {
