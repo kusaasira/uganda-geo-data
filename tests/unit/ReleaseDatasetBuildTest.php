@@ -25,11 +25,17 @@ final class ReleaseDatasetBuildTest extends TestCase
                 self::assertSame(0, $status, implode("\n", $output));
             }
             foreach (['canonical.json', 'qa.json', 'manifest.json'] as $file) {
-                self::assertSame(hash_file('sha256', $base . '/first/' . $file),
-                    hash_file('sha256', $base . '/second/' . $file));
+                self::assertSame(
+                    hash_file('sha256', $base . '/first/' . $file),
+                    hash_file('sha256', $base . '/second/' . $file)
+                );
             }
-            $report = json_decode((string) file_get_contents($base . '/first/qa.json'),
-                true, 512, JSON_THROW_ON_ERROR);
+            $report = json_decode(
+                (string) file_get_contents($base . '/first/qa.json'),
+                true,
+                512,
+                JSON_THROW_ON_ERROR
+            );
             self::assertTrue($report['valid']);
             self::assertGreaterThan(0, $report['total_units']);
         } finally {
