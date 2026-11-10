@@ -105,8 +105,14 @@ try {
     $candidates = $geo->searchByName('parish', 'Central');
 }
 
-// Scope by the actual parent subcounty ID when known.
-$parishes = $geo->searchByName('parish', 'Central', $subcountyId);
+// Select a real parent ID before a scoped lookup.
+$district = $geo->district('Mukono');
+foreach ($district->counties() as $county) {
+    foreach ($county->subCounties() as $subcounty) {
+        $parishes = $geo->searchByName('parish', 'Central', $subcounty->id());
+        // Handle every matching parish in this particular subcounty.
+    }
+}
 ```
 
 An ID is meaningful **within its administrative level and source snapshot**. Numeric package source IDs are **not** guaranteed to be official UBOS administrative codes. Use a verified crosswalk when matching IDs from external systems.
