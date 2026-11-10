@@ -40,6 +40,10 @@ final class ExplorerIndexBuilder
             }
             $knownSources[$sourceId] = true;
         }
+        if ($snapshot['units'] === []) {
+            throw new InvalidArgumentException('Explorer requires nonempty canonical units');
+        }
+
         $index = [];
         foreach ($snapshot['units'] as $unit) {
             if (!is_array($unit) || !isset($unit['id'], $unit['name'], $unit['level'])
