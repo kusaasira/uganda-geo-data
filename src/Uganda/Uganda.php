@@ -173,6 +173,8 @@ final class Uganda
         /** @var array<int, array<string, string>> $districts */
         $districts = $this->getFileContents($this->sourceDirectory . '/districts.json');
 
+        $this->validateHierarchyReferences($villages, $parishes, $subCounties, $counties, $districts);
+
         // Keep the source identity distinct from the display name.
         // Reject duplicate IDs rather than silently overwriting records.
         $seenIds = [];
@@ -255,6 +257,54 @@ final class Uganda
         }
 
         return $mappedDistrict;
+    }
+
+
+    /**
+     * Ensure the runtime tree cannot silently drop children with unknown parents.
+     *
+     * @param array<int, array<string, int|string>> $villages
+     * @param array<int, array<string, int|string>> $parishes
+     * @param array<int, array<string, int|string>> $subCounties
+     * @param array<int, array<string, int|string>> $counties
+     * @param array<int, array<string, int|string>> $districts
+     */
+    private function validateHierarchyReferences(
+        array $villages,
+        array $parishes,
+        array $subCounties,
+        array $counties,
+        array $districts
+    ): void {
+        $ids = [];
+        foreach ([
+            'district' => $districts,
+            'county' => $counties,
+            'subcounty' => $subCounties,
+            'parish' => $parishes,
+        ] as $level => $rows) {
+            foreach ($rows as $row) {
+                $ids[$level][(int) $row['id']] = true;
+            }
+        }
+
+        foreach ([
+            ['village', $villages, 'parish', 'parish'],
+            ['parish', $parishes, 'subcounty', 'subcounty'],
+            ['subcounty', $subCounties, 'county', 'county'],
+            ['county', $counties, 'district', 'district'],
+        ] as $check) {
+            [$level, $rows, $parentKey, $parentLevel] = $check;
+            foreach ($rows as $row) {
+                $parent = (int) $row[$parentKey];
+                if (!isset($ids[$parentLevel][$parent])) {
+                    throw new \UnexpectedValueException(
+                        sprintf('Orphan %s record %s: unknown %s %d',
+                            $level, (string) $row['id'], $parentLevel, $parent)
+                    );
+                }
+            }
+        }
     }
 
     /** @return array<int, array<string, int|string>> */
