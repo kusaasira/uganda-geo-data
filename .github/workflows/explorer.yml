@@ -1,0 +1,27 @@
+name: Explorer checks
+
+on:
+  pull_request:
+    branches: [main, next/2.x]
+    paths:
+      - 'resources/explorer/**'
+      - 'tools/data/build-explorer.php'
+      - 'src/Uganda/Data/ExplorerIndexBuilder.php'
+      - 'tests/unit/ExplorerBuildCommandTest.php'
+      - '.github/workflows/explorer.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  explorer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check browser script syntax
+        run: node --check resources/explorer/assets/app.js
+      - name: Run browser behavior smoke tests
+        run: node --test resources/explorer/assets/app.test.js
+      - name: Check CLI PHP syntax
+        run: php -l tools/data/build-explorer.php
