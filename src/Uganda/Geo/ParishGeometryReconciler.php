@@ -82,7 +82,9 @@ final class ParishGeometryReconciler
             $verified[] = $objectId;
         }
 
-        $unmatched = array_keys(array_diff_key($featureIds, $seenObjects));
+        // Numeric string array keys are cast to integers by PHP.
+        // Expose source object IDs as strings consistently in review reports.
+        $unmatched = array_map('strval', array_keys(array_diff_key($featureIds, $seenObjects)));
         $missingParishes = array_keys(array_diff_key($parishes, $seenParishes));
         sort($verified);
         sort($unresolved);
