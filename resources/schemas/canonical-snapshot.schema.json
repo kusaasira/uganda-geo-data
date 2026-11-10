@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/kusaasira/uganda-geo-data/blob/next/2.x/resources/schemas/canonical-snapshot.schema.json",
+  "$id": "https://raw.githubusercontent.com/kusaasira/uganda-geo-data/next/2.x/resources/schemas/canonical-snapshot.schema.json",
   "title": "Uganda Geo Canonical Dataset Snapshot",
   "type": "object",
   "additionalProperties": false,

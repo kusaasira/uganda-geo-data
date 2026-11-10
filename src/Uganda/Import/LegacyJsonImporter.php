@@ -44,8 +44,11 @@ final class LegacyJsonImporter
                 throw new RuntimeException("Invalid JSON in $path", 0, $exception);
             }
 
-            if (!is_array($rows)) {
-                throw new RuntimeException("Expected array of rows in $path");
+            if (!is_array($rows) || array_keys($rows) !== array_keys(array_values($rows))) {
+                throw new RuntimeException("Expected a JSON list of rows in $path");
+            }
+            if ($rows === []) {
+                throw new RuntimeException("Required $level source file is empty: $path");
             }
 
             foreach ($rows as $index => $row) {
@@ -86,7 +89,7 @@ final class LegacyJsonImporter
                     'source_record_id' => $sourceId,
                     'aliases' => [],
                     'lifecycle_status' => 'active',
-                    'external_codes' => [],
+                    'external_codes' => new \stdClass(),
                     'verification_status' => 'unverified',
                 ];
             }
