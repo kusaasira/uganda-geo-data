@@ -18,7 +18,7 @@ final class ReleaseReadmeContractsTest extends TestCase
         self::assertStringContainsString('composer require "kusaasira/uganda-geo:^2.0"', $readme);
         self::assertStringContainsString('Uganda Bureau of Statistics', $readme);
         self::assertStringContainsString("searchByName('parish', 'Central', \$subcounty->id())", $readme);
-        self::assertStringNotContainsString('\$subcountyId', $readme);
+        self::assertStringNotContainsString('$subcountyId', $readme);
         self::assertStringContainsString('mkdir -p build', $readme);
 
         foreach ([
