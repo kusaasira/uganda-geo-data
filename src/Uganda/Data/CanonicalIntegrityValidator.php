@@ -86,10 +86,12 @@ final class CanonicalIntegrityValidator
                 !in_array($unit['verification_status'], ['unverified', 'verified', 'disputed'], true)) {
                 $errors[] = "Invalid verification status for unit $id";
             }
-            foreach (['aliases', 'external_codes'] as $field) {
-                if (!array_key_exists($field, $unit) || !is_array($unit[$field])) {
-                    $errors[] = "Invalid $field for unit $id";
-                }
+            if (!array_key_exists('aliases', $unit) || !is_array($unit['aliases'])) {
+                $errors[] = "Invalid aliases for unit $id";
+            }
+            if (!array_key_exists('external_codes', $unit) ||
+                (!is_array($unit['external_codes']) && !$unit['external_codes'] instanceof \stdClass)) {
+                $errors[] = "Invalid external_codes for unit $id";
             }
             if (!in_array($unit['source_id'] ?? null, $sources, true)) {
                 $errors[] = "Unregistered source for unit $id";

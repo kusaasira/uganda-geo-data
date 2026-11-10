@@ -114,7 +114,7 @@ final class CanonicalIntegrityValidatorTest extends TestCase
         }
         $snapshot = (new LegacyJsonImporter())->import($directory);
         $report = (new CanonicalIntegrityValidator())->validate($snapshot, $expected);
-        $this->assertTrue($report['valid'], implode('; ', $report['errors']));
+        $this->assertTrue($report['valid'], implode('; ', array_slice($report['errors'], 0, 10)));
         $this->assertSame(array_sum($expected), $report['total_units']);
     }
 }
