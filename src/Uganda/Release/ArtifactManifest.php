@@ -14,6 +14,9 @@ final class ArtifactManifest
      */
     public function build(string $root, array $files): array
     {
+        if ($files === []) {
+            throw new InvalidArgumentException('Release inventory cannot be empty');
+        }
         $entries = [];
         foreach ($files as $relative) {
             $path = $this->resolve($root, $relative);
@@ -32,11 +35,15 @@ final class ArtifactManifest
         return ['schema_version' => 1, 'hash_algorithm' => 'sha256', 'artifacts' => array_values($entries)];
     }
 
-    /** @param array<string, mixed> $manifest */
-    public function verify(string $root, array $manifest): void
+    /**
+     * @param array<string, mixed> $manifest
+     * @param array<int, string>|null $expectedFiles An explicit independent release inventory.
+     */
+    public function verify(string $root, array $manifest, ?array $expectedFiles = null): void
     {
         if (($manifest['schema_version'] ?? null) !== 1 || ($manifest['hash_algorithm'] ?? null) !== 'sha256'
-            || !isset($manifest['artifacts']) || !is_array($manifest['artifacts'])) {
+            || !isset($manifest['artifacts']) || !is_array($manifest['artifacts'])
+            || $manifest['artifacts'] === []) {
             throw new InvalidArgumentException('Unsupported or incomplete release manifest');
         }
         $paths = [];
@@ -51,6 +58,18 @@ final class ArtifactManifest
             if (!hash_equals($entry['sha256'], (string) hash_file('sha256', $path))
                 || filesize($path) !== $entry['bytes']) {
                 throw new InvalidArgumentException('Release artifact mismatch: ' . $entry['path']);
+            }
+        }
+
+        if ($expectedFiles !== null) {
+            if ($expectedFiles === [] || count($expectedFiles) !== count(array_unique($expectedFiles))) {
+                throw new InvalidArgumentException('Expected artifact inventory must be nonempty with unique paths');
+            }
+            sort($expectedFiles, SORT_STRING);
+            $listed = array_keys($paths);
+            sort($listed, SORT_STRING);
+            if ($listed !== $expectedFiles) {
+                throw new InvalidArgumentException('Release artifact inventory mismatch');
             }
         }
     }
