@@ -8,6 +8,10 @@ if ($root === false) {
     fwrite(STDERR, "Unable to resolve repository root\n");
     exit(1);
 }
+if ($argc > 2 || (isset($argv[1]) && $argv[1] !== '--laravel')) {
+    fwrite(STDERR, "Usage: php tools/ci/consumer-install.php [--laravel]\n");
+    exit(2);
+}
 $laravel = ($argv[1] ?? '') === '--laravel';
 $directory = sys_get_temp_dir() . '/uganda-geo-consumer-' . bin2hex(random_bytes(8));
 if (!mkdir($directory, 0700)) {
