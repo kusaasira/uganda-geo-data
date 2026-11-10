@@ -65,4 +65,30 @@ final class ExplorerIndexBuilderTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         (new ExplorerIndexBuilder())->build(['schema_version' => 1, 'source_ids' => ['test-fixture'], 'units' => []]);
     }
+    /** @test */
+    public function itRejectsMalformedOrDuplicateSourceManifests(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid or duplicate canonical source');
+        (new ExplorerIndexBuilder())->build([
+            'schema_version' => 1,
+            'snapshot_id' => 'test',
+            'source_ids' => ['source', 'source'],
+            'units' => [],
+        ]);
+    }
+
+    /** @test */
+    public function itRejectsAssociativeSourceLists(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('indexed lists');
+        (new ExplorerIndexBuilder())->build([
+            'schema_version' => 1,
+            'snapshot_id' => 'test',
+            'source_ids' => ['source-id' => 'source'],
+            'units' => [],
+        ]);
+    }
+
 }
