@@ -83,10 +83,12 @@ test("displays only snapshot-scoped reviewed polygon counts", async () => {
     unit_count: 1, units: [{ id: "p1", name: "Central", level: "parish", parent_id: null }],
     geometry_coverage: {
       reviewed: 1, total: 2, unmapped: 1,
+      source_feature_count: 2, unmatched_source_features: 1, matching_status: "incomplete",
       scope: "supplied_canonical_snapshot_only", national_coverage: "unverified"
     }
   });
   assert.match(elements.coverage.textContent, /1 of 2 parishes/);
+  assert.match(elements.coverage.textContent, /1 source polygons unresolved/);
   assert.match(elements.coverage.textContent, /national coverage unverified/);
 });
 
