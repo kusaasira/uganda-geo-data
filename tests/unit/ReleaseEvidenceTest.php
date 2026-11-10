@@ -119,5 +119,4 @@ final class ReleaseEvidenceTest extends TestCase
             ]
         );
     }
-
 }
