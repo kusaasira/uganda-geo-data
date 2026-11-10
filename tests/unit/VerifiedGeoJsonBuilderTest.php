@@ -79,6 +79,6 @@ final class VerifiedGeoJsonBuilderTest extends TestCase
     {
         $result = (new VerifiedGeoJsonBuilder())->build([], ['units' => []], [], 'source');
         $this->assertSame([], $result['features']);
-        $this->assertSame('incomplete', $result['metadata']['coverage_status']);
+        $this->assertSame('incomplete', $result['metadata']['input_mapping_status']);
     }
 }
