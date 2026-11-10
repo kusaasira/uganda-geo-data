@@ -49,4 +49,13 @@ final class CanonicalSnapshotDifferTest extends TestCase
             ['units' => []]
         );
     }
+    /** @test */
+    public function rejectsNonListUnitStructuresInsteadOfSilentlyDiffingAnObject(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        (new CanonicalSnapshotDiffer())->compare(
+            ['units' => ['record' => ['id' => 'x']]],
+            ['units' => []]
+        );
+    }
 }

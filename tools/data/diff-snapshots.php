@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use Uganda\Data\CanonicalIntegrityValidator;
 use Uganda\Data\CanonicalSnapshotDiffer;
 
 $root = dirname(__DIR__, 2);
+require_once $root . '/src/Uganda/Data/CanonicalIntegrityValidator.php';
 require_once $root . '/src/Uganda/Data/CanonicalSnapshotDiffer.php';
 if (!isset($argv[1], $argv[2])) {
     fwrite(STDERR, "Usage: php tools/data/diff-snapshots.php <before.json> <after.json>\n");
@@ -20,6 +22,10 @@ try {
         $snapshot = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
         if (!is_array($snapshot)) {
             throw new RuntimeException("Invalid snapshot document: $path");
+        }
+        $check = (new CanonicalIntegrityValidator())->validate($snapshot);
+        if (!$check['valid']) {
+            throw new RuntimeException('Invalid canonical snapshot: ' . $path);
         }
         $snapshots[] = $snapshot;
     }
