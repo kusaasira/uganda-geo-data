@@ -34,6 +34,13 @@ final class ExplorerCoverageSummary
         $total = count($ids);
         $matches = $report['verified_matches'] ?? null;
         $unmapped = $report['unmapped_canonical_unit_ids'] ?? null;
+        $unmatched = $report['unmatched_source_object_ids'] ?? null;
+        $unresolved = $report['unresolved_source_object_ids'] ?? null;
+        $sourceCount = $report['source_feature_count'] ?? null;
+        if (!is_int($sourceCount) || $sourceCount < 0
+            || !is_array($unmatched) || !is_array($unresolved)) {
+            throw new InvalidArgumentException('Incomplete source-side geometry coverage evidence');
+        }
         if (!is_int($report['canonical_parish_ward_count'] ?? null)
             || $total !== $report['canonical_parish_ward_count']
             || !is_int($report['verified_count'] ?? null)
@@ -56,9 +63,25 @@ final class ExplorerCoverageSummary
             }
             $missing[$id] = true;
         }
+        $sourceIds = [];
+        foreach ($matches as $match) {
+            $sourceId = $match['source_object_id'] ?? null;
+            if (!is_string($sourceId) || $sourceId === '' || isset($sourceIds[$sourceId])) {
+                throw new InvalidArgumentException('Duplicate or missing verified source geometry identity');
+            }
+            $sourceIds[$sourceId] = true;
+        }
+        foreach (array_merge($unmatched, $unresolved) as $sourceId) {
+            if (!is_string($sourceId) || $sourceId === '' || isset($sourceIds[$sourceId])) {
+                throw new InvalidArgumentException('Duplicate or invalid unmatched source geometry identity');
+            }
+            $sourceIds[$sourceId] = true;
+        }
         if (count($verified) !== $report['verified_count']
             || count($verified) + count($missing) !== $total
-            || ($report['coverage'] === 'complete' && count($missing) !== 0)) {
+            || count($sourceIds) !== $sourceCount
+            || ($report['coverage'] === 'complete' &&
+                ($missing !== [] || $unmatched !== [] || $unresolved !== [] || $verified === []))) {
             throw new InvalidArgumentException('Inconsistent geometry coverage partition');
         }
 
@@ -66,6 +89,9 @@ final class ExplorerCoverageSummary
             'reviewed' => count($verified),
             'total' => $total,
             'unmapped' => count($missing),
+            'source_feature_count' => $sourceCount,
+            'unmatched_source_features' => count($unmatched) + count($unresolved),
+            'matching_status' => $report['coverage'],
             'scope' => 'supplied_canonical_snapshot_only',
             'national_coverage' => 'unverified',
         ];
