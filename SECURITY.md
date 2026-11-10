@@ -2,10 +2,12 @@
 
 ## Supported releases
 
-Security maintenance applies to supported stable versions listed in the current release policy. Pre-release versions are for evaluation and do not carry a separate support commitment. The published v1 release has no promise of ongoing fixes beyond the announced maintenance policy.
+Uganda Geo v1.0.0 is a historical published version without a guaranteed ongoing security support window. Development and pre-release versions are for evaluation and do not carry a separate support commitment. Supported release branches and maintenance windows will be explicitly identified when a new stable release is published.
 
-## Private reporting
+## Private vulnerability reporting
 
-Report a suspected vulnerability to **joshuakusaasira@gmail.com**, preferably without an exploit proof in a public issue. Include affected package version, reproduction steps, expected impact and a contact method. If private GitHub vulnerability reporting is available for this repository, you may use that channel instead.
+Use the repository's **Security → Report a vulnerability** workflow when [private vulnerability reporting](https://github.com/kusaasira/uganda-geo-data/security/advisories/new) is enabled. GitHub may require a signed-in account.
 
-Do not submit tokens, credentials or identifiable personal records with reports. Maintainers will assess and coordinate remediation according to availability. This document does not promise an unsupported service-level agreement.
+If that private workflow is unavailable, open a **non-sensitive** issue requesting a private disclosure channel, without including exploit details or secrets. Maintainers can then arrange a private channel. Do not place a proof of concept or affected credentials in a public issue.
+
+A report should identify the affected version, security impact, reproduction conditions and a safe contact path. Maintainers will assess it according to available capacity. No fixed security response SLA is promised.
