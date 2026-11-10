@@ -21,13 +21,21 @@ final class ReleaseEvidence
     {
         if (!is_bool($canonical['valid'] ?? null)
             || !is_int($canonical['total_units'] ?? null)
-            || $canonical['total_units'] < 0) {
-            throw new InvalidArgumentException('Invalid canonical integrity evidence');
+            || $canonical['total_units'] < 0
+            || !is_array($canonical['counts_by_level'] ?? null)
+            || !is_array($canonical['errors'] ?? null)) {
+            throw new InvalidArgumentException('Incomplete canonical integrity evidence');
         }
-
-        if ($canonical['valid'] && is_array($canonical['errors'] ?? null)
-            && $canonical['errors'] !== []) {
-            throw new InvalidArgumentException('Canonical report contradicts its own error list');
+        $total = 0;
+        foreach ($canonical['counts_by_level'] as $level => $count) {
+            if (!is_string($level) || $level === '' || !is_int($count) || $count < 0) {
+                throw new InvalidArgumentException('Malformed canonical level counts');
+            }
+            $total += $count;
+        }
+        if ($total !== $canonical['total_units']
+            || $canonical['valid'] !== ($canonical['errors'] === [])) {
+            throw new InvalidArgumentException('Canonical conservation report is self-contradictory');
         }
 
         $topologyStatus = 'unverified';
