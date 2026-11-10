@@ -79,5 +79,4 @@ final class GeometryExportFieldsTest extends TestCase
         $this->expectExceptionMessage('two-dimensional');
         (new GeometryExportFields())->prepare($collection);
     }
-
 }
