@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/kusaasira/uganda-geo-data/next/2.x/resources/schemas/administrative-unit.schema.json",
+  "title": "Uganda Geo Canonical Administrative Unit",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "level",
+    "name",
+    "parent_id",
+    "source_id",
+    "source_record_id",
+    "aliases",
+    "lifecycle_status",
+    "external_codes"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9:_-]+$"
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "region",
+        "district",
+        "city",
+        "municipality",
+        "county",
+        "subcounty",
+        "town_council",
+        "division",
+        "parish",
+        "ward",
+        "village",
+        "cell"
+      ]
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_record_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "lifecycle_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "retired",
+        "disputed"
+      ]
+    },
+    "external_codes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "valid_from": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "valid_to": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "unverified",
+        "verified",
+        "disputed"
+      ]
+    }
+  }
+}
