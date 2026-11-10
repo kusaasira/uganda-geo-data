@@ -25,8 +25,10 @@ final class SnapshotReleaseAuditorTest extends TestCase
 
         $report = (new SnapshotReleaseAuditor())->audit($before, $after);
         $this->assertSame('review_required', $report['status']);
-        $this->assertSame(['added' => 1, 'missing_from_next_snapshot' => 1, 'modified' => 1],
-            $report['summary']);
+        $this->assertSame(
+            ['added' => 1, 'missing_from_next_snapshot' => 1, 'modified' => 1],
+            $report['summary']
+        );
         $this->assertSame('a', $report['groups']['renamed'][0]['id']);
         $this->assertSame('a', $report['groups']['reparented'][0]['id']);
         $this->assertSame('a', $report['groups']['lifecycle_changed'][0]['id']);
