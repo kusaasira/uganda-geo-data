@@ -13,14 +13,19 @@ final class VerifiedGeoJsonBuilder
      * reviewed polygon-to-unit matches. A local artifact is not publication approval.
      *
      * @param array<int|string, array<string, mixed>> $features
-     * @param array<string, mixed> $report
+     * @param array<string, mixed> $snapshot
+     * @param array<int, array<string, mixed>> $decisions
      * @return array<string, mixed>
      */
-    public function build(array $features, array $report, string $sourceId): array
+    public function build(array $features, array $snapshot, array $decisions, string $sourceId): array
     {
-        if (trim($sourceId) === '' || !isset($report['matches']) || !is_array($report['matches'])) {
-            throw new InvalidArgumentException('Source identity and a reviewed matching report are required');
+        if (trim($sourceId) === '') {
+            throw new InvalidArgumentException('Source identity is required');
         }
+
+        // Never accept a caller-supplied "verified" result. Re-evaluate every
+        // decision against the canonical units and actual source features.
+        $report = (new ParishBoundaryMatcher())->match($features, $snapshot, $decisions);
 
         $output = [];
         $usedUnits = [];
@@ -54,7 +59,6 @@ final class VerifiedGeoJsonBuilder
                     'source_object_id' => $objectId,
                     'evidence_url' => (string) $match['evidence_url'],
                     'evidence_date' => (string) $match['evidence_date'],
-                    'reviewer' => (string) $match['reviewer'],
                 ],
                 'geometry' => $feature['geometry'],
             ];
@@ -69,8 +73,12 @@ final class VerifiedGeoJsonBuilder
             'features' => $output,
             'metadata' => [
                 'source_id' => $sourceId,
-                'verified_feature_count' => count($output),
-                'coverage_status' => $report['status'] ?? 'incomplete',
+                'reviewed_identity_count' => count($output),
+                'topology_status' => 'not_checked',
+                'verification_scope' => 'canonical_identity_and_parent_only',
+                'coverage_status' => $report['status'],
+                'unmatched_source_feature_count' => count($report['unmatched_source_object_ids']),
+                'unmatched_canonical_unit_count' => count($report['unmatched_canonical_unit_ids']),
                 'publication_rights' => 'review_required',
             ],
         ];
