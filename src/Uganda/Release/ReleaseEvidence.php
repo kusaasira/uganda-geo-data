@@ -25,15 +25,44 @@ final class ReleaseEvidence
             throw new InvalidArgumentException('Invalid canonical integrity evidence');
         }
 
+        if ($canonical['valid'] && is_array($canonical['errors'] ?? null)
+            && $canonical['errors'] !== []) {
+            throw new InvalidArgumentException('Canonical report contradicts its own error list');
+        }
+
         $topologyStatus = 'unverified';
         if ($topology !== null) {
+            $results = $topology['results'] ?? null;
             if (!is_int($topology['feature_count'] ?? null)
                 || !is_int($topology['failed_count'] ?? null)
                 || $topology['feature_count'] < 1 || $topology['failed_count'] < 0
-                || $topology['failed_count'] > $topology['feature_count']) {
+                || $topology['failed_count'] > $topology['feature_count']
+                || !is_array($results) || count($results) !== $topology['feature_count']) {
                 throw new InvalidArgumentException('Invalid topology evidence');
             }
-            $topologyStatus = $topology['failed_count'] === 0 ? 'passed' : 'failed';
+            $failed = 0;
+            $indices = [];
+            foreach ($results as $result) {
+                if (!is_array($result) || !is_int($result['feature_index'] ?? null)
+                    || isset($indices[$result['feature_index']])
+                    || !is_array($result['audit'] ?? null)
+                    || !in_array($result['audit']['status'] ?? null, ['passed', 'failed'], true)
+                    || !is_array($result['audit']['issues'] ?? null)) {
+                    throw new InvalidArgumentException('Malformed topology feature evidence');
+                }
+                $indices[$result['feature_index']] = true;
+                $hasIssues = $result['audit']['issues'] !== [];
+                if (($result['audit']['status'] === 'failed') !== $hasIssues) {
+                    throw new InvalidArgumentException('Contradictory feature topology status');
+                }
+                if ($hasIssues) {
+                    $failed++;
+                }
+            }
+            if ($failed !== $topology['failed_count']) {
+                throw new InvalidArgumentException('Topology count contradicts feature-level evidence');
+            }
+            $topologyStatus = $failed === 0 ? 'passed' : 'failed';
         }
 
         $coverageStatus = 'unverified';
@@ -44,6 +73,54 @@ final class ReleaseEvidence
                 || $coverage['verified_count'] < 0
                 || $coverage['canonical_parish_ward_count'] < $coverage['verified_count']) {
                 throw new InvalidArgumentException('Invalid parish mapping evidence');
+            }
+            $matches = $coverage['verified_matches'] ?? null;
+            $unmapped = $coverage['unmapped_canonical_unit_ids'] ?? null;
+            $unmatched = $coverage['unmatched_source_object_ids'] ?? null;
+            $unresolved = $coverage['unresolved_source_object_ids'] ?? null;
+            if (!is_array($matches) || !is_array($unmapped)
+                || !is_array($unmatched) || !is_array($unresolved)
+                || !is_int($coverage['source_feature_count'] ?? null)) {
+                throw new InvalidArgumentException('Missing parish feature-level evidence');
+            }
+            $mappedIds = [];
+            $sourceIds = [];
+            foreach ($matches as $match) {
+                if (!is_array($match) || !is_string($match['unit_id'] ?? null)
+                    || !is_string($match['source_object_id'] ?? null)
+                    || isset($mappedIds[$match['unit_id']])
+                    || isset($sourceIds[$match['source_object_id']])) {
+                    throw new InvalidArgumentException('Invalid or duplicate verified parish match');
+                }
+                $mappedIds[$match['unit_id']] = true;
+                $sourceIds[$match['source_object_id']] = true;
+            }
+            if (count($matches) !== $coverage['verified_count']
+                || count(array_unique($unmapped, SORT_REGULAR)) !== count($unmapped)
+                || count(array_unique($unmatched, SORT_REGULAR)) !== count($unmatched)
+                || count(array_unique($unresolved, SORT_REGULAR)) !== count($unresolved)
+                || count($matches) + count($unmapped) !== $coverage['canonical_parish_ward_count']
+                || count($matches) + count($unmatched) + count($unresolved) !== $coverage['source_feature_count']) {
+                throw new InvalidArgumentException('Parish coverage counters contradict feature evidence');
+            }
+            foreach ($unmapped as $id) {
+                if (!is_string($id) || isset($mappedIds[$id])) {
+                    throw new InvalidArgumentException('Mapped and unmapped parish IDs overlap');
+                }
+            }
+            $unmatchedIds = [];
+            foreach (array_merge($unmatched, $unresolved) as $id) {
+                if (!is_string($id) || isset($sourceIds[$id])) {
+                    throw new InvalidArgumentException('Unmatched or unresolved source IDs overlap verified matches');
+                }
+                if (isset($unmatchedIds[$id])) {
+                    throw new InvalidArgumentException('Duplicate source ID across unmatched/unresolved lists');
+                }
+                $unmatchedIds[$id] = true;
+            }
+            if ($coverage['coverage'] === 'complete' && ($unmapped !== [] || $unmatched !== []
+                || $unresolved !== [] || $matches === [])) {
+                throw new InvalidArgumentException('Complete parish coverage claim contradicts unresolved data');
             }
             $coverageStatus = $coverage['coverage'] === 'complete' ? 'reported_complete' : 'incomplete';
         }
