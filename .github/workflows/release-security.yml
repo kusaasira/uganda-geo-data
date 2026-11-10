@@ -1,0 +1,31 @@
+name: Release security and SBOM
+
+on:
+  pull_request:
+    branches: [main, next/2.x]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Generate deterministic CycloneDX inventory
+        run: |
+          mkdir -p build
+          php tools/release/create-sbom.php 2.0.0-dev build/sbom.json
+          php -r '$d=json_decode(file_get_contents("build/sbom.json"),true,512,JSON_THROW_ON_ERROR); if($d["bomFormat"]!=="CycloneDX")exit(1);'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ubuntu-geo-runtime-sbom
+          path: build/sbom.json
+          retention-days: 7
