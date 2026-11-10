@@ -90,4 +90,17 @@ final class ExplorerIndexBuilderTest extends TestCase
             'units' => [],
         ]);
     }
+    /** @test */
+    public function itRejectsNonStringSnapshotIdentityBeforeNormalization(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('identity must be a string');
+        (new ExplorerIndexBuilder())->build([
+            'schema_version' => 1,
+            'snapshot_id' => ['invalid'],
+            'source_ids' => ['test-fixture'],
+            'units' => [],
+        ]);
+    }
+
 }
