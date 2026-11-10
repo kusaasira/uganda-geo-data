@@ -55,4 +55,16 @@ final class ParishGeometryCoverageAuditorTest extends TestCase
         $report = (new ParishGeometryCoverageAuditor())->audit([], ['units' => []], []);
         $this->assertSame('incomplete', $report['coverage']);
     }
+    /** @test */
+    public function rejectsAssociativeUnresolvedInventoriesThatHideSourceOrder(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('indexed list');
+        (new ParishGeometryCoverageAuditor())->audit(
+            [101 => ['type' => 'Feature']],
+            ['units' => []],
+            [],
+            ['source' => '101']
+        );
+    }
 }
