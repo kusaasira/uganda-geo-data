@@ -191,6 +191,9 @@ The repository includes tooling to inspect and acquire public polygon endpoints,
 The **PHP runtime does not ship a verified national parish boundary archive**. GIS tooling requires separately acquired source data and, for format conversion, **GDAL**. Example operator commands:
 
 ```bash
+# Create a local output parent before downloading source files.
+mkdir -p build
+
 # Inspect the catalogued public feature service.
 php tools/geo/inspect-arcgis.php arcgis-parishes-2024
 
