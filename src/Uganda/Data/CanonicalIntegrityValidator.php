@@ -7,6 +7,20 @@ namespace Uganda\Data;
 final class CanonicalIntegrityValidator
 {
     /**
+     * The legacy bundled data has a known five-tier parent contract.
+     * Other publishers can use different, separately verified hierarchies.
+     *
+     * @var array<string, string|null>
+     */
+    private const LEGACY_PARENT_LEVELS = [
+        'district' => null,
+        'county' => 'district',
+        'subcounty' => 'county',
+        'parish' => 'subcounty',
+        'village' => 'parish',
+    ];
+
+    /**
      * Validate identity, provenance, parent links, cycles and record conservation.
      * The method reports failures without dropping or repairing any input row.
      *
@@ -106,6 +120,16 @@ final class CanonicalIntegrityValidator
             if (is_string($parent) && !isset($byId[$parent])) {
                 $errors[] = "Unresolved parent $parent for unit $id";
                 continue;
+            }
+            $level = $unit['level'] ?? null;
+            if (($unit['source_id'] ?? null) === 'legacy-bundled'
+                && is_string($level) && array_key_exists($level, self::LEGACY_PARENT_LEVELS)) {
+                $expectedParentLevel = self::LEGACY_PARENT_LEVELS[$level];
+                $actualParentLevel = is_string($parent) ? ($byId[$parent]['level'] ?? null) : null;
+                if ($actualParentLevel !== $expectedParentLevel) {
+                    $errors[] = "Invalid legacy parent level for unit $id: expected "
+                        . ($expectedParentLevel ?? 'no parent');
+                }
             }
             $seen = [];
             $cursor = $id;
