@@ -1,0 +1,31 @@
+name: Release readiness evidence
+
+on:
+  pull_request:
+    branches: [next/2.x]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Evaluate pending release gates without asserting success
+        run: |
+          mkdir -p build
+          php tools/release/assess-readiness.php resources/releases/readiness-template.json > build/release-readiness.json
+          php -r '$r=json_decode(file_get_contents("build/release-readiness.json"),true,512,JSON_THROW_ON_ERROR); if($r["status"]!=="blocked" || $r["release_ready"]!==false)exit(1);'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v2-release-readiness-preflight
+          path: build/release-readiness.json
+          retention-days: 7
