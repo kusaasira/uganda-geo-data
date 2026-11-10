@@ -62,5 +62,4 @@ final class ExplorerIndexBuilderTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         (new ExplorerIndexBuilder())->build(['schema_version' => 1, 'units' => []]);
     }
-
 }
