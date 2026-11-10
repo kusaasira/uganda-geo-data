@@ -32,9 +32,10 @@ final class ExplorerIndexBuilderTest extends TestCase
     public function rejectsDuplicateIdsInsteadOfOverwriting(): void
     {
         $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid or duplicate canonical unit');
         (new ExplorerIndexBuilder())->build(['schema_version' => 1, 'snapshot_id' => 'test', 'source_ids' => ['test-fixture'], 'units' => [
-            ['id' => 'village:1', 'name' => 'First', 'level' => 'village'],
-            ['id' => 'village:1', 'name' => 'Second', 'level' => 'village'],
+            ['id' => 'district:1', 'name' => 'First', 'level' => 'district', 'parent_id' => null, 'source_id' => 'test-fixture'],
+            ['id' => 'district:1', 'name' => 'Second', 'level' => 'district', 'parent_id' => null, 'source_id' => 'test-fixture'],
         ]]);
     }
     /** @test */
