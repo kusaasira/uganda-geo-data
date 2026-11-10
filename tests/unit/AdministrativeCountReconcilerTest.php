@@ -46,4 +46,28 @@ final class AdministrativeCountReconcilerTest extends TestCase
             ['publications' => [['id' => 'ref', 'url' => 'https://example.org', 'counts' => ['parish' => -1]]]]
         );
     }
+    /** @test */
+    public function rejectsDuplicateCanonicalUnitsInsteadOfInflatingCounts(): void
+    {
+        $unit = ['id' => 'legacy:parish:1', 'level' => 'parish'];
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Duplicate canonical unit ID');
+        (new AdministrativeCountReconciler())->reconcile(
+            ['units' => [$unit, $unit]],
+            ['publications' => [['id' => 'official', 'url' => 'https://www.ubos.org/',
+                'counts' => ['parish' => 2]]]]
+        );
+    }
+
+    /** @test */
+    public function rejectsDuplicatePublicationIds(): void
+    {
+        $pub = ['id' => 'official', 'url' => 'https://www.ubos.org/', 'counts' => ['parish' => 1]];
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Duplicate UBOS publication ID');
+        (new AdministrativeCountReconciler())->reconcile(
+            ['units' => [['id' => 'legacy:parish:1', 'level' => 'parish']]],
+            ['publications' => [$pub, $pub]]
+        );
+    }
 }
