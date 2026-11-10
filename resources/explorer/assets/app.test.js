@@ -30,7 +30,7 @@ class Element {
 
 async function loadExplorer(index) {
   const elements = {};
-  for (const key of ["query", "level", "results", "details", "status", "source"]) {
+  for (const key of ["query", "level", "results", "details", "status", "source", "coverage"]) {
     elements[key] = new Element(key);
   }
   const document = {
@@ -75,6 +75,21 @@ test("keeps duplicate names distinct and resets stale selected details", async (
   assert.equal(elements.results.children[0].textContent, "No matching administrative units");
   assert.match(elements.details.children[0].textContent, /^Select a matching location/);
   assert.match(elements.source.textContent, /Reference date: unverified/);
+});
+
+test("displays only snapshot-scoped reviewed polygon counts", async () => {
+  const elements = await loadExplorer({
+    snapshot_id: "sample", reference_date: null, limitations: "Test",
+    unit_count: 1, units: [{ id: "p1", name: "Central", level: "parish", parent_id: null }],
+    geometry_coverage: {
+      reviewed: 1, total: 2, unmapped: 1,
+      source_feature_count: 2, unmatched_source_features: 1, matching_status: "incomplete",
+      scope: "supplied_canonical_snapshot_only", national_coverage: "unverified"
+    }
+  });
+  assert.match(elements.coverage.textContent, /1 of 2 parishes/);
+  assert.match(elements.coverage.textContent, /1 source polygons unresolved/);
+  assert.match(elements.coverage.textContent, /national coverage unverified/);
 });
 
 test("renders untrusted locality names as text rather than HTML", async () => {

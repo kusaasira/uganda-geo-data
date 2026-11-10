@@ -8,6 +8,7 @@ const level = document.getElementById("level");
 const results = document.getElementById("results");
 const details = document.getElementById("details");
 const status = document.getElementById("status");
+const coverage = document.getElementById("coverage");
 
 function createLine(tag, value, className = "") {
   const node = document.createElement(tag);
@@ -84,6 +85,27 @@ async function initialize() {
     if (!Array.isArray(index.units) || !Number.isSafeInteger(index.unit_count)
         || index.unit_count !== index.units.length || typeof index.snapshot_id !== "string"
         || !index.snapshot_id.trim()) throw new Error("Invalid or incomplete local dataset");
+    if (index.geometry_coverage) {
+      const info = index.geometry_coverage;
+      if (!Number.isSafeInteger(info.reviewed) || !Number.isSafeInteger(info.total)
+          || !Number.isSafeInteger(info.unmapped) || info.total < 0 || info.reviewed < 0
+          || info.unmapped < 0 || info.reviewed + info.unmapped !== info.total
+          || !Number.isSafeInteger(info.source_feature_count)
+          || !Number.isSafeInteger(info.unmatched_source_features)
+          || info.source_feature_count < 0 || info.unmatched_source_features < 0
+          || info.source_feature_count !== info.reviewed + info.unmatched_source_features
+          || !["complete", "incomplete"].includes(info.matching_status)
+          || info.scope !== "supplied_canonical_snapshot_only"
+          || info.national_coverage !== "unverified") {
+        throw new Error("Invalid reviewed geometry coverage summary");
+      }
+      coverage.textContent = info.reviewed + " of " + info.total
+        + " parishes/wards mapped in supplied snapshot · "
+        + info.unmapped + " unmapped · " + info.unmatched_source_features
+        + " source polygons unresolved · national coverage unverified";
+    } else {
+      coverage.textContent = "Reviewed geometry coverage not supplied · national coverage unverified";
+    }
     units = index.units;
     for (const unit of units) {
       if (!unit || typeof unit.id !== "string" || typeof unit.name !== "string"
