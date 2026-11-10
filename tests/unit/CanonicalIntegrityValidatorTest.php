@@ -6,6 +6,7 @@ namespace unit;
 
 use PHPUnit\Framework\TestCase;
 use Uganda\Data\CanonicalIntegrityValidator;
+use Uganda\Import\LegacyJsonImporter;
 
 final class CanonicalIntegrityValidatorTest extends TestCase
 {
@@ -93,5 +94,27 @@ final class CanonicalIntegrityValidatorTest extends TestCase
         $this->assertFalse($result['valid']);
         $this->assertStringContainsString('Invalid lifecycle status', implode(' ', $result['errors']));
         $this->assertStringContainsString('Invalid aliases', implode(' ', $result['errors']));
+    }
+    /** @test */
+    public function actualBundledDatasetPreservesAllRecordsAndParentLinks(): void
+    {
+        $directory = dirname(__DIR__, 2) . '/src/Uganda/Data';
+        $files = [
+            'district' => 'districts.json',
+            'county' => 'counties.json',
+            'subcounty' => 'sub_counties.json',
+            'parish' => 'parishes.json',
+            'village' => 'villages.json',
+        ];
+        $expected = [];
+        foreach ($files as $level => $file) {
+            $rows = json_decode((string) file_get_contents($directory . '/' . $file), true, 512, JSON_THROW_ON_ERROR);
+            $this->assertIsArray($rows);
+            $expected[$level] = count($rows);
+        }
+        $snapshot = (new LegacyJsonImporter())->import($directory);
+        $report = (new CanonicalIntegrityValidator())->validate($snapshot, $expected);
+        $this->assertTrue($report['valid'], implode('; ', $report['errors']));
+        $this->assertSame(array_sum($expected), $report['total_units']);
     }
 }
