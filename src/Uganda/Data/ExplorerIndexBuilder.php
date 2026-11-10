@@ -20,8 +20,15 @@ final class ExplorerIndexBuilder
         if (($snapshot['schema_version'] ?? null) !== 1
             || !is_string($snapshot['snapshot_id'] ?? null)
             || trim($snapshot['snapshot_id']) === ''
+            || !isset($snapshot['source_ids']) || !is_array($snapshot['source_ids'])
+            || $snapshot['source_ids'] === []
             || !isset($snapshot['units']) || !is_array($snapshot['units'])) {
             throw new InvalidArgumentException('Expected a versioned canonical snapshot with non-empty identity and units');
+        }
+        foreach ($snapshot['source_ids'] as $sourceId) {
+            if (!is_string($sourceId) || trim($sourceId) === '') {
+                throw new InvalidArgumentException('Invalid canonical source identifier');
+            }
         }
         $index = [];
         foreach ($snapshot['units'] as $unit) {
@@ -29,12 +36,18 @@ final class ExplorerIndexBuilder
                 || !is_string($unit['id']) || trim($unit['id']) === ''
                 || !is_string($unit['name']) || trim($unit['name']) === ''
                 || !is_string($unit['level']) || trim($unit['level']) === ''
+                || !array_key_exists('parent_id', $unit)
+                || !isset($unit['source_id']) || !is_string($unit['source_id'])
+                || !in_array($unit['source_id'], $snapshot['source_ids'], true)
                 || isset($index[$unit['id']])) {
                 throw new InvalidArgumentException('Invalid or duplicate canonical unit');
             }
             $parent = $unit['parent_id'] ?? null;
-            if ($parent !== null && !is_string($parent)) {
+            if ($parent !== null && (!is_string($parent) || trim($parent) === '')) {
                 throw new InvalidArgumentException('Canonical parent identity must be a string or null');
+            }
+            if ($parent === null && !in_array($unit['level'], ['region', 'district', 'city'], true)) {
+                throw new InvalidArgumentException('Non-root unit is missing a canonical parent: ' . $unit['id']);
             }
             $index[$unit['id']] = [
                 'id' => $unit['id'],
