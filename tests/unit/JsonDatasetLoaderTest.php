@@ -122,8 +122,10 @@ final class JsonDatasetLoaderTest extends TestCase
         $valid = new Uganda($this->directory);
         $this->assertCount(1, $valid->villages());
 
-        file_put_contents($this->directory . '/villages.json',
-            '[{"id":"1","name":"Village","parish":"999"}]');
+        file_put_contents(
+            $this->directory . '/villages.json',
+            '[{"id":"1","name":"Village","parish":"999"}]'
+        );
         $this->expectException(\UnexpectedValueException::class);
         $this->expectExceptionMessage('Orphan village');
         new Uganda($this->directory);

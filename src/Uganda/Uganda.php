@@ -299,8 +299,13 @@ final class Uganda
                 $parent = (int) $row[$parentKey];
                 if (!isset($ids[$parentLevel][$parent])) {
                     throw new \UnexpectedValueException(
-                        sprintf('Orphan %s record %s: unknown %s %d',
-                            $level, (string) $row['id'], $parentLevel, $parent)
+                        sprintf(
+                            'Orphan %s record %s: unknown %s %d',
+                            $level,
+                            (string) $row['id'],
+                            $parentLevel,
+                            $parent
+                        )
                     );
                 }
             }
