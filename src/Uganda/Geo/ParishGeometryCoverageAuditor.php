@@ -20,6 +20,9 @@ final class ParishGeometryCoverageAuditor
      */
     public function audit(array $features, array $snapshot, array $decisions, array $unresolvedSourceIds = []): array
     {
+        if (array_keys($unresolvedSourceIds) !== array_keys(array_values($unresolvedSourceIds))) {
+            throw new InvalidArgumentException('Unresolved source IDs must be an indexed list');
+        }
         $mapping = (new ParishBoundaryMatcher())->match($features, $snapshot, $decisions);
         $sourceIds = $mapping['unmatched_source_object_ids'];
         if (!is_array($sourceIds)) {
