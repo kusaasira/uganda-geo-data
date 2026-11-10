@@ -48,6 +48,22 @@ final class GeometryExportFields
             }
             $ids[$original['unit_id']] = true;
             GeometryContract::assertGeometry($feature['geometry']);
+            $geometry = $feature['geometry'];
+            // The published distribution is intentionally two-dimensional.
+            // Reject elevations rather than allowing a GIS driver to remove Z.
+            /** @var array<int, array<int, array<int, array<int, int|float>>>> $polygons */
+            $polygons = $geometry['type'] === 'Polygon'
+                ? [$geometry['coordinates']]
+                : $geometry['coordinates'];
+            foreach ($polygons as $polygon) {
+                foreach ($polygon as $ring) {
+                    foreach ($ring as $position) {
+                        if (count($position) !== 2) {
+                            throw new InvalidArgumentException('Expected two-dimensional parish coordinates');
+                        }
+                    }
+                }
+            }
             $features[] = [
                 'type' => 'Feature',
                 'id' => $original['unit_id'],
