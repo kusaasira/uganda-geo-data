@@ -73,7 +73,16 @@ final class GeometryArchive
                 throw new RuntimeException('Unable to reopen GIS archive for validation');
             }
             try {
-                foreach ($manifest['artifacts'] as $item) {
+                $items = $manifest['artifacts'] ?? null;
+                if (!is_array($items)) {
+                    throw new RuntimeException('Malformed archive artifact manifest');
+                }
+                foreach ($items as $item) {
+                    if (!is_array($item) || !is_string($item['path'] ?? null)
+                        || !is_string($item['sha256'] ?? null)
+                        || !is_int($item['bytes'] ?? null)) {
+                        throw new RuntimeException('Malformed archive artifact entry');
+                    }
                     $raw = $check->getFromName($item['path']);
                     if (!is_string($raw) || strlen($raw) !== $item['bytes']
                         || hash('sha256', $raw) !== $item['sha256']) {
