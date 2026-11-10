@@ -26,6 +26,9 @@ try {
     }
 
     $median = static function (array $values): float {
+        if (count($values) !== 3) {
+            throw new InvalidArgumentException('Missing benchmark sample measurement');
+        }
         foreach ($values as $value) {
             if ((!is_int($value) && !is_float($value)) || !is_finite((float) $value) || $value < 0) {
                 throw new InvalidArgumentException('Invalid benchmark measurement');
