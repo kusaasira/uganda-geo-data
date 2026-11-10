@@ -19,7 +19,7 @@ final class PackageMetadataTest extends TestCase
         $this->assertSame('kusaasira/uganda-geo', $composer['name']);
         $this->assertSame('MIT', $composer['license']);
         $this->assertSame('^8.2', $composer['require']['php']);
-        $this->assertSame('src/Uganda/', $composer['autoload']['psr-4']['Uganda\\\\']);
+        $this->assertSame('src/Uganda/', $composer['autoload']['psr-4']['Uganda' . chr(92)]);
     }
 
     /** @test */
