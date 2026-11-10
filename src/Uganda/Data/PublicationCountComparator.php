@@ -22,13 +22,25 @@ final class PublicationCountComparator
             !is_array($older['counts']) || !is_array($newer['counts'])) {
             throw new InvalidArgumentException('Both publications require identifiers and count dictionaries');
         }
+        if ($mappings === [] || array_keys($mappings) !== array_keys(array_values($mappings))) {
+            throw new InvalidArgumentException('Publication comparisons require a nonempty mapping list');
+        }
         $output = [];
+        $seen = [];
         foreach ($mappings as $index => $mapping) {
+            if (!is_array($mapping)) {
+                throw new InvalidArgumentException("Invalid comparison mapping at index $index");
+            }
             $a = $mapping['older'] ?? null;
             $b = $mapping['newer'] ?? null;
             if (!is_string($a) || !is_string($b) || !isset($older['counts'][$a], $newer['counts'][$b])) {
                 throw new InvalidArgumentException("Missing reference category in comparison at index $index");
             }
+            $key = $a . ':' . $b;
+            if (isset($seen[$key])) {
+                throw new InvalidArgumentException("Duplicate publication category comparison at index $index");
+            }
+            $seen[$key] = true;
             $previous = $older['counts'][$a];
             $current = $newer['counts'][$b];
             if (!is_int($previous) || !is_int($current) || $previous < 0 || $current < 0 ||
