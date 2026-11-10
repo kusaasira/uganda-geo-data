@@ -1,0 +1,105 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "legacy:parish:100",
+      "properties": {
+        "unit_id": "legacy:parish:100",
+        "parent_id": "legacy:subcounty:20",
+        "source_id": "geometry-fixture",
+        "src_obj_id": "100",
+        "evid_date": "2024-05-01"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              0
+            ],
+            [
+              32.1,
+              0
+            ],
+            [
+              32.1,
+              0.1
+            ],
+            [
+              32,
+              0.1
+            ],
+            [
+              32,
+              0
+            ]
+          ],
+          [
+            [
+              32.02,
+              0.02
+            ],
+            [
+              32.040000000000006,
+              0.02
+            ],
+            [
+              32.040000000000006,
+              0.04
+            ],
+            [
+              32.02,
+              0.04
+            ],
+            [
+              32.02,
+              0.02
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "legacy:parish:101",
+      "properties": {
+        "unit_id": "legacy:parish:101",
+        "parent_id": "legacy:subcounty:20",
+        "source_id": "geometry-fixture",
+        "src_obj_id": "101",
+        "evid_date": "2024-05-01"
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                32.2,
+                0
+              ],
+              [
+                32.300000000000004,
+                0
+              ],
+              [
+                32.300000000000004,
+                0.1
+              ],
+              [
+                32.2,
+                0.1
+              ],
+              [
+                32.2,
+                0
+              ]
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
