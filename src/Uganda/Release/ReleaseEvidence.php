@@ -83,6 +83,11 @@ final class ReleaseEvidence
                 || $coverage['canonical_parish_ward_count'] < $coverage['verified_count']) {
                 throw new InvalidArgumentException('Invalid parish mapping evidence');
             }
+            $canonicalParishes = $canonical['counts_by_level']['parish'] ?? 0;
+            $canonicalWards = $canonical['counts_by_level']['ward'] ?? 0;
+            if ($coverage['canonical_parish_ward_count'] !== $canonicalParishes + $canonicalWards) {
+                throw new InvalidArgumentException('Coverage report references a different canonical parish/ward inventory');
+            }
             $matches = $coverage['verified_matches'] ?? null;
             $unmapped = $coverage['unmapped_canonical_unit_ids'] ?? null;
             $unmatched = $coverage['unmatched_source_object_ids'] ?? null;
