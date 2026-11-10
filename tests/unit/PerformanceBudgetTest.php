@@ -40,4 +40,21 @@ final class PerformanceBudgetTest extends TestCase
             ['constructor_ms' => 500, 'index_warmup_ms' => 200, 'memory_peak_bytes' => 1024]
         );
     }
+    /** @test */
+    public function itAllowsAnExactBudgetWithoutFalseRejection(): void
+    {
+        $budgets = ['constructor_ms' => 750, 'index_warmup_ms' => 250, 'memory_peak_bytes' => 167772160];
+        self::assertSame([], (new PerformanceBudget())->violations($budgets, $budgets));
+    }
+
+    /** @test */
+    public function itRejectsNonFiniteMeasurements(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        (new PerformanceBudget())->violations(
+            ['constructor_ms' => INF, 'index_warmup_ms' => 5, 'memory_peak_bytes' => 100],
+            ['constructor_ms' => 750, 'index_warmup_ms' => 250, 'memory_peak_bytes' => 167772160]
+        );
+    }
+
 }
