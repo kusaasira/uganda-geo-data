@@ -90,13 +90,19 @@ async function initialize() {
       if (!Number.isSafeInteger(info.reviewed) || !Number.isSafeInteger(info.total)
           || !Number.isSafeInteger(info.unmapped) || info.total < 0 || info.reviewed < 0
           || info.unmapped < 0 || info.reviewed + info.unmapped !== info.total
+          || !Number.isSafeInteger(info.source_feature_count)
+          || !Number.isSafeInteger(info.unmatched_source_features)
+          || info.source_feature_count < 0 || info.unmatched_source_features < 0
+          || info.source_feature_count !== info.reviewed + info.unmatched_source_features
+          || !["complete", "incomplete"].includes(info.matching_status)
           || info.scope !== "supplied_canonical_snapshot_only"
           || info.national_coverage !== "unverified") {
         throw new Error("Invalid reviewed geometry coverage summary");
       }
       coverage.textContent = info.reviewed + " of " + info.total
         + " parishes/wards mapped in supplied snapshot · "
-        + info.unmapped + " unmapped · national coverage unverified";
+        + info.unmapped + " unmapped · " + info.unmatched_source_features
+        + " source polygons unresolved · national coverage unverified";
     } else {
       coverage.textContent = "Reviewed geometry coverage not supplied · national coverage unverified";
     }
