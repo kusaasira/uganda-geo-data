@@ -35,20 +35,28 @@ final class ReleaseReadiness
             throw new InvalidArgumentException('Expected full Git commit SHA for readiness check');
         }
         $matchesCommit = ($attestation['integration_sha'] ?? null) === $actualSha;
-        $verified = [];
+        $attested = [];
         $blockers = [];
         $evidence = $attestation['gates'] ?? null;
         if (!is_array($evidence)) {
             $evidence = [];
         }
+        if (($attestation['schema_version'] ?? null) !== 1) {
+            $blockers[] = 'schema_version';
+        }
+        if (array_diff(array_keys($evidence), self::GATES) !== []) {
+            $blockers[] = 'unexpected_gate_attestation';
+        }
         foreach (self::GATES as $name) {
             $claim = $evidence[$name] ?? null;
             $status = is_array($claim) ? ($claim['status'] ?? null) : null;
             $url = is_array($claim) ? ($claim['evidence_url'] ?? null) : null;
-            $valid = $status === 'verified' && is_string($url)
+            // A valid URL is an attested evidence POINTER, not evidence
+            // that the linked document is accurate or approved.
+            $valid = $status === 'attested' && is_string($url)
                 && filter_var($url, FILTER_VALIDATE_URL) !== false
                 && parse_url($url, PHP_URL_SCHEME) === 'https';
-            $verified[$name] = $valid;
+            $attested[$name] = $valid;
             if (!$valid) {
                 $blockers[] = $name;
             }
@@ -58,12 +66,12 @@ final class ReleaseReadiness
         }
         return [
             'integration_sha' => $actualSha,
-            'commit_verified' => $matchesCommit,
-            'gates' => $verified,
+            'attestation_matches_checkout' => $matchesCommit,
+            'gate_attestations' => $attested,
             'blocked_by' => $blockers,
-            'status' => $blockers === [] ? 'evidence_complete_pending_human_verification' : 'blocked',
+            'status' => $blockers === [] ? 'attestations_supplied_pending_independent_review' : 'blocked',
             'release_ready' => false,
-            'limitations' => 'Links and attestations require independent inspection. This report never authorizes tagging, merging or publication.',
+            'limitations' => 'Complete evidence links are unverified attestations. This report never authorizes tagging, merging or publication.',
         ];
     }
 }
