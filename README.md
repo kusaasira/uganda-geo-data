@@ -26,10 +26,10 @@ In order to run this project, ensure that you have installed;
 
 ## Installation
 
-Install with Composer. **Important:** the currently published stable tag, `v1.0.0`, exposes the older `Uganda\\Geo` API. The `Uganda\\Uganda` examples below describe the development branch and must not be presented as installation instructions for that stable tag. Do not migrate production consumers until a compatible v2 tag is available.
+Install with Composer. **Important:** the currently published stable tag, `v1.0.0`, exposes the older `Uganda\Geo` API. The `Uganda\Uganda` examples below describe the development branch and must not be presented as installation instructions for that stable tag. Do not migrate production consumers until a compatible v2 tag is available.
 
-```
-$ composer require kusaasira/uganda-geo
+```bash
+composer require kusaasira/uganda-geo
 ```
 
 ## Usage
@@ -161,7 +161,8 @@ Use source IDs for identity and parent-scoped searches for repeated place names:
 ```php
 $district = $uganda->district('Mukono');
 $sameDistrict = $uganda->findById('district', $district->id());
-$parishes = $uganda->searchByName('parish', 'Central', $subCountyId);
+$subCounty = $uganda->subCounty('Namasale Town Council');
+$parishes = $uganda->searchByName('parish', 'Central', $subCounty->id());
 ```
 
 Name-only global lookups can raise `AmbiguousLocationException`. Collection keys in the next major release are source IDs rather than normalized place names. The historical numeric IDs are not established official UBOS codes. See [v1-to-v2 migration](docs/migration/v1-to-v2.md).
