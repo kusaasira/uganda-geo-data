@@ -1,0 +1,28 @@
+name: Consumer installation
+
+on:
+  pull_request:
+    branches: [main, next/2.x]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  install:
+    name: Composer consumer / PHP 8.4 / ${{ matrix.consumer }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        consumer: [standalone, laravel]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: json
+          tools: composer:v2
+          coverage: none
+      - name: Verify independent installation
+        run: php tools/ci/consumer-install.php ${{ matrix.consumer == 'laravel' && '--laravel' || '' }}
