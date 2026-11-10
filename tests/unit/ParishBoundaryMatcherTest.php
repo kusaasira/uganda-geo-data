@@ -69,4 +69,17 @@ final class ParishBoundaryMatcherTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         (new ParishBoundaryMatcher())->match($this->features(), $this->snapshot(), [$one, $two]);
     }
+    /** @test */
+    public function unmatchedSourceObjectIdsAreConsistentlyStrings(): void
+    {
+        $report = (new ParishBoundaryMatcher())->match($this->features(), $this->snapshot());
+        $this->assertSame(['10', '11'], $report['unmatched_source_object_ids']);
+    }
+
+    /** @test */
+    public function emptyInputsCannotClaimCompleteGeographicCoverage(): void
+    {
+        $report = (new ParishBoundaryMatcher())->match([], ['units' => []]);
+        $this->assertSame('incomplete', $report['status']);
+    }
 }
