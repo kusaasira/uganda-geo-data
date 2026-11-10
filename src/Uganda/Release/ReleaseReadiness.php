@@ -19,7 +19,7 @@ final class ReleaseReadiness
         'snapshot_and_asset_checksums',
         'release_notes_and_migration',
         'maintainer_release_approval',
-        'published_tag_install_smoke',
+        'prerelease_tag_install_smoke',
     ];
 
     /**
