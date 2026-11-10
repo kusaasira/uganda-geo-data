@@ -14,8 +14,18 @@ if ($argc < 4) {
 try {
     $manifest = (new ArtifactManifest())->build($argv[1], array_slice($argv, 3));
     $json = json_encode($manifest, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n";
-    if (file_put_contents($argv[2], $json) === false) {
-        throw new RuntimeException('Could not write release manifest');
+    // Use an exclusive create to prevent overwriting a published manifest or
+    // following an existing output symlink.
+    $handle = fopen($argv[2], 'x');
+    if ($handle === false) {
+        throw new RuntimeException('Manifest destination already exists or is not writable');
+    }
+    try {
+        if (fwrite($handle, $json) !== strlen($json)) {
+            throw new RuntimeException('Could not write complete release manifest');
+        }
+    } finally {
+        fclose($handle);
     }
     fwrite(STDOUT, "Release checksum manifest generated\n");
 } catch (Throwable $error) {
