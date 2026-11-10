@@ -6,11 +6,11 @@ namespace Uganda;
 
 use Uganda\Exceptions\AmbiguousLocationException;
 use Uganda\Exceptions\CountyNotFoundException;
-use Uganda\Lookup\LocationIndex;
 use Uganda\Exceptions\DistrictNotFoundException;
 use Uganda\Exceptions\ParishNotFoundException;
 use Uganda\Exceptions\SubCountyNotFoundException;
 use Uganda\Exceptions\VillageNotFoundException;
+use Uganda\Lookup\LocationIndex;
 
 final class Uganda
 {
