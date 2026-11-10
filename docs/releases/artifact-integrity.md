@@ -6,8 +6,10 @@ Release assets are built outside the source tree, then bound to immutable SHA-25
 
 ```bash
 php tools/release/create-manifest.php build/release build/release-manifest.json dataset.json polygons.geojson
-php tools/release/verify-manifest.php build/release build/release-manifest.json
+php tools/release/verify-manifest.php build/release build/release-manifest.json dataset.json polygons.geojson
 ```
+
+Both commands require a nonempty explicit artifact inventory. The verification command compares the required file list with the manifest as well as checking every hash, so a missing expected dataset or boundary file cannot silently pass. The creation command refuses to overwrite an existing manifest.
 
 A manifest proves which bytes were checked. It does not establish that the data is correct, authoritative, licensed for distribution or compatible with consumers. The release captain must also verify package installation, data reconciliation, geometry topology, source terms and user-visible migration documentation before tagging a stable version.
 
