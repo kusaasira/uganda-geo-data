@@ -22,14 +22,20 @@ final class ExplorerIndexBuilder
             || trim($snapshot['snapshot_id']) === ''
             || !isset($snapshot['source_ids']) || !is_array($snapshot['source_ids'])
             || $snapshot['source_ids'] === []
-            || count(array_unique($snapshot['source_ids'])) !== count($snapshot['source_ids'])
             || !isset($snapshot['units']) || !is_array($snapshot['units'])) {
             throw new InvalidArgumentException('Expected a versioned canonical snapshot with non-empty identity and units');
         }
+        if (array_keys($snapshot['source_ids']) !== range(0, count($snapshot['source_ids']) - 1)
+            || ($snapshot['units'] !== []
+                && array_keys($snapshot['units']) !== range(0, count($snapshot['units']) - 1))) {
+            throw new InvalidArgumentException('Canonical sources and units must be indexed lists');
+        }
+        $knownSources = [];
         foreach ($snapshot['source_ids'] as $sourceId) {
-            if (!is_string($sourceId) || trim($sourceId) === '') {
-                throw new InvalidArgumentException('Invalid canonical source identifier');
+            if (!is_string($sourceId) || trim($sourceId) === '' || isset($knownSources[$sourceId])) {
+                throw new InvalidArgumentException('Invalid or duplicate canonical source identifier');
             }
+            $knownSources[$sourceId] = true;
         }
         $index = [];
         foreach ($snapshot['units'] as $unit) {
@@ -39,7 +45,7 @@ final class ExplorerIndexBuilder
                 || !is_string($unit['level']) || trim($unit['level']) === ''
                 || !array_key_exists('parent_id', $unit)
                 || !isset($unit['source_id']) || !is_string($unit['source_id'])
-                || !in_array($unit['source_id'], $snapshot['source_ids'], true)
+                || !isset($knownSources[$unit['source_id']])
                 || isset($index[$unit['id']])) {
                 throw new InvalidArgumentException('Invalid or duplicate canonical unit');
             }
