@@ -24,4 +24,20 @@ final class PublicEndpointCatalogueTest extends TestCase
             $this->assertGreaterThan(0, $entry['max_record_count']);
         }
     }
+    /** @test */
+    public function rejectsLayerMetadataThatChangesObjectIdOrRequiredFields(): void
+    {
+        $metadata = [
+            'id' => 1,
+            'name' => 'Uganda_2024_Parishes',
+            'geometryType' => 'esriGeometryPolygon',
+            'objectIdField' => 'OBJECTID',
+            'maxRecordCount' => 2000,
+            'extent' => ['spatialReference' => ['wkid' => 102100]],
+            'fields' => [['name' => 'FID']],
+        ];
+        $catalogue = json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/resources/geometry/endpoints.json'), true, 512, JSON_THROW_ON_ERROR);
+        $this->expectException(\RuntimeException::class);
+        \Uganda\Geo\ArcGisLayerMetadata::assertMatches($metadata, $catalogue['endpoints'][0]);
+    }
 }
