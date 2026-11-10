@@ -45,6 +45,30 @@ final class PolygonTopologyAuditorTest extends TestCase
     }
 
     /** @test */
+    public function catchesHoleCrossingExteriorEvenWhenFirstVertexIsInside(): void
+    {
+        $geometry = ['type' => 'Polygon', 'coordinates' => [
+            [[0, 0], [4, 0], [4, 4], [0, 4], [0, 0]],
+            [[1, 1], [5, 1], [5, 2], [1, 2], [1, 1]],
+        ]];
+
+        $issues = (new PolygonTopologyAuditor())->audit($geometry)['issues'];
+        $this->assertContains('hole_outside_exterior', array_column($issues, 'code'));
+    }
+
+    /** @test */
+    public function rejectsHolesTouchingTheExteriorRing(): void
+    {
+        $geometry = ['type' => 'Polygon', 'coordinates' => [
+            [[0, 0], [4, 0], [4, 4], [0, 4], [0, 0]],
+            [[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]],
+        ]];
+
+        $issues = (new PolygonTopologyAuditor())->audit($geometry)['issues'];
+        $this->assertContains('hole_outside_exterior', array_column($issues, 'code'));
+    }
+
+    /** @test */
     public function includesEveryPartOfAMultipolygon(): void
     {
         $one = [[0, 0], [2, 0], [2, 2], [0, 0]];
