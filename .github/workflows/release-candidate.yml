@@ -1,0 +1,47 @@
+name: Verify v2 release candidate
+
+on:
+  pull_request:
+    branches: [next/2.x]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Candidate tag label (verification only; no tag will be created)'
+        required: true
+        default: 'v2.0.0-rc.1'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  candidate:
+    name: Offline candidate dry run
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Assemble candidate notes and dataset validation
+        env:
+          CANDIDATE: ${{ inputs.version || 'v2.0.0-rc.1' }}
+        run: |
+          set -euo pipefail
+          mkdir -p build/candidate
+          php tools/release/build-notes.php resources/releases/v2-notes.json "$CANDIDATE" build/candidate/RELEASE_NOTES.md
+          php tools/data/import-legacy.php src/Uganda/Data build/candidate/canonical.json
+          php tools/data/validate-canonical.php build/candidate/canonical.json src/Uganda/Data > build/candidate/qa.json
+          php tools/release/create-manifest.php build/candidate build/candidate-manifest.json RELEASE_NOTES.md canonical.json qa.json
+          php tools/release/verify-manifest.php build/candidate build/candidate-manifest.json RELEASE_NOTES.md canonical.json qa.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v2-release-candidate-dry-run
+          path: |
+            build/candidate/RELEASE_NOTES.md
+            build/candidate/qa.json
+            build/candidate-manifest.json
+          retention-days: 7
