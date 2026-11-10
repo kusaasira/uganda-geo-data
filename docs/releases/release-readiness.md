@@ -5,15 +5,18 @@ attestation bound to the exact next/2.x or main commit, with independently
 reviewed HTTPS evidence for each mandatory gate.
 
     php tools/release/assess-readiness.php resources/releases/readiness-template.json
-    php tools/release/assess-readiness.php approved-evidence.json --enforce
+    php tools/release/assess-readiness.php approved-evidence.json --require-attestations
 
 The default template intentionally has no accepted gates and must report
-blocked. The optional --enforce flag returns nonzero when required evidence
-is missing, malformed or not tied to the current Git HEAD.
+blocked. The optional --require-attestations flag returns nonzero when required
+evidence pointers are missing, malformed or not tied to the checked-out
+repository commit. It validates the structure of attestations only and does
+not confirm that the URLs actually support the claims.
 
 Even a fully populated evidence file reports
-evidence_complete_pending_human_verification and release_ready=false.
-It is a review inventory, not a publishing authorization. The maintainer
+attestations_supplied_pending_independent_review and release_ready=false.
+It is a review inventory, not a publishing authorization. A green inventory
+workflow merely proves the pending-state handling works. The maintainer
 must independently inspect the linked CI runs, data provenance, geometry
 topology, format round trips, source rights, package installation, release
 notes and approvals.
