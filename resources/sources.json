@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "catalogue_id": "uganda-geo-source-registry",
+  "sources": [
+    {
+      "id": "legacy-bundled",
+      "kind": "legacy_snapshot",
+      "publisher": "Uganda Geo contributors",
+      "url": "https://github.com/kusaasira/uganda-geo-data/tree/main/src/Uganda/Data",
+      "reference_label": "Current bundled hierarchy, historical collection date unknown",
+      "reference_date": null,
+      "retrieved_at": null,
+      "redistribution_status": "unverified",
+      "notes": "Legacy numeric identifiers are package-local until evidence establishes an external authority."
+    },
+    {
+      "id": "ubos-nphc-2024",
+      "kind": "official_statistics",
+      "publisher": "Uganda Bureau of Statistics",
+      "url": "https://statistics.ubos.org/nphc/report",
+      "reference_label": "2024 National Population and Housing Census",
+      "reference_date": null,
+      "retrieved_at": null,
+      "redistribution_status": "unverified",
+      "notes": "Census statistical classifications and publication reference dates must be recorded separately."
+    },
+    {
+      "id": "ubos-abstract-2024",
+      "kind": "official_statistics",
+      "publisher": "Uganda Bureau of Statistics",
+      "url": "https://www.ubos.org/wp-content/uploads/publications/The-Annual-Statistical-Abstract-2024.pdf",
+      "reference_label": "2024 Annual Statistical Abstract",
+      "reference_date": null,
+      "retrieved_at": null,
+      "redistribution_status": "unverified",
+      "notes": "Counts in the abstract are not interchangeable with differently grouped census totals."
+    },
+    {
+      "id": "arcgis-uganda-parishes-2024",
+      "kind": "third_party_geometry",
+      "publisher": "ArcGIS service publisher, identity pending verification",
+      "url": "https://services1.arcgis.com/49FlB10KwAxJa07X/ArcGIS/rest/services/Map_2_June_WFL1/FeatureServer/1",
+      "reference_label": "Uganda_2024_Parishes feature layer",
+      "reference_date": null,
+      "retrieved_at": null,
+      "redistribution_status": "unverified",
+      "notes": "Public ArcGIS feature accessibility does not establish UBOS ownership or redistribution terms; CRS advertised as EPSG:3857."
+    }
+  ]
+}

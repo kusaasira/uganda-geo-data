@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Uganda;
 
+use Uganda\Exceptions\AmbiguousLocationException;
+
 use Uganda\Exceptions\VillageNotFoundException;
 
 final class Parish
@@ -14,14 +16,14 @@ final class Parish
 
     private int $subCountyId;
 
-    /** @var array<string, Village> */
+    /** @var array<int|string, Village> */
     private array $villages;
 
     /**
      * @param int $id
      * @param string $name
      * @param int $subCountyId
-     * @param array<string, Village> $villages
+     * @param array<int|string, Village> $villages
      */
     public function __construct(int $id, string $name, int $subCountyId, array $villages = [])
     {
@@ -46,7 +48,7 @@ final class Parish
         return $this->subCountyId;
     }
 
-    /** @return array<string, Village> */
+    /** @return array<int|string, Village> */
     public function villages(): array
     {
         return $this->villages;
@@ -57,11 +59,24 @@ final class Parish
      */
     public function village(string $name): Village
     {
-        if (!array_key_exists(strtolower($name), $this->villages)) {
-            throw new VillageNotFoundException(sprintf('unable to locate village called %s', $name));
+        $matches = [];
+        foreach ($this->villages() as $candidate) {
+            if (strtolower(trim($candidate->name())) === strtolower(trim($name))) {
+                $matches[] = $candidate;
+            }
+        }
+        if (count($matches) > 1) {
+            throw new AmbiguousLocationException(sprintf(
+                'multiple village records match %s; use an ID or parent-scoped lookup',
+                $name
+            ));
         }
 
-        return $this->villages[strtolower($name)];
+        if (isset($matches[0])) {
+            return $matches[0];
+        }
+
+        throw new VillageNotFoundException(sprintf('unable to locate village called %s', $name));
     }
 
     /** @return array<string, array<array<string, int|string>>|int|string> */

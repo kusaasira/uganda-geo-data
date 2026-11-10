@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Browse Uganda administrative units by stable ID and parent context.">
+<title>Uganda Geo | Administrative Explorer</title>
+<link rel="stylesheet" href="assets/style.css">
+<script src="assets/app.js" defer></script>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <p class="eyebrow">Uganda Geo · Administrative Explorer</p>
+    <h1>Explore administrative locations</h1>
+    <p>Search source locations by name or ID, inspect their hierarchy and identify duplicate names safely.</p>
+  </header>
+  <section class="panel" aria-label="Location search">
+    <div class="controls">
+      <label>Search by name or ID<input type="search" id="query" placeholder="District, parish, village or source ID" autocomplete="off"></label>
+      <label>Administrative level<select id="level"><option value="">All levels</option></select></label>
+    </div>
+    <p id="status" role="status" aria-live="polite">Loading local dataset…</p>
+    <p id="coverage" role="status" aria-live="polite">Reviewed geometry coverage is not available.</p>
+    <div class="layout">
+      <ul id="results" aria-label="Matching administrative units"></ul>
+      <aside id="details" aria-label="Selected location details"><p>Select a result to view its source ID and parent hierarchy.</p></aside>
+    </div>
+  </section>
+  <footer><small id="source">This is a dated source snapshot. Names and boundaries require official verification.</small></footer>
+</main>
+</body>
+</html>

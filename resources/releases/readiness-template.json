@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "integration_sha": null,
+  "note": "Template only; do not mark verified without independent evidence for the exact commit",
+  "gates": {
+    "all_integrated_ci_checks": {
+      "status": "pending",
+      "evidence_url": null
+    },
+    "canonical_conservation": {
+      "status": "pending",
+      "evidence_url": null
+    },
+    "source_provenance_and_currency": {
+      "status": "pending",
+      "evidence_url": null
+    },
+    "parish_geometry_identity_and_topology": {
+      "status": "pending",
+      "evidence_url": null
+    },
+    "gis_format_roundtrip": {
+      "status": "pending",
+      "evidence_url": null
+    },
+    "geometry_redistribution_rights": {
+      "status": "pending",
+      "evidence_url": null
+    },
+    "standalone_and_laravel_consumer_install": {
+      "status": "pending",
+      "evidence_url": null
+    },
+    "snapshot_and_asset_checksums": {
+      "status": "pending",
+      "evidence_url": null
+    },
+    "release_notes_and_migration": {
+      "status": "pending",
+      "evidence_url": null
+    },
+    "maintainer_release_approval": {
+      "status": "pending",
+      "evidence_url": null
+    },
+    "prerelease_tag_install_smoke": {
+      "status": "pending",
+      "evidence_url": null
+    }
+  }
+}

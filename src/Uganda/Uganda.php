@@ -4,26 +4,34 @@ declare(strict_types=1);
 
 namespace Uganda;
 
+use Uganda\Data\JsonDatasetLoader;
+use Uganda\Exceptions\AmbiguousLocationException;
 use Uganda\Exceptions\CountyNotFoundException;
 use Uganda\Exceptions\DistrictNotFoundException;
 use Uganda\Exceptions\ParishNotFoundException;
 use Uganda\Exceptions\SubCountyNotFoundException;
 use Uganda\Exceptions\VillageNotFoundException;
+use Uganda\Lookup\LocationIndex;
 
 final class Uganda
 {
     /**
-     * @var array<string, District>
+     * @var array<int, District>
      */
     private array $districts;
 
-    public function __construct()
+    private ?LocationIndex $locationIndex = null;
+
+    private string $sourceDirectory;
+
+    public function __construct(?string $sourceDirectory = null)
     {
+        $this->sourceDirectory = $sourceDirectory ?? __DIR__ . '/Data';
         $this->districts = $this->generateTree();
     }
 
     /**
-     * @return array<string, District>
+     * @return array<int, District>
      */
     public function districts(): array
     {
@@ -35,11 +43,19 @@ final class Uganda
      */
     public function district(string $name): District
     {
-        if (!array_key_exists(strtolower($name), $this->districts)) {
-            throw new DistrictNotFoundException(sprintf('unable to locate district called %s', $name));
+        $matches = $this->searchByName('district', $name);
+        if (count($matches) > 1) {
+            throw new AmbiguousLocationException(sprintf(
+                'multiple district records match %s; use an ID or parent-scoped lookup',
+                $name
+            ));
         }
 
-        return $this->districts[strtolower($name)];
+        if (isset($matches[0]) && $matches[0] instanceof District) {
+            return $matches[0];
+        }
+
+        throw new DistrictNotFoundException(sprintf('unable to locate district called %s', $name));
     }
 
     /**
@@ -59,15 +75,19 @@ final class Uganda
      */
     public function county(string $name): County
     {
-        foreach ($this->districts() as $district) {
-            try {
-                return $district->county($name);
-            } catch (CountyNotFoundException $exception) {
-                continue;
-            }
+        $matches = $this->searchByName('county', $name);
+        if (count($matches) > 1) {
+            throw new AmbiguousLocationException(sprintf(
+                'multiple county records match %s; use an ID or parent-scoped lookup',
+                $name
+            ));
         }
 
-        throw new CountyNotFoundException();
+        if (isset($matches[0]) && $matches[0] instanceof County) {
+            return $matches[0];
+        }
+
+        throw new CountyNotFoundException(sprintf('unable to locate county called %s', $name));
     }
 
     /** @return array<int, SubCounty> */
@@ -85,15 +105,19 @@ final class Uganda
      */
     public function subCounty(string $name): SubCounty
     {
-        foreach ($this->counties() as $county) {
-            try {
-                return $county->subCounty($name);
-            } catch (SubCountyNotFoundException $exception) {
-                continue;
-            }
+        $matches = $this->searchByName('subcounty', $name);
+        if (count($matches) > 1) {
+            throw new AmbiguousLocationException(sprintf(
+                'multiple sub county records match %s; use an ID or parent-scoped lookup',
+                $name
+            ));
         }
 
-        throw new SubCountyNotFoundException();
+        if (isset($matches[0]) && $matches[0] instanceof SubCounty) {
+            return $matches[0];
+        }
+
+        throw new SubCountyNotFoundException(sprintf('unable to locate sub county called %s', $name));
     }
 
     /** @return array<int, Parish> */
@@ -111,16 +135,19 @@ final class Uganda
      */
     public function parish(string $name): Parish
     {
-        $name = strtolower($name);
-        foreach ($this->subCounties() as $subCounty) {
-            try {
-                return $subCounty->parish($name);
-            } catch (ParishNotFoundException $exception) {
-                continue;
-            }
+        $matches = $this->searchByName('parish', $name);
+        if (count($matches) > 1) {
+            throw new AmbiguousLocationException(sprintf(
+                'multiple parish records match %s; use an ID or parent-scoped lookup',
+                $name
+            ));
         }
 
-        throw new ParishNotFoundException();
+        if (isset($matches[0]) && $matches[0] instanceof Parish) {
+            return $matches[0];
+        }
+
+        throw new ParishNotFoundException(sprintf('unable to locate parish called %s', $name));
     }
 
     /** @return array<int, Village> */
@@ -138,49 +165,100 @@ final class Uganda
      */
     public function village(string $name): Village
     {
-        foreach ($this->parishes() as $parish) {
-            try {
-                return $parish->village($name);
-            } catch (VillageNotFoundException $exception) {
-                continue;
-            }
+        $matches = $this->searchByName('village', $name);
+        if (count($matches) > 1) {
+            throw new AmbiguousLocationException(sprintf(
+                'multiple village records match %s; use an ID or parent-scoped lookup',
+                $name
+            ));
         }
 
-        throw new VillageNotFoundException();
+        if (isset($matches[0]) && $matches[0] instanceof Village) {
+            return $matches[0];
+        }
+
+        throw new VillageNotFoundException(sprintf('unable to locate village called %s', $name));
     }
 
-    /** @return array<string, District> */
+    public function findById(string $level, int $id): ?object
+    {
+        return $this->index()->byId($level, $id);
+    }
+
+    /** @return array<int, object> */
+    public function searchByName(string $level, string $name, ?int $parentId = null): array
+    {
+        return $this->index()->byName($level, $name, $parentId);
+    }
+
+    /** @return array<int, object> */
+    public function childrenOf(string $level, int $parentId): array
+    {
+        return $this->index()->childrenOf($level, $parentId);
+    }
+
+    /** @return array<int, object> */
+    public function ancestorsOf(string $level, int $id): array
+    {
+        return $this->index()->ancestorsOf($level, $id);
+    }
+
+    private function index(): LocationIndex
+    {
+        if ($this->locationIndex === null) {
+            $this->locationIndex = new LocationIndex($this->districts);
+        }
+
+        return $this->locationIndex;
+    }
+
+    /** @return array<int, District> */
     private function generateTree(): array
     {
         /** @var array<int, array<string, string>> $villages */
-        $villages = $this->getFileContents(__DIR__ . '/Data/villages.json');
+        $villages = $this->getFileContents($this->sourceDirectory . '/villages.json');
 
         /** @var array<int, array<string, string>> $parishes */
-        $parishes = $this->getFileContents(__DIR__ . '/Data/parishes.json');
+        $parishes = $this->getFileContents($this->sourceDirectory . '/parishes.json');
 
         /** @var array<int, array<string, string>> $subCounties */
-        $subCounties = $this->getFileContents(__DIR__ . '/Data/sub_counties.json');
+        $subCounties = $this->getFileContents($this->sourceDirectory . '/sub_counties.json');
 
         /** @var array<int, array<string, string>> $counties */
-        $counties = $this->getFileContents(__DIR__ . '/Data/counties.json');
+        $counties = $this->getFileContents($this->sourceDirectory . '/counties.json');
 
         /** @var array<int, array<string, string>> $districts */
-        $districts = $this->getFileContents(__DIR__ . '/Data/districts.json');
+        $districts = $this->getFileContents($this->sourceDirectory . '/districts.json');
 
-        /** @var array<string, array<string, Village>> $mappedVillages */
+        $this->validateHierarchyReferences($villages, $parishes, $subCounties, $counties, $districts);
+
+        // Keep the source identity distinct from the display name.
+        // Reject duplicate IDs rather than silently overwriting records.
+        $seenIds = [];
+        /** @var array<int, array<int, Village>> $mappedVillages */
         $mappedVillages = [];
         foreach ($villages as $village) {
-            $mappedVillages[$village['parish']][strtolower($village['name'])] = new Village(
+            $id = (int) $village['id'];
+            if (isset($seenIds['village'][$id])) {
+                throw new \UnexpectedValueException('Duplicate village ID: ' . $id);
+            }
+            $seenIds['village'][$id] = true;
+            $mappedVillages[$village['parish']][$id] = new Village(
                 (int) $village['id'],
                 $village['name'],
                 (int) $village['parish']
             );
         }
 
-        /** @var array<string, array<string, Parish>> $mappedParishes */
+        /** @var array<int, array<int, Parish>> $mappedParishes */
         $mappedParishes = [];
         foreach ($parishes as $parish) {
-            $mappedParishes[$parish['subcounty']][strtolower($parish['name'])] = new Parish(
+            $id = (int) $parish['id'];
+            if (isset($seenIds['parish'][$id])) {
+                throw new \UnexpectedValueException('Duplicate parish ID: ' . $id);
+            }
+            $seenIds['parish'][$id] = true;
+            $mappedParishes[$parish['subcounty']][$id] = new Parish(
                 (int) $parish['id'],
                 ucfirst($parish['name']),
                 (int) $parish['subcounty'],
@@ -188,10 +266,15 @@ final class Uganda
             );
         }
 
-        /** @var array<string, array<string, SubCounty>> $mappedSubCounties */
+        /** @var array<int, array<int, SubCounty>> $mappedSubCounties */
         $mappedSubCounties = [];
         foreach ($subCounties as $subCounty) {
-            $mappedSubCounties[$subCounty['county']][strtolower($subCounty['name'])] = new SubCounty(
+            $id = (int) $subCounty['id'];
+            if (isset($seenIds['subCounty'][$id])) {
+                throw new \UnexpectedValueException('Duplicate subCounty ID: ' . $id);
+            }
+            $seenIds['subCounty'][$id] = true;
+            $mappedSubCounties[$subCounty['county']][$id] = new SubCounty(
                 (int) $subCounty['id'],
                 ucfirst($subCounty['name']),
                 (int) $subCounty['county'],
@@ -199,10 +282,15 @@ final class Uganda
             );
         }
 
-        /** @var array<string, array<string, County>> $mappedCounties */
+        /** @var array<int, array<int, County>> $mappedCounties */
         $mappedCounties = [];
         foreach ($counties as $county) {
-            $mappedCounties[$county['district']][strtolower($county['name'])] = new County(
+            $id = (int) $county['id'];
+            if (isset($seenIds['county'][$id])) {
+                throw new \UnexpectedValueException('Duplicate county ID: ' . $id);
+            }
+            $seenIds['county'][$id] = true;
+            $mappedCounties[$county['district']][$id] = new County(
                 (int) $county['id'],
                 ucfirst($county['name']),
                 (int) $county['district'],
@@ -210,10 +298,15 @@ final class Uganda
             );
         }
 
-        /** @var array<string, District> $mappedDistrict */
+        /** @var array<int, District> $mappedDistrict */
         $mappedDistrict = [];
         foreach ($districts as $district) {
-            $mappedDistrict[strtolower($district['name'])] = new District(
+            $id = (int) $district['id'];
+            if (isset($seenIds['district'][$id])) {
+                throw new \UnexpectedValueException('Duplicate district ID: ' . $id);
+            }
+            $seenIds['district'][$id] = true;
+            $mappedDistrict[$id] = new District(
                 (int) $district['id'],
                 ucfirst($district['name']),
                 $mappedCounties[$district['id']] ?? []
@@ -223,21 +316,61 @@ final class Uganda
         return $mappedDistrict;
     }
 
-    /** @return array<string, string> */
-    private function getFileContents(string $filePath): array
-    {
-        try {
-            /** @var array<string, string> $response */
-            $response = (array) json_decode(
-                (string) file_get_contents($filePath),
-                true,
-                512,
-                JSON_THROW_ON_ERROR
-            );
-        } catch (\JsonException $jsonException) {
-            return [];
+    /**
+     * Ensure the runtime tree cannot silently drop children with unknown parents.
+     *
+     * @param array<int, array<string, int|string>> $villages
+     * @param array<int, array<string, int|string>> $parishes
+     * @param array<int, array<string, int|string>> $subCounties
+     * @param array<int, array<string, int|string>> $counties
+     * @param array<int, array<string, int|string>> $districts
+     */
+    private function validateHierarchyReferences(
+        array $villages,
+        array $parishes,
+        array $subCounties,
+        array $counties,
+        array $districts
+    ): void {
+        $ids = [];
+        foreach ([
+            'district' => $districts,
+            'county' => $counties,
+            'subcounty' => $subCounties,
+            'parish' => $parishes,
+        ] as $level => $rows) {
+            foreach ($rows as $row) {
+                $ids[$level][(int) $row['id']] = true;
+            }
         }
 
-        return $response;
+        foreach ([
+            ['village', $villages, 'parish', 'parish'],
+            ['parish', $parishes, 'subcounty', 'subcounty'],
+            ['subcounty', $subCounties, 'county', 'county'],
+            ['county', $counties, 'district', 'district'],
+        ] as $check) {
+            [$level, $rows, $parentKey, $parentLevel] = $check;
+            foreach ($rows as $row) {
+                $parent = (int) $row[$parentKey];
+                if (!isset($ids[$parentLevel][$parent])) {
+                    throw new \UnexpectedValueException(
+                        sprintf(
+                            'Orphan %s record %s: unknown %s %d',
+                            $level,
+                            (string) $row['id'],
+                            $parentLevel,
+                            $parent
+                        )
+                    );
+                }
+            }
+        }
+    }
+
+    /** @return array<int, array<string, int|string>> */
+    private function getFileContents(string $filePath): array
+    {
+        return (new JsonDatasetLoader())->load($filePath);
     }
 }

@@ -1,162 +1,97 @@
 # Uganda Geo Data
 
-This is a PHP package that retrieves Uganda's districts with their respective counties, sub counties, parishes and villages in Uganda. This data has been scrapped off [Uganda's passport's official portal](https://passports.go.ug).
+Uganda Geo is a framework-independent PHP library for administrative location data. It preserves distinct source IDs for districts, counties, subcounties, parishes and villages while exposing explicitly scoped searches. The historical bundled data was originally sourced from the Uganda passport portal. Official UBOS snapshots and source provenance are reviewed separately.
 
 # Description
 
 This package gives you the leverage to access all sub levels ranging from districts, counties, subcounties, parishes to villages in Uganda. You can also access the different mentioned areas independently.
 
-## Table of Contents
+## Versions and requirements
 
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Retrieve Districts data](#retrieve-districts-data)
-  - [Retrieve Individual geo units data.](#retrieve-individual-geo-units-data)
-- [Credits](#credits)
-- [Contributions](#contributions)
-- [License](#license)
+The currently published stable package is **v1.0.0**. It exposes the chainable `Uganda\Geo` class. The forthcoming **v2.0.0** release is not published yet and introduces a different `Uganda\Uganda` object model.
 
-## Requirements
-
-In order to run this project, ensure that you have installed;
-
-- PHP 7.4 or later
-- Composer
+- **Stable v1:** Follow the requirements and API of the existing immutable v1.0.0 tag.
+- **Development v2:** Minimum PHP **8.2** and Composer 2. The PHP 8.2 branch reaches upstream end of security maintenance on 31 December 2026, so consumer deployments should plan an upgrade.
 
 ## Installation
 
-This project using composer.
+### Published stable v1
 
+```bash
+composer require "kusaasira/uganda-geo:^1.0"
 ```
-$ composer require kusaasira/uganda-geo
-```
-
-## Usage
-
-The examples below show examples of usage of the package and their resulting outputs
-
-### Retrieve Districts data.
 
 ```php
+<?php
+
+require 'vendor/autoload.php';
+
+use Uganda\Geo;
+
+// The v1 API is chainable and returns JSON using all().
+$json = (new Geo())->districts('Mukono')->counties()->all();
+echo $json;
+```
+
+### Upcoming v2
+
+After a stable v2 release is published, install it with:
+
+```bash
+composer require "kusaasira/uganda-geo:^2.0"
+```
+
+Until then, the examples below apply only to a checkout of the `next/2.x` integration branch with Composer dependencies installed. They are **not** compatible with the published v1 package.
+
+## Development v2 API
+
+```php
+<?php
+
 use Uganda\Uganda;
 
 $uganda = new Uganda();
 
-# Retrieve all districts
-$districts = $uganda->districts();
+// Access a district by name when the name is unambiguous.
+$district = $uganda->district('Mukono');
+$districtId = $district->id();
 
-# Retrieve all counties in a particular district
-$counties = $uganda
-    ->district('Mukono')
-    ->counties();
+// Recover the same model using its stable package identity.
+$matchingDistrict = $uganda->findById('district', $districtId);
+assert($matchingDistrict === $district);
 
-# Retrieve all sub counties in a particular district
-$subCounties = $uganda
-    ->district('Mukono')
-    ->subCounties();
+// Traverse direct descendants using the actual parent model.
+foreach ($district->counties() as $county) {
+    foreach ($county->subCounties() as $subCounty) {
+        foreach ($subCounty->parishes() as $parish) {
+            foreach ($parish->villages() as $village) {
+                // Each model carries an ID and a name.
+                echo $village->id(), ': ', $village->name(), PHP_EOL;
+                break 4; // Show one representative record, not the entire district.
+            }
+        }
+    }
+}
 
+// Lookups by name can have more than one result.
+$matches = $uganda->searchByName('parish', 'Central');
 
-# Retrieve all parishes in a particular district
-$parishes = $uganda
-    ->district('Mukono')
-    ->parishes();
-
-# Retrieve all villages in a particular district
-$villages = $uganda
-    ->district('Mukono')
-    ->villages();
+// Scope a search using an actual parent from the known district hierarchy.
+foreach ($district->counties() as $county) {
+    foreach ($county->subCounties() as $subCounty) {
+        $localParishes = $uganda->searchByName('parish', 'Central', $subCounty->id());
+        break 2;
+    }
+}
 ```
 
-### Retrieve County data.
+Global singular name methods such as `$uganda->parish($name)` throw an `AmbiguousLocationException` if multiple source units share that name. Use an ID or parent-scoped result set rather than accepting an arbitrary first match. Legacy numeric identifiers are **package source IDs**, not proven official government codes.
 
-```php
-use Uganda\Uganda;
-
-$uganda = new Uganda();
-
-# Retrieve all counties
-$counties = $uganda->counties();
-
-# Retrieve specific county
-$county = $uganda->county('Adjumani West County');
-
-# Retrieve all sub counties in a particular county
-$subCounties = $uganda
-    ->county('Adjumani West County')
-    ->subCounties();
-
-# Retrieve all parishes in a particular county
-$parishes = $uganda
-    ->county('Adjumani West County')
-    ->parishes();
-
-# Retrieve all villages in a particular county
-$villages = $uganda
-    ->county('Adjumani West County')
-    ->villages();
-```
-
-### Retrieve Sub County data.
-
-```php
-use Uganda\Uganda;
-
-$uganda = new Uganda();
-
-# Retrieve all sub counties
-$subCounties = $uganda->subCounties();
-
-# Retrieve specific sub county
-$subCounty = $uganda->subCounty('Namasale Town Council');
-
-# Retrieve all parishes in a particular sub county
-$parishes = $uganda
-    ->county('Namasale Town Council')
-    ->parishes();
-
-# Retrieve all villages in a particular sub county
-$villages = $uganda
-    ->county('Namasale Town Council')
-    ->villages();
-```
-
-### Retrieve Parish data.
-
-```php
-use Uganda\Uganda;
-
-$uganda = new Uganda();
-
-# Retrieve all parishes
-$parishes = $uganda->parishes();
-
-# Retrieve specific parish
-$parish = $uganda->parish('Bunamwamba');
-
-# Retrieve all villages in a particular parish
-$villages = $uganda
-    ->county('Bunamwamba')
-    ->villages();
-```
-
-### Retrieve Village data.
-
-```php
-use Uganda\Uganda;
-
-$uganda = new Uganda();
-
-# Retrieve all villages
-$villages = $uganda->villages();
-
-# Retrieve specific village
-$subCounty = $uganda->village('Ayeye');
-```
+See the [v1-to-v2 migration guide](docs/migration/v1-to-v2.md) and [official source review](docs/data/official-source-review.md) for data provenance, breaking changes and known limitations.
 
 ## Credits
 
-The data used in this package has been scrapped off This data has been scrapped off [Uganda's passport's official portal](https://passports.go.ug) as there is no updated geo data source since 2018 published anywhere.
+The original package dataset was derived from [Uganda's passport portal](https://passports.go.ug). Administrative counts in dated UBOS publications can differ from this legacy snapshot. See [official source review](docs/data/official-source-review.md) and [source registry](docs/data/sources.md) before treating a record as current or legally authoritative.
 
 ## Collaborators ✨
 

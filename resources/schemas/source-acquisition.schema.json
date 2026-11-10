@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Immutable Source Acquisition Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source_id",
+    "source_url",
+    "captured_at_utc",
+    "sha256",
+    "byte_count",
+    "content_type"
+  ],
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "captured_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "byte_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "content_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "http_status": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 100,
+      "maximum": 599
+    },
+    "source_crs": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "headers": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  }
+}

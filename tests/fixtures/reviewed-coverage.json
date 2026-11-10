@@ -1,0 +1,15 @@
+{
+  "canonical_parish_ward_count": 1,
+  "verified_count": 1,
+  "verified_matches": [
+    {
+      "unit_id": "fixture:parish:1",
+      "source_object_id": "1"
+    }
+  ],
+  "unmapped_canonical_unit_ids": [],
+  "coverage": "complete",
+  "source_feature_count": 1,
+  "unmatched_source_object_ids": [],
+  "unresolved_source_object_ids": []
+}

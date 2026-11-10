@@ -1,0 +1,23 @@
+name: Location lookup performance
+
+on:
+  pull_request:
+    branches: [main, next/2.x]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Check bounded initialization and lookup memory
+        run: php tools/benchmarks/check-budgets.php

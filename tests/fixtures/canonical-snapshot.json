@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "snapshot_id": "contract-test-snapshot",
+  "source_ids": [
+    "test-fixture"
+  ],
+  "reference_date": null,
+  "units": [
+    {
+      "id": "fixture:district:1",
+      "level": "district",
+      "name": "Example District",
+      "parent_id": null,
+      "source_id": "test-fixture",
+      "source_record_id": "1",
+      "aliases": [],
+      "lifecycle_status": "active",
+      "external_codes": {}
+    },
+    {
+      "id": "fixture:county:1",
+      "level": "county",
+      "name": "Example County",
+      "parent_id": "fixture:district:1",
+      "source_id": "test-fixture",
+      "source_record_id": "1",
+      "aliases": [],
+      "lifecycle_status": "active",
+      "external_codes": {}
+    },
+    {
+      "id": "fixture:subcounty:1",
+      "level": "subcounty",
+      "name": "Example Subcounty",
+      "parent_id": "fixture:county:1",
+      "source_id": "test-fixture",
+      "source_record_id": "1",
+      "aliases": [],
+      "lifecycle_status": "active",
+      "external_codes": {}
+    },
+    {
+      "id": "fixture:parish:1",
+      "level": "parish",
+      "name": "Example Parish",
+      "parent_id": "fixture:subcounty:1",
+      "source_id": "test-fixture",
+      "source_record_id": "1",
+      "aliases": [],
+      "lifecycle_status": "active",
+      "external_codes": {}
+    },
+    {
+      "id": "fixture:village:1",
+      "level": "village",
+      "name": "Example Village",
+      "parent_id": "fixture:parish:1",
+      "source_id": "test-fixture",
+      "source_record_id": "1",
+      "aliases": [],
+      "lifecycle_status": "active",
+      "external_codes": {}
+    }
+  ]
+}

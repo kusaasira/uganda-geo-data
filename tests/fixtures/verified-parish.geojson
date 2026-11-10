@@ -1,0 +1,47 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "verification_scope": "canonical_identity_and_parent_only",
+    "publication_rights": "review_required"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "fixture:parish:1",
+      "properties": {
+        "unit_id": "fixture:parish:1",
+        "parent_unit_id": "fixture:subcounty:1",
+        "source_id": "test-fixture",
+        "source_object_id": "1",
+        "evidence_date": "2024-05-01"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              0
+            ],
+            [
+              32.01,
+              0
+            ],
+            [
+              32.01,
+              0.01
+            ],
+            [
+              32,
+              0.01
+            ],
+            [
+              32,
+              0
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

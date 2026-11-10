@@ -1,0 +1,26 @@
+name: GIS distribution formats
+
+on:
+  pull_request:
+    branches: [main, next/2.x]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  spatial-export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+          coverage: none
+      - run: sudo apt-get update && sudo apt-get install -y gdal-bin
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Verify Shapefile and GeoPackage identity parity
+        run: |
+          mkdir -p build
+          php tools/geo/export-formats.php tests/fixtures/verified-parish.geojson build/parish-formats

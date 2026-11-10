@@ -1,0 +1,63 @@
+{
+  "base_version": "v2.0.0",
+  "sections": {
+    "Added": [
+      "Identity-preserving administrative hierarchy indexed by source IDs with deterministic ancestry and parent-scoped child navigation.",
+      "Typed exact-ID lookup, scoped name search and multi-result search that handles repeated locality names without losing records.",
+      "Canonical snapshot validation, lossless legacy imports, source manifests, provenance-aware crosswalks and dated administrative history reviews.",
+      "Deterministic dataset snapshots, source-record conservation reports, change diffs and SHA-256-verified release artifacts.",
+      "Optional public ArcGIS metadata inspection, object-ID-based GeoJSON acquisition and reviewed parish-to-canonical-identity matching.",
+      "Optional point-in-polygon classification, polygon topology diagnostics and reviewed GIS format conversion.",
+      "Static administrative explorer with review-scoped geometry coverage information and explicit source limitations.",
+      "Reproducible developer CI, Composer consumer installation checks, performance budgets, CycloneDX SBOM generation and nonpublishing release readiness tooling."
+    ],
+    "Changed": [
+      "Minimum supported PHP runtime is 8.2; validate your application's PHP and Composer compatibility before upgrading.",
+      "The public v2 object API uses Uganda\\Uganda rather than the published v1 Uganda\\Geo chainable API.",
+      "Identity-sensitive collections use record IDs instead of normalized place names as associative keys.",
+      "Singular global name lookups reject ambiguous results rather than silently selecting one matching administrative unit.",
+      "Dataset snapshots have separate reference dates and versioning semantics from the PHP package's semantic version."
+    ],
+    "Fixed": [
+      "Preserve distinct parishes and villages that share a normalized name under the same parent.",
+      "Report malformed, missing or otherwise unusable JSON datasets as explicit loading failures rather than legitimate empty results.",
+      "Prevent silently broken parent links, duplicate identities and conservation errors during canonical imports.",
+      "Correct Composer license metadata and remove the previously registered nonexistent Laravel service provider.",
+      "Repair outdated installation and API examples; cover representative documentation contracts with executable tests."
+    ],
+    "Data": [
+      "The bundled legacy administrative hierarchy remains a historical snapshot with an unknown original capture date; current nationwide accuracy is not verified.",
+      "Separate dated UBOS 2024 census and 2024 annual abstract counts from package data rather than treating different administrative classifications as interchangeable.",
+      "Review newer official source references without claiming that aggregate statistical publications establish the current legal status of every unit.",
+      "Legacy numeric package IDs must not be represented as verified official government identifiers.",
+      "Unit-level official reconciliation, currentness, precise administrative change dates and redistribution permissions require source-specific evidence."
+    ],
+    "Geometry": [
+      "Publicly accessible boundary endpoints can be inspected and acquired for development with recorded metadata, source URLs, capture time and checksums.",
+      "Optional GIS workflows match reviewed polygon features to canonical parish identities using a parent-aware evidence trail, not name-only guesses.",
+      "Spatial validation includes EPSG:4326 normalization, polygon geometry diagnostics, ambiguity handling and boundary-aware point classification.",
+      "Reviewed sources can be converted locally into GeoJSON, GeoPackage and ESRI Shapefile with .shp, .shx, .dbf, .prj and .cpg sidecars.",
+      "Geometry archives and round-trip validation are reproducible technical tooling, not proof of official national boundary coverage.",
+      "National parish polygon completeness is not verified; unmatched administrative units and unresolved source geometries remain explicitly distinguishable.",
+      "Redistribution of any third-party geometry asset depends on source-specific rights, accurate attribution and independent release approval."
+    ],
+    "Security": [
+      "Reject unsafe release asset paths, incomplete archives, mismatched file inventories and invalid artifact hashes.",
+      "Produce a software bill of materials for resolved runtime dependencies and explicit source publication checks.",
+      "Keep release workflows nonpublishing and read-only until independently reviewed authorization is provided.",
+      "Validate correction evidence and administrative parent identity before treating submitted data as canonical."
+    ],
+    "Documentation": [
+      "Provide the v1-to-v2 migration guide, current public API reference and usage examples with verified hierarchy semantics.",
+      "Document source provenance, reference dates, canonical identity, data trust limitations and correction submissions.",
+      "Explain public endpoint acquisition, parish boundary review, topology diagnostics, geospatial formats and release qualification.",
+      "Publish developer contribution, support, security and pull request review conventions."
+    ],
+    "Upgrade": [
+      "Read docs/migration/v1-to-v2.md and update code using Uganda\\Geo chains to the Uganda\\Uganda model, explicit IDs and scoped searches.",
+      "Handle AmbiguousLocationException where a location name can refer to several administrative units.",
+      "Run standalone PHP or Laravel consumer smoke tests against an immutable prerelease and verify your persisted legacy IDs before migration.",
+      "Install the stable 2.0 release from Packagist only after it is actually published and its exact tagged behavior has been independently verified."
+    ]
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Uganda Geo Administrative Data Correction",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "unit_id",
+    "level",
+    "current_name",
+    "parent_unit_id",
+    "parent_name",
+    "current_value",
+    "proposed_value",
+    "evidence_url",
+    "evidence_reference_date",
+    "evidence_details",
+    "status"
+  ],
+  "properties": {
+    "unit_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "level": {
+      "type": "string",
+      "minLength": 1
+    },
+    "current_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_unit_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "current_value": {
+      "type": "string",
+      "minLength": 1
+    },
+    "proposed_value": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "evidence_reference_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "evidence_details": {
+      "type": "string",
+      "minLength": 1
+    },
+    "effective_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "source_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "submitted",
+        "needs_evidence",
+        "in_review",
+        "approved",
+        "rejected",
+        "disputed"
+      ]
+    },
+    "reviewer_notes": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
