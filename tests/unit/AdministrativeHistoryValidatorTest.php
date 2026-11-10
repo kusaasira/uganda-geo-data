@@ -40,5 +40,4 @@ final class AdministrativeHistoryValidatorTest extends TestCase
         $this->assertFalse($report['valid']);
         $this->assertNotEmpty($report['errors']);
     }
-
 }
