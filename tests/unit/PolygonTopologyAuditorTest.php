@@ -95,6 +95,28 @@ final class PolygonTopologyAuditorTest extends TestCase
     }
 
     /** @test */
+    public function itFlagsIntersectingMultipolygonMembers(): void
+    {
+        $geometry = ['type' => 'MultiPolygon', 'coordinates' => [
+            [[[0, 0], [3, 0], [3, 3], [0, 3], [0, 0]]],
+            [[[2, 2], [4, 2], [4, 4], [2, 4], [2, 2]]],
+        ]];
+        $codes = array_column((new PolygonTopologyAuditor())->audit($geometry)['issues'], 'code');
+        $this->assertContains('multipart_overlap', $codes);
+    }
+
+    /** @test */
+    public function cornerContactIsNotMisreportedAsInteriorOverlap(): void
+    {
+        $geometry = ['type' => 'MultiPolygon', 'coordinates' => [
+            [[[0, 0], [2, 0], [2, 2], [0, 2], [0, 0]]],
+            [[[2, 2], [4, 2], [4, 4], [2, 4], [2, 2]]],
+        ]];
+        $codes = array_column((new PolygonTopologyAuditor())->audit($geometry)['issues'], 'code');
+        $this->assertNotContains('multipart_overlap', $codes);
+    }
+
+    /** @test */
     public function includesEveryPartOfAMultipolygon(): void
     {
         $one = [[0, 0], [2, 0], [2, 2], [0, 0]];
