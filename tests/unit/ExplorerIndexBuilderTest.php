@@ -29,6 +29,20 @@ final class ExplorerIndexBuilderTest extends TestCase
     }
 
     /** @test */
+    public function itRejectsAnEmptyCanonicalDatasetRatherThanPublishingAFalseExplorer(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('nonempty canonical units');
+
+        (new ExplorerIndexBuilder())->build([
+            'schema_version' => 1,
+            'snapshot_id' => 'empty-snapshot',
+            'source_ids' => ['test-fixture'],
+            'units' => [],
+        ]);
+    }
+
+    /** @test */
     public function rejectsDuplicateIdsInsteadOfOverwriting(): void
     {
         $this->expectException(InvalidArgumentException::class);
