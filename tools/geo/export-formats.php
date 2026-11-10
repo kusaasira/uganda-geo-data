@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Uganda\Geo\GeometryContract;
+use Uganda\Geo\GeometryRoundTripVerifier;
 use Uganda\Geo\GeometryExportFields;
 
 require dirname(__DIR__, 2) . '/vendor/autoload.php';
@@ -76,27 +76,7 @@ try {
         if (!is_array($decoded) || !is_array($decoded['features'] ?? null)) {
             throw new RuntimeException('Invalid ' . $type . ' roundtrip');
         }
-        $identities = [];
-        foreach ($decoded['features'] as $feature) {
-            if (!is_array($feature) || !is_array($feature['properties'] ?? null)
-                || !is_string($feature['properties']['unit_id'] ?? null)
-                || !is_array($feature['geometry'] ?? null)) {
-                throw new RuntimeException('Invalid ' . $type . ' feature');
-            }
-            $id = $feature['properties']['unit_id'];
-            if (isset($identities[$id])) {
-                throw new RuntimeException('Duplicate ' . $type . ' unit identity');
-            }
-            $identities[$id] = true;
-            GeometryContract::assertGeometry($feature['geometry']);
-        }
-        $expected = array_column($prepared['features'], 'id');
-        sort($expected, SORT_STRING);
-        $actual = array_keys($identities);
-        sort($actual, SORT_STRING);
-        if ($actual !== $expected) {
-            throw new RuntimeException($type . ' lost or changed canonical identifiers');
-        }
+        (new GeometryRoundTripVerifier())->verify($prepared, $decoded);
         unlink($roundtrip);
     }
     file_put_contents($stage . '/fields.json', json_encode($exporter->dictionary(),
