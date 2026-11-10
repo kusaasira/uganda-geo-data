@@ -43,9 +43,9 @@ Version 2 changes that contract:
 
 Install the **stable 2.x** package from Packagist:
 
-\`\`\`bash
+```bash
 composer require "kusaasira/uganda-geo:^2.0"
-\`\`\`
+```
 
 Requirements: PHP **8.2 or newer**, Composer **2** and PHP's JSON extension. Release-specific install availability can be checked on [Packagist](https://packagist.org/packages/kusaasira/uganda-geo).
 
@@ -53,7 +53,7 @@ Version 2 is a **breaking upgrade** from v1. Read the [migration guide](docs/mig
 
 ## Quick start
 
-\`\`\`php
+```php
 <?php
 
 require __DIR__ . '/vendor/autoload.php';
@@ -79,18 +79,18 @@ $matches = $geo->searchByName('parish', 'Central');
 foreach ($matches as $parish) {
     echo $parish->id() . ' - ' . $parish->name() . PHP_EOL;
 }
-\`\`\`
+```
 
 Or execute the versioned example in a local repository checkout:
 
-\`\`\`bash
+```bash
 composer install
 php examples/standalone-v2.php
-\`\`\`
+```
 
 ### Resolve an ambiguous place safely
 
-\`\`\`php
+```php
 <?php
 
 use Uganda\Uganda;
@@ -107,27 +107,30 @@ try {
 
 // Scope by the actual parent subcounty ID when known.
 $parishes = $geo->searchByName('parish', 'Central', $subcountyId);
-\`\`\`
+```
 
 An ID is meaningful **within its administrative level and source snapshot**. Numeric package source IDs are **not** guaranteed to be official UBOS administrative codes. Use a verified crosswalk when matching IDs from external systems.
 
 ### Navigate parents and children
 
-\`\`\`php
+```php
 <?php
 
 use Uganda\Uganda;
 
 $geo = new Uganda();
 
-$county = $geo->county('Kampala'); // Only succeeds if exactly one county matches.
-$subcounties = $geo->childrenOf('subcounty', $county->id());
+$district = $geo->district('Mukono');
+$county = reset($district->counties());
 
-foreach ($subcounties as $subcounty) {
-    $ancestors = $geo->ancestorsOf('subcounty', $subcounty->id());
-    echo $subcounty->name() . ' has ' . count($ancestors) . " ancestors\n";
+if ($county instanceof \Uganda\County) {
+    $subcounties = $geo->childrenOf('subcounty', $county->id());
+    foreach ($subcounties as $subcounty) {
+        $ancestors = $geo->ancestorsOf('subcounty', $subcounty->id());
+        echo $subcounty->name() . ' has ' . count($ancestors) . " ancestors\n";
+    }
 }
-\`\`\`
+```
 
 For examples that must work regardless of a particular source name, use [examples/standalone-v2.php](examples/standalone-v2.php).
 
@@ -135,14 +138,14 @@ For examples that must work regardless of a particular source name, use [example
 
 | Method | Behavior |
 | --- | --- |
-| \`districts()\`, \`counties()\`, \`subCounties()\`, \`parishes()\`, \`villages()\` | Collect each level from the bundled hierarchy |
-| \`district($name)\`, \`county($name)\`, \`subCounty($name)\`, \`parish($name)\`, \`village($name)\` | Return a unique named unit or throw |
-| \`findById($level, $id)\` | Find an exact level-specific integer ID or return \`null\` |
-| \`searchByName($level, $name, $parentId = null)\` | Return every exact normalized-name match, optionally scoped to a parent |
-| \`childrenOf($childLevel, $parentId)\` | Return direct children of a known parent |
-| \`ancestorsOf($level, $id)\` | Return ancestors from root to immediate parent |
+| `districts()`, `counties()`, `subCounties()`, `parishes()`, `villages()` | Collect each level from the bundled hierarchy |
+| `district($name)`, `county($name)`, `subCounty($name)`, `parish($name)`, `village($name)` | Return a unique named unit or throw |
+| `findById($level, $id)` | Find an exact level-specific integer ID or return `null` |
+| `searchByName($level, $name, $parentId = null)` | Return every exact normalized-name match, optionally scoped to a parent |
+| `childrenOf($childLevel, $parentId)` | Return direct children of a known parent |
+| `ancestorsOf($level, $id)` | Return ancestors from root to immediate parent |
 
-Supported levels: \`district\`, \`county\`, \`subcounty\`, \`parish\` and \`village\`. A name is a display property, **never a globally unique lookup key**.
+Supported levels: `district`, `county`, `subcounty`, `parish` and `village`. A name is a display property, **never a globally unique lookup key**.
 
 See the [complete v2 API reference](docs/api/v2-reference.md) for return contracts, errors and more examples.
 
@@ -150,12 +153,12 @@ See the [complete v2 API reference](docs/api/v2-reference.md) for return contrac
 
 The production library has **no Illuminate dependency** and does not register a service provider. Use it directly through Composer autoloading:
 
-\`\`\`php
+```php
 use Uganda\Uganda;
 
 $geo = app(Uganda::class);
 $districts = $geo->districts();
-\`\`\`
+```
 
 Laravel container integration is covered by independent consumer smoke tests. No service-provider configuration or auto-discovery is required.
 
@@ -181,7 +184,7 @@ The repository includes tooling to inspect and acquire public polygon endpoints,
 
 The **PHP runtime does not ship a verified national parish boundary archive**. GIS tooling requires separately acquired source data and, for format conversion, **GDAL**. Example operator commands:
 
-\`\`\`bash
+```bash
 # Inspect the catalogued public feature service.
 php tools/geo/inspect-arcgis.php arcgis-parishes-2024
 
@@ -190,9 +193,9 @@ php tools/geo/download-arcgis.php arcgis-parishes-2024 ./build/arcgis-2024
 
 # After human-reviewed identity matching, export verified GeoJSON to a NEW directory.
 php tools/geo/export-formats.php reviewed-parishes.geojson ./build/parish-formats
-\`\`\`
+```
 
-The generated local formats include **GeoJSON**, **GeoPackage** and an ESRI Shapefile set with \`.shp\`, \`.shx\`, \`.dbf\`, \`.prj\` and \`.cpg\`.
+The generated local formats include **GeoJSON**, **GeoPackage** and an ESRI Shapefile set with `.shp`, `.shx`, `.dbf`, `.prj` and `.cpg`.
 
 **Publication distinction:** Public access is enough to discover and ingest an endpoint under applicable access terms. It does not by itself grant redistribution rights. Local GIS conversion and sample topology tests do not prove nationwide completeness. Unverified third-party geometry files are **not attached** to the v2.0.0 source release.
 
@@ -200,13 +203,13 @@ Read [public endpoint guidance](docs/geospatial/public-endpoints.md), [coverage 
 
 ## Development and verification
 
-\`\`\`bash
+```bash
 composer install
 composer test
 composer cs-test
 ./vendor/bin/phpstan analyse src --level 9
 php examples/standalone-v2.php
-\`\`\`
+```
 
 CI covers PHP **8.2, 8.3, 8.4 and 8.5**, the lowest-supported dependency set, standalone/Laravel consumers, data validation and optional GIS workflows. Test fixtures prove code behavior, not external administrative currentness or source publication rights.
 
