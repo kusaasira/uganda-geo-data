@@ -50,4 +50,17 @@ final class AdministrativeHistoryValidatorTest extends TestCase
         ]]);
         $this->assertFalse($report['valid']);
     }
+    /** @test */
+    public function rejectsDictionaryShapedHistoryThatHasNoStableEventOrdering(): void
+    {
+        $report = (new AdministrativeHistoryValidator())->validate([
+            'event' => [
+                'id' => 'event-1', 'kind' => 'rename', 'from_ids' => ['unit:1'],
+                'to_ids' => ['unit:1'], 'effective_date' => '2024-05-01',
+                'evidence_url' => 'https://example.org/official-notice',
+            ],
+        ]);
+        $this->assertFalse($report['valid']);
+        $this->assertNotEmpty($report['errors']);
+    }
 }

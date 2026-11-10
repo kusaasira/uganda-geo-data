@@ -14,6 +14,10 @@ final class AdministrativeHistoryValidator
      */
     public function validate(array $events): array
     {
+        if (array_keys($events) !== array_keys(array_values($events))) {
+            return ['valid' => false, 'count' => count($events),
+                'errors' => ['Administrative change events must be an indexed list']];
+        }
         $errors = [];
         $seen = [];
         foreach ($events as $index => $event) {
