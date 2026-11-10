@@ -8,7 +8,7 @@ This package gives you the leverage to access all sub levels ranging from distri
 
 ## Versions and requirements
 
-The currently published stable package is **v1.0.0**. It exposes the chainable \`Uganda\Geo\` class. The forthcoming **v2.0.0** release is not published yet and introduces a different \`Uganda\Uganda\` object model.
+The currently published stable package is **v1.0.0**. It exposes the chainable `Uganda\Geo` class. The forthcoming **v2.0.0** release is not published yet and introduces a different `Uganda\Uganda` object model.
 
 - **Stable v1:** Follow the requirements and API of the existing immutable v1.0.0 tag.
 - **Development v2:** Minimum PHP **8.2** and Composer 2. The PHP 8.2 branch reaches upstream end of security maintenance on 31 December 2026, so consumer deployments should plan an upgrade.
@@ -17,11 +17,11 @@ The currently published stable package is **v1.0.0**. It exposes the chainable \
 
 ### Published stable v1
 
-\`\`\`bash
+```bash
 composer require "kusaasira/uganda-geo:^1.0"
-\`\`\`
+```
 
-\`\`\`php
+```php
 <?php
 
 require 'vendor/autoload.php';
@@ -31,21 +31,21 @@ use Uganda\Geo;
 // The v1 API is chainable and returns JSON using all().
 $json = (new Geo())->districts('Mukono')->counties()->all();
 echo $json;
-\`\`\`
+```
 
 ### Upcoming v2
 
 After a stable v2 release is published, install it with:
 
-\`\`\`bash
+```bash
 composer require "kusaasira/uganda-geo:^2.0"
-\`\`\`
+```
 
-Until then, the examples below apply only to a checkout of the \`next/2.x\` integration branch with Composer dependencies installed. They are **not** compatible with the published v1 package.
+Until then, the examples below apply only to a checkout of the `next/2.x` integration branch with Composer dependencies installed. They are **not** compatible with the published v1 package.
 
 ## Development v2 API
 
-\`\`\`php
+```php
 <?php
 
 use Uganda\Uganda;
@@ -67,6 +67,7 @@ foreach ($district->counties() as $county) {
             foreach ($parish->villages() as $village) {
                 // Each model carries an ID and a name.
                 echo $village->id(), ': ', $village->name(), PHP_EOL;
+                break 4; // Show one representative record, not the entire district.
             }
         }
     }
@@ -75,14 +76,16 @@ foreach ($district->counties() as $county) {
 // Lookups by name can have more than one result.
 $matches = $uganda->searchByName('parish', 'Central');
 
-// Scope the search to an existing parent when that parent is known.
-$subCounty = $uganda->searchByName('subcounty', 'Namasale Town Council')[0] ?? null;
-if ($subCounty !== null) {
-    $localParishes = $uganda->searchByName('parish', 'Central', $subCounty->id());
+// Scope a search using an actual parent from the known district hierarchy.
+foreach ($district->counties() as $county) {
+    foreach ($county->subCounties() as $subCounty) {
+        $localParishes = $uganda->searchByName('parish', 'Central', $subCounty->id());
+        break 2;
+    }
 }
-\`\`\`
+```
 
-Global singular name methods such as \`$uganda->parish($name)\` throw an \`AmbiguousLocationException\` if multiple source units share that name. Use an ID or parent-scoped result set rather than accepting an arbitrary first match. Legacy numeric identifiers are **package source IDs**, not proven official government codes.
+Global singular name methods such as `$uganda->parish($name)` throw an `AmbiguousLocationException` if multiple source units share that name. Use an ID or parent-scoped result set rather than accepting an arbitrary first match. Legacy numeric identifiers are **package source IDs**, not proven official government codes.
 
 See the [v1-to-v2 migration guide](docs/migration/v1-to-v2.md) and [official source review](docs/data/official-source-review.md) for data provenance, breaking changes and known limitations.
 
