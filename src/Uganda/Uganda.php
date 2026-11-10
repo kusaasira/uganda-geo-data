@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Uganda;
 
+use Uganda\Data\JsonDatasetLoader;
 use Uganda\Exceptions\AmbiguousLocationException;
 use Uganda\Exceptions\CountyNotFoundException;
 use Uganda\Exceptions\DistrictNotFoundException;
@@ -21,8 +22,11 @@ final class Uganda
 
     private ?LocationIndex $locationIndex = null;
 
-    public function __construct()
+    private string $sourceDirectory;
+
+    public function __construct(?string $sourceDirectory = null)
     {
+        $this->sourceDirectory = $sourceDirectory ?? __DIR__ . '/Data';
         $this->districts = $this->generateTree();
     }
 
@@ -200,19 +204,21 @@ final class Uganda
     private function generateTree(): array
     {
         /** @var array<int, array<string, string>> $villages */
-        $villages = $this->getFileContents(__DIR__ . '/Data/villages.json');
+        $villages = $this->getFileContents($this->sourceDirectory . '/villages.json');
 
         /** @var array<int, array<string, string>> $parishes */
-        $parishes = $this->getFileContents(__DIR__ . '/Data/parishes.json');
+        $parishes = $this->getFileContents($this->sourceDirectory . '/parishes.json');
 
         /** @var array<int, array<string, string>> $subCounties */
-        $subCounties = $this->getFileContents(__DIR__ . '/Data/sub_counties.json');
+        $subCounties = $this->getFileContents($this->sourceDirectory . '/sub_counties.json');
 
         /** @var array<int, array<string, string>> $counties */
-        $counties = $this->getFileContents(__DIR__ . '/Data/counties.json');
+        $counties = $this->getFileContents($this->sourceDirectory . '/counties.json');
 
         /** @var array<int, array<string, string>> $districts */
-        $districts = $this->getFileContents(__DIR__ . '/Data/districts.json');
+        $districts = $this->getFileContents($this->sourceDirectory . '/districts.json');
+
+        $this->validateHierarchyReferences($villages, $parishes, $subCounties, $counties, $districts);
 
         // Keep the source identity distinct from the display name.
         // Reject duplicate IDs rather than silently overwriting records.
@@ -298,21 +304,61 @@ final class Uganda
         return $mappedDistrict;
     }
 
-    /** @return array<string, string> */
-    private function getFileContents(string $filePath): array
-    {
-        try {
-            /** @var array<string, string> $response */
-            $response = (array) json_decode(
-                (string) file_get_contents($filePath),
-                true,
-                512,
-                JSON_THROW_ON_ERROR
-            );
-        } catch (\JsonException $jsonException) {
-            return [];
+    /**
+     * Ensure the runtime tree cannot silently drop children with unknown parents.
+     *
+     * @param array<int, array<string, int|string>> $villages
+     * @param array<int, array<string, int|string>> $parishes
+     * @param array<int, array<string, int|string>> $subCounties
+     * @param array<int, array<string, int|string>> $counties
+     * @param array<int, array<string, int|string>> $districts
+     */
+    private function validateHierarchyReferences(
+        array $villages,
+        array $parishes,
+        array $subCounties,
+        array $counties,
+        array $districts
+    ): void {
+        $ids = [];
+        foreach ([
+            'district' => $districts,
+            'county' => $counties,
+            'subcounty' => $subCounties,
+            'parish' => $parishes,
+        ] as $level => $rows) {
+            foreach ($rows as $row) {
+                $ids[$level][(int) $row['id']] = true;
+            }
         }
 
-        return $response;
+        foreach ([
+            ['village', $villages, 'parish', 'parish'],
+            ['parish', $parishes, 'subcounty', 'subcounty'],
+            ['subcounty', $subCounties, 'county', 'county'],
+            ['county', $counties, 'district', 'district'],
+        ] as $check) {
+            [$level, $rows, $parentKey, $parentLevel] = $check;
+            foreach ($rows as $row) {
+                $parent = (int) $row[$parentKey];
+                if (!isset($ids[$parentLevel][$parent])) {
+                    throw new \UnexpectedValueException(
+                        sprintf(
+                            'Orphan %s record %s: unknown %s %d',
+                            $level,
+                            (string) $row['id'],
+                            $parentLevel,
+                            $parent
+                        )
+                    );
+                }
+            }
+        }
+    }
+
+    /** @return array<int, array<string, int|string>> */
+    private function getFileContents(string $filePath): array
+    {
+        return (new JsonDatasetLoader())->load($filePath);
     }
 }
