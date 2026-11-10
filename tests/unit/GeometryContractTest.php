@@ -39,4 +39,27 @@ final class GeometryContractTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         GeometryContract::assertGeometry(['type' => 'MultiPolygon', 'coordinates' => []]);
     }
+    /** @test */
+    public function rejectsDegenerateRingsWithOnlyTwoUniquePositions(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        GeometryContract::assertGeometry([
+            'type' => 'Polygon',
+            'coordinates' => [[[32, 1], [33, 1], [32, 1], [33, 1], [32, 1]]],
+        ]);
+    }
+
+    /** @test */
+    public function rejectsProjectedMetreCoordinatesAsLongitudeLatitude(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        GeometryContract::assertLonLat([3500000, 400000]);
+    }
+
+    /** @test */
+    public function rejectsNonFiniteCoordinateValues(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        GeometryContract::assertLonLat([NAN, 1]);
+    }
 }

@@ -32,11 +32,16 @@ final class GeometryContract
                 if (!is_array($ring) || count($ring) < 4) {
                     throw new InvalidArgumentException('Polygon ring must contain at least four positions');
                 }
+                $distinct = [];
                 foreach ($ring as $position) {
                     if (!is_array($position)) {
                         throw new InvalidArgumentException('GeoJSON position must be a coordinate array');
                     }
                     self::assertLonLat($position);
+                    $distinct[json_encode([$position[0], $position[1]])] = true;
+                }
+                if (count($distinct) < 3) {
+                    throw new InvalidArgumentException('Polygon ring must contain at least three distinct positions');
                 }
                 $first = reset($ring);
                 $last = end($ring);
