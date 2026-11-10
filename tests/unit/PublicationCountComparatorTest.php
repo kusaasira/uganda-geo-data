@@ -38,4 +38,26 @@ final class PublicationCountComparatorTest extends TestCase
             [['older' => 'not_present', 'newer' => 'parish_education_scope', 'scope_verified' => false]]
         );
     }
+    /** @test */
+    public function refusesAnEmptyComparisonThatWouldClaimSuccessWithoutData(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        (new PublicationCountComparator())->compare(
+            ['id' => 'first', 'counts' => ['parish' => 10]],
+            ['id' => 'second', 'counts' => ['parish' => 12]],
+            []
+        );
+    }
+
+    /** @test */
+    public function rejectsRepeatedCategoryPairsThatInflateTheComparisonInventory(): void
+    {
+        $pair = ['older' => 'parish', 'newer' => 'parish', 'scope_verified' => false];
+        $this->expectException(InvalidArgumentException::class);
+        (new PublicationCountComparator())->compare(
+            ['id' => 'first', 'counts' => ['parish' => 10]],
+            ['id' => 'second', 'counts' => ['parish' => 12]],
+            [$pair, $pair]
+        );
+    }
 }
