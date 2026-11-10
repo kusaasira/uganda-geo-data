@@ -62,4 +62,22 @@ final class GeometryExportFieldsTest extends TestCase
         $this->expectExceptionMessage('DBF limit');
         (new GeometryExportFields())->prepare($collection);
     }
+    /** @test */
+    public function itRejectsThreeDimensionalGeometryThatCouldLoseAltitudeDuringExport(): void
+    {
+        $collection = json_decode(
+            (string) file_get_contents(dirname(__DIR__) . '/fixtures/verified-parish.geojson'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+        foreach ($collection['features'][0]['geometry']['coordinates'][0] as &$position) {
+            $position[] = 123;
+        }
+        unset($position);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('two-dimensional');
+        (new GeometryExportFields())->prepare($collection);
+    }
+
 }
