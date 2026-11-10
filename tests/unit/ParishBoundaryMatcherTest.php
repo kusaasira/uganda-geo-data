@@ -91,4 +91,20 @@ final class ParishBoundaryMatcherTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         (new ParishBoundaryMatcher())->match($this->features(), $this->snapshot(), [$decision]);
     }
+    /** @test */
+    public function refusesDictionaryShapedMappingDecisions(): void
+    {
+        $decision = [
+            'object_id' => 10, 'unit_id' => 'parish:1',
+            'parent_unit_id' => 'subcounty:1', 'evidence_url' => 'https://example.org/official',
+            'evidence_date' => '2024-12-31', 'reviewer' => 'GIS reviewer',
+        ];
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('indexed list');
+        (new ParishBoundaryMatcher())->match(
+            $this->features(),
+            $this->snapshot(),
+            ['decision' => $decision]
+        );
+    }
 }
