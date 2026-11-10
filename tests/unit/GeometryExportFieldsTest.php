@@ -33,4 +33,34 @@ final class GeometryExportFieldsTest extends TestCase
             ['type' => 'Feature', 'properties' => [], 'geometry' => []],
         ]]);
     }
+    /** @test */
+    public function itRejectsIdentifiersThatWouldBeSilentlyTruncatedByShapefile(): void
+    {
+        $collection = json_decode(
+            (string) file_get_contents(dirname(__DIR__) . '/fixtures/verified-parish.geojson'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+        $collection['features'][0]['properties']['unit_id'] = 'p' . str_repeat('a', 254);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('DBF limit');
+        (new GeometryExportFields())->prepare($collection);
+    }
+
+    /** @test */
+    public function itCountsUtf8BytesRatherThanCharactersForDbaseLimits(): void
+    {
+        $collection = json_decode(
+            (string) file_get_contents(dirname(__DIR__) . '/fixtures/verified-parish.geojson'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+        $collection['features'][0]['properties']['source_id'] = str_repeat('é', 130);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('DBF limit');
+        (new GeometryExportFields())->prepare($collection);
+    }
+
 }
