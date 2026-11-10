@@ -1,0 +1,99 @@
+name: Administrative data correction
+description: Report a missing, inaccurate or outdated Uganda administrative unit with dated source evidence
+title: "[Data correction] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Corrections must identify a specific administrative unit and cite verifiable evidence. This form does not edit published datasets automatically. Do not include personal identification numbers or private contact information.
+  - type: input
+    id: canonical-unit-id
+    attributes:
+      label: Canonical Uganda Geo unit ID
+      description: Supply the exact canonical identifier if known. Otherwise state "unknown".
+      placeholder: "legacy:parish:1234"
+    validations:
+      required: true
+  - type: dropdown
+    id: administrative-level
+    attributes:
+      label: Administrative level
+      options:
+        - District
+        - City
+        - Municipality
+        - County
+        - Subcounty
+        - Town council
+        - Division
+        - Parish
+        - Ward
+        - Village
+        - Cell
+        - Other or uncertain
+    validations:
+      required: true
+  - type: input
+    id: current-name
+    attributes:
+      label: Name as currently recorded
+      placeholder: "Exact existing name or 'not present'"
+    validations:
+      required: true
+  - type: input
+    id: parent-unit-id
+    attributes:
+      label: Parent administrative unit ID
+      description: Provide the parent ID or "unknown" and include its name below.
+    validations:
+      required: true
+  - type: input
+    id: parent-name
+    attributes:
+      label: Parent administrative unit name
+    validations:
+      required: true
+  - type: textarea
+    id: existing-value
+    attributes:
+      label: Current record and suspected error
+      description: Describe the current administrative classification, hierarchy or geometry problem.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-correction
+    attributes:
+      label: Proposed corrected record
+      description: Include corrected name, classification or parent relationship. Specify a boundary source for geometry changes.
+    validations:
+      required: true
+  - type: input
+    id: evidence-url
+    attributes:
+      label: Public evidence URL
+      description: Link to an official publication, dated register or traceable open dataset.
+      placeholder: "https://..."
+    validations:
+      required: true
+  - type: input
+    id: evidence-reference-date
+    attributes:
+      label: Evidence publication or reference date
+      description: Supply a YYYY-MM-DD date or explain in the evidence section if unavailable.
+      placeholder: "2024-12-31"
+    validations:
+      required: true
+  - type: textarea
+    id: evidence-detail
+    attributes:
+      label: Evidence details and effective-date explanation
+      description: Provide page, section or dataset ID and distinguish publication date from administrative effective date.
+    validations:
+      required: true
+  - type: checkboxes
+    id: declarations
+    attributes:
+      label: Submission declaration
+      options:
+        - label: I have not included private personal information or unverified claims presented as official facts.
+          required: true
