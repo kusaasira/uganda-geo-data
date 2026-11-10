@@ -47,7 +47,10 @@ final class LegacyJsonImporterTest extends TestCase
         $this->assertSame('legacy:parish:4', $snapshot['units'][5]['parent_id']);
         $this->assertSame('legacy:parish:4', $snapshot['units'][6]['parent_id']);
         $this->assertSame('legacy:parish:5', $snapshot['units'][4]['id']);
-        $this->assertSame($snapshot, (new LegacyJsonImporter())->import($this->dir));
+        $this->assertSame(
+            json_encode($snapshot, JSON_THROW_ON_ERROR),
+            json_encode((new LegacyJsonImporter())->import($this->dir), JSON_THROW_ON_ERROR)
+        );
         $json = json_encode($snapshot, JSON_THROW_ON_ERROR);
         $this->assertStringContainsString('"external_codes":{}', $json);
         $this->assertSame([], json_decode($json, true, 512, JSON_THROW_ON_ERROR)['units'][0]['external_codes']);
@@ -95,5 +98,4 @@ final class LegacyJsonImporterTest extends TestCase
         $this->expectExceptionMessage('source file is empty');
         (new LegacyJsonImporter())->import($this->dir);
     }
-
 }
