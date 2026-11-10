@@ -27,7 +27,11 @@ final class SoftwareBillOfMaterials
             throw new InvalidArgumentException('Invalid package metadata for software bill of materials');
         }
         $resolved = [];
-        foreach ($lock['packages'] ?? [] as $package) {
+        $packages = $lock['packages'] ?? [];
+        if (!is_array($packages)) {
+            throw new InvalidArgumentException('Invalid Composer production package inventory');
+        }
+        foreach ($packages as $package) {
             if (!is_array($package) || !is_string($package['name'] ?? null)
                 || !is_string($package['version'] ?? null)) {
                 throw new InvalidArgumentException('Invalid Composer runtime lock');
