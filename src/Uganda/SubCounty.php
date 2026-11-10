@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Uganda;
 
+use Uganda\Exceptions\AmbiguousLocationException;
+
 use Uganda\Exceptions\ParishNotFoundException;
 use Uganda\Exceptions\VillageNotFoundException;
 
@@ -54,10 +56,21 @@ final class SubCounty
 
     public function parish(string $name): Parish
     {
-        foreach ($this->parishes as $child) {
-            if (strtolower($child->name()) === strtolower($name)) {
-                return $child;
+        $matches = [];
+        foreach ($this->parishes() as $candidate) {
+            if (strtolower(trim($candidate->name())) === strtolower(trim($name))) {
+                $matches[] = $candidate;
             }
+        }
+        if (count($matches) > 1) {
+            throw new AmbiguousLocationException(sprintf(
+                'multiple parish records match %s; use an ID or parent-scoped lookup',
+                $name
+            ));
+        }
+
+        if (isset($matches[0])) {
+            return $matches[0];
         }
 
         throw new ParishNotFoundException(sprintf('unable to locate parish called %s', $name));
@@ -78,12 +91,21 @@ final class SubCounty
      */
     public function village(string $name): Village
     {
-        foreach ($this->parishes() as $parish) {
-            try {
-                return $parish->village($name);
-            } catch (VillageNotFoundException $exception) {
-                continue;
+        $matches = [];
+        foreach ($this->villages() as $candidate) {
+            if (strtolower(trim($candidate->name())) === strtolower(trim($name))) {
+                $matches[] = $candidate;
             }
+        }
+        if (count($matches) > 1) {
+            throw new AmbiguousLocationException(sprintf(
+                'multiple village records match %s; use an ID or parent-scoped lookup',
+                $name
+            ));
+        }
+
+        if (isset($matches[0])) {
+            return $matches[0];
         }
 
         throw new VillageNotFoundException(sprintf('unable to locate village called %s', $name));
