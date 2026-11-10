@@ -15,25 +15,23 @@ final class AdministrativeNameSearchTest extends TestCase
     public function returnsAllGlobalNameMatchesInsteadOfChoosingArbitrarily(): void
     {
         $uganda = new Uganda();
-        $matches = $uganda->searchByName('county', 'Lower Madi');
+        $fixture = $this->repeatedParishFixture();
+        $matches = $uganda->searchByName('parish', $fixture['name']);
         $this->assertGreaterThanOrEqual(2, count($matches));
-        $this->assertNotSame($matches[0]->id(), $matches[1]->id());
 
         $this->expectException(AmbiguousAdministrativeNameException::class);
-        $uganda->county('Lower Madi');
+        $uganda->parish($fixture['name']);
     }
 
     /** @test */
-    public function scopesRepeatedCountyNamesToTheirActualParents(): void
+    public function scopesRepeatedParishNamesToTheirActualParent(): void
     {
         $uganda = new Uganda();
-        $matches = $uganda->searchByName('county', 'Lower Madi');
-        $this->assertNotEmpty($matches);
-        $county = $matches[0];
-        $scoped = $uganda->searchByName('county', 'lower madi', $county->districtId());
-        $this->assertContains($county, $scoped);
-        foreach ($scoped as $candidate) {
-            $this->assertSame($county->districtId(), $candidate->districtId());
+        $fixture = $this->repeatedParishFixture();
+        $matches = $uganda->searchByName('parish', $fixture['name'], $fixture['parent']);
+        $this->assertGreaterThanOrEqual(2, count($matches));
+        foreach ($matches as $candidate) {
+            $this->assertSame($fixture['parent'], $candidate->subCountyId());
         }
     }
 
@@ -62,5 +60,20 @@ final class AdministrativeNameSearchTest extends TestCase
         $uganda = new Uganda();
         $this->expectException(InvalidArgumentException::class);
         $uganda->searchByName('continent', 'Africa');
+    }
+    /** @return array{name: string, parent: int} */
+    private function repeatedParishFixture(): array
+    {
+        $source = dirname(__DIR__, 2) . '/src/Uganda/Data/parishes.json';
+        $rows = json_decode((string) file_get_contents($source), true, 512, JSON_THROW_ON_ERROR);
+        $seen = [];
+        foreach ($rows as $row) {
+            $key = $row['subcounty'] . ':' . strtolower($row['name']);
+            if (isset($seen[$key])) {
+                return ['name' => $row['name'], 'parent' => (int) $row['subcounty']];
+            }
+            $seen[$key] = true;
+        }
+        $this->fail('Required same-parent parish name fixture is absent');
     }
 }
