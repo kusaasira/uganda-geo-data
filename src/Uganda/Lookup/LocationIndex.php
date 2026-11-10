@@ -19,7 +19,7 @@ final class LocationIndex
     private array $parentById = [];
 
     /** @var array<string, array<int, array<int, int>>> */
-    private array $childrenByParent = [];
+    private ?array $childrenByParent = null;
 
     /** @param array<int, District> $districts */
     public function __construct(array $districts)
@@ -49,10 +49,7 @@ final class LocationIndex
         $this->byId[$level][$id] = $unit;
         $this->byName[$level][strtolower(trim($name))][] = $id;
         $this->parentById[$level][$id] = $parentId;
-        if ($parentId !== null) {
-            $this->childrenByParent[$level][$parentId][] = $id;
-        }
-    }
+      }
 
     public function byId(string $level, int $id): ?object
     {
@@ -80,6 +77,19 @@ final class LocationIndex
         $this->assertLevel($level);
         if ($level === 'district') {
             throw new InvalidArgumentException('Districts have no administrative parent in this dataset');
+        }
+
+        // Keep the secondary child index lazy: ID/name searches should not
+        // allocate an additional 70,000+ entry relation map unnecessarily.
+        if ($this->childrenByParent === null) {
+            $this->childrenByParent = [];
+            foreach ($this->parentById as $childLevel => $parents) {
+                foreach ($parents as $childId => $idOfParent) {
+                    if ($idOfParent !== null) {
+                        $this->childrenByParent[$childLevel][$idOfParent][] = $childId;
+                    }
+                }
+            }
         }
 
         $children = [];
