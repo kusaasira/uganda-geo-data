@@ -94,5 +94,4 @@ final class CanonicalIntegrityValidatorTest extends TestCase
         $this->assertStringContainsString('Invalid lifecycle status', implode(' ', $result['errors']));
         $this->assertStringContainsString('Invalid aliases', implode(' ', $result['errors']));
     }
-
 }
