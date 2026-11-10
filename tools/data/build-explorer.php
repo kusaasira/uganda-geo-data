@@ -6,7 +6,7 @@ use Uganda\Data\ExplorerIndexBuilder;
 
 require dirname(__DIR__, 2) . '/vendor/autoload.php';
 
-if ($argc !== 3 || !is_file($argv[1])) {
+if (($argc !== 3 && $argc !== 4) || !is_file($argv[1])) {
     fwrite(STDERR, "Usage: php tools/data/build-explorer.php canonical.json NEW_OUTPUT_DIRECTORY\n");
     exit(2);
 }
@@ -24,6 +24,13 @@ try {
         throw new UnexpectedValueException('Invalid canonical input snapshot');
     }
     $index = (new ExplorerIndexBuilder())->build($snapshot);
+    if (isset($argv[3])) {
+        $coverage = json_decode((string) file_get_contents($argv[3]), true, 512, JSON_THROW_ON_ERROR);
+        if (!is_array($coverage)) {
+            throw new UnexpectedValueException('Invalid reviewed geometry coverage report');
+        }
+        $index['geometry_coverage'] = (new \Uganda\Data\ExplorerCoverageSummary())->summarize($index, $coverage);
+    }
 
     $parent = dirname($output);
     if (!is_dir($parent) && !mkdir($parent, 0755, true)) {
