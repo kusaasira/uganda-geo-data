@@ -15,6 +15,7 @@ final class PolygonTopologyAuditor
     public function audit(array $geometry): array
     {
         GeometryContract::assertGeometry($geometry);
+        /** @var array<int, array<int, array<int, array<int, int|float>>>> $polygons */
         $polygons = $geometry['type'] === 'Polygon' ? [$geometry['coordinates']] : $geometry['coordinates'];
         $issues = [];
         $ringReport = [];
@@ -33,8 +34,21 @@ final class PolygonTopologyAuditor
                 if ($this->selfIntersects($ring)) {
                     $issues[] = ['polygon' => $polygonIndex, 'ring' => $ringIndex, 'code' => 'self_intersection'];
                 }
-                if ($ringIndex > 0 && !$this->contains($rings[0], $ring[0])) {
-                    $issues[] = ['polygon' => $polygonIndex, 'ring' => $ringIndex, 'code' => 'hole_outside_exterior'];
+                if ($ringIndex > 0) {
+                    $outside = $this->ringsIntersect($rings[0], $ring);
+                    foreach ($ring as $point) {
+                        if (!$this->contains($rings[0], $point)) {
+                            $outside = true;
+                            break;
+                        }
+                    }
+                    if ($outside) {
+                        $issues[] = [
+                            'polygon' => $polygonIndex,
+                            'ring' => $ringIndex,
+                            'code' => 'hole_outside_exterior',
+                        ];
+                    }
                 }
             }
         }
@@ -59,6 +73,23 @@ final class PolygonTopologyAuditor
         }
 
         return $sum / 2.0;
+    }
+
+    /**
+     * @param array<int, array<int, int|float>> $outer
+     * @param array<int, array<int, int|float>> $inner
+     */
+    private function ringsIntersect(array $outer, array $inner): bool
+    {
+        for ($i = 0, $maxA = count($outer) - 1; $i < $maxA; $i++) {
+            for ($j = 0, $maxB = count($inner) - 1; $j < $maxB; $j++) {
+                if ($this->segmentsIntersect($outer[$i], $outer[$i + 1], $inner[$j], $inner[$j + 1])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /** @param array<int, array<int, float|int>> $ring */
