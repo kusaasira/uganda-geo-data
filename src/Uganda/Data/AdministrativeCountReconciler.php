@@ -30,24 +30,37 @@ final class AdministrativeCountReconciler
         }
 
         $legacyCounts = [];
+        $seenUnitIds = [];
+        if (array_keys($snapshot['units']) !== array_keys(array_values($snapshot['units']))) {
+            throw new InvalidArgumentException('Canonical snapshot units must be a list');
+        }
         foreach ($snapshot['units'] as $index => $unit) {
             if (!is_array($unit) || !isset($unit['id'], $unit['level']) ||
                 !is_string($unit['id']) || $unit['id'] === '' ||
                 !is_string($unit['level']) || $unit['level'] === '') {
                 throw new InvalidArgumentException("Invalid canonical unit at index $index");
             }
+            if (isset($seenUnitIds[$unit['id']])) {
+                throw new InvalidArgumentException('Duplicate canonical unit ID: ' . $unit['id']);
+            }
+            $seenUnitIds[$unit['id']] = true;
             $level = $unit['level'];
             $legacyCounts[$level] = ($legacyCounts[$level] ?? 0) + 1;
         }
         ksort($legacyCounts);
 
         $reports = [];
+        $seenPublications = [];
         foreach ($references['publications'] as $index => $publication) {
             if (!is_array($publication) || !isset($publication['id'], $publication['url'], $publication['counts']) ||
                 !is_string($publication['id']) || !is_string($publication['url']) ||
                 !is_array($publication['counts']) || $publication['counts'] === []) {
                 throw new InvalidArgumentException("Invalid UBOS reference at index $index");
             }
+            if (isset($seenPublications[$publication['id']])) {
+                throw new InvalidArgumentException('Duplicate UBOS publication ID: ' . $publication['id']);
+            }
+            $seenPublications[$publication['id']] = true;
             $comparisons = [];
             foreach ($publication['counts'] as $category => $expected) {
                 if (!is_string($category) || !is_int($expected) || $expected < 0) {
