@@ -23,6 +23,12 @@ final class SoftwareBillOfMaterialsTest extends TestCase
         $bom = $builder->build($composer, null, '2.0.0-dev');
         self::assertSame('CycloneDX', $bom['bomFormat']);
         self::assertSame(['ext-json', 'php'], array_column($bom['components'], 'name'));
+        self::assertSame('platform', $bom['components'][1]['type']);
+        self::assertArrayNotHasKey('version', $bom['components'][1]);
+        self::assertSame(
+            [['name' => 'composer:constraint', 'value' => '^8.2']],
+            $bom['components'][1]['properties']
+        );
         self::assertSame($bom, $builder->build($composer, null, '2.0.0-dev'));
     }
 
