@@ -38,5 +38,4 @@ final class SourcePublicationGateTest extends TestCase
                 'license_url' => 'https://example.org/license', 'attribution' => 'Example'],
         ]], ['same']);
     }
-
 }
