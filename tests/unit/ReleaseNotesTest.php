@@ -22,6 +22,9 @@ final class ReleaseNotesTest extends TestCase
         self::assertSame($notes, (new ReleaseNotes())->render($manifest, 'v2.0.0-rc.1'));
         self::assertLessThan(strpos($notes, '## Fixed'), strpos($notes, '## Added'));
         self::assertStringContainsString('## Upgrade', $notes);
+        self::assertStringContainsString('Before stable publication', $notes);
+        self::assertStringContainsString('After publishing the stable tag', $notes);
+        self::assertStringNotContainsString('exact-tag Packagist installation pass', $notes);
     }
 
     /** @test */
