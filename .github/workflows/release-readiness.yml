@@ -2,7 +2,7 @@ name: Release readiness inventory (nonpublishing)
 
 on:
   pull_request:
-    branches: [next/2.x]
+    branches: [main, next/2.x]
   workflow_dispatch:
 
 permissions:
