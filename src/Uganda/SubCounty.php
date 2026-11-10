@@ -15,13 +15,13 @@ final class SubCounty
 
     private int $countyId;
 
-    /** @var array<string, Parish> */
+    /** @var array<int|string, Parish> */
     private array $parishes;
 
     /**
      * @param int $id
      * @param string $name
-     * @param array<string, Parish> $parishes
+     * @param array<int|string, Parish> $parishes
      */
     public function __construct(int $id, string $name, int $countyId, array $parishes = [])
     {
@@ -46,7 +46,7 @@ final class SubCounty
         return $this->countyId;
     }
 
-    /** @return array<string, Parish> */
+    /** @return array<int|string, Parish> */
     public function parishes(): array
     {
         return $this->parishes;
@@ -54,11 +54,13 @@ final class SubCounty
 
     public function parish(string $name): Parish
     {
-        if (!array_key_exists(strtolower($name), $this->parishes)) {
-            throw new ParishNotFoundException(sprintf('unable to locate parish called %s', $name));
+        foreach ($this->parishes as $child) {
+            if (strtolower($child->name()) === strtolower($name)) {
+                return $child;
+            }
         }
 
-        return $this->parishes[strtolower($name)];
+        throw new ParishNotFoundException(sprintf('unable to locate parish called %s', $name));
     }
 
     /** @return array<int, Village> */

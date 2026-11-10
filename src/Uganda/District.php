@@ -15,13 +15,13 @@ final class District
 
     private string $name;
 
-    /** @var array<string, County> */
+    /** @var array<int|string, County> */
     private $counties;
 
     /**
      * @param int $id
      * @param string $name
-     * @param array<string, County> $counties
+     * @param array<int|string, County> $counties
      */
     public function __construct(int $id, string $name, array $counties = [])
     {
@@ -41,7 +41,7 @@ final class District
     }
 
     /**
-     * @return array<string, County>
+     * @return array<int|string, County>
      */
     public function counties(): array
     {
@@ -53,11 +53,13 @@ final class District
      */
     public function county(string $name): County
     {
-        if (!array_key_exists(strtolower($name), $this->counties)) {
-            throw new CountyNotFoundException(sprintf('unable to locate county called %s', $name));
+        foreach ($this->counties as $child) {
+            if (strtolower($child->name()) === strtolower($name)) {
+                return $child;
+            }
         }
 
-        return $this->counties[strtolower($name)];
+        throw new CountyNotFoundException(sprintf('unable to locate county called %s', $name));
     }
 
     /** @return array<int, SubCounty> */
