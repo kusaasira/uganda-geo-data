@@ -77,4 +77,11 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist
       - name: Audit production dependencies
-        run: composer audit --no-dev
+        run: |
+          set -euo pipefail
+          count=$(composer show --no-dev --format=json | php -r '$data = json_decode(stream_get_contents(STDIN), true, 512, JSON_THROW_ON_ERROR); echo count($data["installed"] ?? []);')
+          if [ "$count" -eq 0 ]; then
+            echo "No third-party production dependencies exist; advisory audit not applicable."
+          else
+            composer audit --no-dev
+          fi
