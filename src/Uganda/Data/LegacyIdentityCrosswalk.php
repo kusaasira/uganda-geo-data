@@ -66,9 +66,11 @@ final class LegacyIdentityCrosswalk
             if (strpos($decision['evidence_url'], 'https://') !== 0 ||
                 trim($decision['reviewer']) === '' ||
                 !preg_match('/^\d{4}-\d{2}-\d{2}$/', $decision['evidence_date']) ||
-                !checkdate((int) substr($decision['evidence_date'], 5, 2),
+                !checkdate(
+                    (int) substr($decision['evidence_date'], 5, 2),
                     (int) substr($decision['evidence_date'], 8, 2),
-                    (int) substr($decision['evidence_date'], 0, 4))) {
+                    (int) substr($decision['evidence_date'], 0, 4)
+                )) {
                 throw new InvalidArgumentException("Verified mapping for $legacy requires dated HTTPS evidence and reviewer");
             }
             $byLegacy[$legacy] = $decision;
