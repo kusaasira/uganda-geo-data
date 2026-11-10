@@ -21,7 +21,17 @@ $matches = $geo->searchByName('district', $district->name());
 if (!in_array($district, $matches, true)) {
     throw new RuntimeException('Name search did not preserve the district identity');
 }
-$countyCount = count($geo->childrenOf('county', $district->id()));
+$counties = $geo->childrenOf('county', $district->id());
+if ($geo->findById('district', PHP_INT_MAX) !== null) {
+    throw new RuntimeException('Unknown district IDs must return null');
+}
+if ($counties !== []) {
+    $county = reset($counties);
+    if (!in_array($county, $geo->searchByName('county', $county->name(), $district->id()), true)) {
+        throw new RuntimeException('Parent-scoped name lookup failed');
+    }
+}
+$countyCount = count($counties);
 $example = [
     'district' => ['id' => $district->id(), 'name' => $district->name()],
     'county_count' => $countyCount,
