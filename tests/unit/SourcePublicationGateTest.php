@@ -28,4 +28,15 @@ final class SourcePublicationGateTest extends TestCase
             ['id' => 'public', 'redistribution_status' => 'unverified'],
         ]], ['public']);
     }
+    /** @test */
+    public function itRejectsConflictingSourceRegistryIdentities(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        (new SourcePublicationGate())->assertMayPublish(['sources' => [
+            ['id' => 'same', 'redistribution_status' => 'restricted'],
+            ['id' => 'same', 'redistribution_status' => 'permitted',
+                'license_url' => 'https://example.org/license', 'attribution' => 'Example'],
+        ]], ['same']);
+    }
+
 }
