@@ -143,4 +143,29 @@ final class ReleaseEvidenceTest extends TestCase
             'counts_by_level' => ['district' => 1],
         ], null, null);
     }
+    /** @test */
+    public function itRejectsPassingSampleCoverageForAFullCanonicalParishSnapshot(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('different canonical parish/ward inventory');
+        (new ReleaseEvidence())->aggregate(
+            [
+                'valid' => true,
+                'total_units' => 100,
+                'counts_by_level' => ['district' => 1, 'parish' => 99],
+                'errors' => [],
+            ],
+            null,
+            [
+                'coverage' => 'complete',
+                'verified_count' => 1,
+                'canonical_parish_ward_count' => 1,
+                'source_feature_count' => 1,
+                'verified_matches' => [['unit_id' => 'parish:1', 'source_object_id' => '1']],
+                'unmapped_canonical_unit_ids' => [],
+                'unmatched_source_object_ids' => [],
+                'unresolved_source_object_ids' => [],
+            ]
+        );
+    }
 }
