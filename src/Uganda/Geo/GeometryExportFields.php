@@ -37,6 +37,11 @@ final class GeometryExportFields
                 if (!is_string($original[$field] ?? null) || trim($original[$field]) === '') {
                     throw new InvalidArgumentException('Missing reviewed geometry property: ' . $field);
                 }
+                // DBF text fields cannot hold more than 254 bytes. Reject
+                // oversize UTF-8 values before GDAL can silently truncate.
+                if (strlen($original[$field]) > 254) {
+                    throw new InvalidArgumentException('Reviewed geometry property exceeds DBF limit: ' . $field);
+                }
             }
             if (isset($ids[$original['unit_id']])) {
                 throw new InvalidArgumentException('Duplicate reviewed parish identity');
