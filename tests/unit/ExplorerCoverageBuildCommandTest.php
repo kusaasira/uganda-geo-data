@@ -23,8 +23,12 @@ final class ExplorerCoverageBuildCommandTest extends TestCase
             $exit = 0;
             exec($command, $lines, $exit);
             self::assertSame(0, $exit, implode("\n", $lines));
-            $index = json_decode((string) file_get_contents($destination . '/data.json'),
-                true, 512, JSON_THROW_ON_ERROR);
+            $index = json_decode(
+                (string) file_get_contents($destination . '/data.json'),
+                true,
+                512,
+                JSON_THROW_ON_ERROR
+            );
             self::assertSame(1, $index['geometry_coverage']['reviewed']);
             self::assertSame(1, $index['geometry_coverage']['total']);
             self::assertSame('unverified', $index['geometry_coverage']['national_coverage']);
