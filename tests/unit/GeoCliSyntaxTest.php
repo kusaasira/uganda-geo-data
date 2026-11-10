@@ -16,7 +16,7 @@ final class GeoCliSyntaxTest extends TestCase
         }
 
         $root = dirname(__DIR__, 2);
-        $scripts = ['tools/validate-source-registry.php','tools/geo/inspect-arcgis.php','tools/geo/download-arcgis.php'];
+        $scripts = ['tools/validate-source-registry.php', 'tools/geo/inspect-arcgis.php', 'tools/geo/download-arcgis.php'];
         foreach ($scripts as $script) {
             $command = escapeshellarg(PHP_BINARY) . ' -l ' . escapeshellarg($root . '/' . $script) . ' 2>&1';
             $output = [];
