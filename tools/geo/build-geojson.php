@@ -38,12 +38,28 @@ try {
 
     $document = (new VerifiedGeoJsonBuilder())->build($index, $snapshot, $decisions, $argv[6]);
     $out = json_encode($document, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n";
-    if (file_exists($argv[4])) {
-        throw new RuntimeException('Destination already exists; choose a new output path');
+    $outputPath = $argv[4];
+    $directory = dirname($outputPath);
+    if (!is_dir($directory) || !is_writable($directory)
+        || file_exists($outputPath) || is_link($outputPath)) {
+        throw new RuntimeException('Output directory must exist and destination must be unused');
     }
-    $temp = $argv[4] . '.partial-' . getmypid();
-    if (file_put_contents($temp, $out) === false || !rename($temp, $argv[4])) {
-        throw new RuntimeException('Cannot write verified GeoJSON output');
+
+    $temp = tempnam($directory, '.uganda-geo-');
+    if ($temp === false) {
+        throw new RuntimeException('Cannot create a temporary GeoJSON output');
+    }
+    try {
+        if (file_put_contents($temp, $out) !== strlen($out)) {
+            throw new RuntimeException('Cannot write complete GeoJSON output');
+        }
+        // Hard-linking the fully written file is atomic and never overwrites
+        // an existing destination even if another process creates one.
+        if (!link($temp, $outputPath)) {
+            throw new RuntimeException('GeoJSON destination exists or is not writable');
+        }
+    } finally {
+        unlink($temp);
     }
     fwrite(STDOUT, "Verified polygon collection generated; rights require review before public distribution\n");
 } catch (Throwable $error) {
