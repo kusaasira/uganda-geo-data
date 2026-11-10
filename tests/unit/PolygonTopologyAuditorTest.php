@@ -69,6 +69,32 @@ final class PolygonTopologyAuditorTest extends TestCase
     }
 
     /** @test */
+    public function reportsOverlappingHolesThatAreIndividuallyInsideTheExterior(): void
+    {
+        $geometry = ['type' => 'Polygon', 'coordinates' => [
+            [[0, 0], [8, 0], [8, 8], [0, 8], [0, 0]],
+            [[1, 1], [1, 4], [4, 4], [4, 1], [1, 1]],
+            [[3, 3], [3, 6], [6, 6], [6, 3], [3, 3]],
+        ]];
+        $issues = (new PolygonTopologyAuditor())->audit($geometry)['issues'];
+        $this->assertContains('hole_overlap', array_column($issues, 'code'));
+    }
+
+    /** @test */
+    public function reportsFullyNestedInteriorRingsAsAnInvalidHoleArrangement(): void
+    {
+        $geometry = ['type' => 'Polygon', 'coordinates' => [
+            [[0, 0], [8, 0], [8, 8], [0, 8], [0, 0]],
+            [[1, 1], [1, 6], [6, 6], [6, 1], [1, 1]],
+            [[2, 2], [2, 3], [3, 3], [3, 2], [2, 2]],
+        ]];
+        $this->assertContains(
+            'hole_overlap',
+            array_column((new PolygonTopologyAuditor())->audit($geometry)['issues'], 'code')
+        );
+    }
+
+    /** @test */
     public function includesEveryPartOfAMultipolygon(): void
     {
         $one = [[0, 0], [2, 0], [2, 2], [0, 0]];
