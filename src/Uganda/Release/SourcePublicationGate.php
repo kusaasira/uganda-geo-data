@@ -21,7 +21,11 @@ final class SourcePublicationGate
             throw new InvalidArgumentException('Release sources must be specified');
         }
         $sources = [];
-        foreach ($registry['sources'] ?? [] as $source) {
+        $entries = $registry['sources'] ?? null;
+        if (!is_array($entries)) {
+            throw new InvalidArgumentException('Invalid source registry inventory');
+        }
+        foreach ($entries as $source) {
             if (is_array($source) && is_string($source['id'] ?? null)) {
                 $sources[$source['id']] = $source;
             }
