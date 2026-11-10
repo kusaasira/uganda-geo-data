@@ -43,7 +43,7 @@
       "status": "pending",
       "evidence_url": null
     },
-    "published_tag_install_smoke": {
+    "prerelease_tag_install_smoke": {
       "status": "pending",
       "evidence_url": null
     }
