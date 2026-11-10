@@ -82,4 +82,13 @@ final class ParishBoundaryMatcherTest extends TestCase
         $report = (new ParishBoundaryMatcher())->match([], ['units' => []]);
         $this->assertSame('incomplete', $report['status']);
     }
+    /** @test */
+    public function rejectsEvidenceWithoutAnActualHttpsHost(): void
+    {
+        $decision = ['object_id' => 10, 'unit_id' => 'parish:1',
+            'parent_unit_id' => 'subcounty:1', 'evidence_url' => 'https://',
+            'evidence_date' => '2024-12-31', 'reviewer' => 'human-reviewer'];
+        $this->expectException(InvalidArgumentException::class);
+        (new ParishBoundaryMatcher())->match($this->features(), $this->snapshot(), [$decision]);
+    }
 }

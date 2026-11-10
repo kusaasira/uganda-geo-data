@@ -76,7 +76,8 @@ final class ParishBoundaryMatcher
             if (isset($byObject[$objectId]) || isset($byUnit[$unitId])) {
                 throw new InvalidArgumentException('Ambiguous duplicate polygon-to-unit assignment');
             }
-            if (strpos($decision['evidence_url'], 'https://') !== 0 ||
+            if (filter_var($decision['evidence_url'], FILTER_VALIDATE_URL) === false ||
+                parse_url($decision['evidence_url'], PHP_URL_SCHEME) !== 'https' ||
                 trim($decision['reviewer']) === '' ||
                 !preg_match('/^\d{4}-\d{2}-\d{2}$/', $decision['evidence_date']) ||
                 !checkdate(
