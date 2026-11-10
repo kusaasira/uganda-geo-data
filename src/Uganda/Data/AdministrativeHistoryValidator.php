@@ -52,7 +52,8 @@ final class AdministrativeHistoryValidator
             $url = $event['evidence_url'] ?? null;
             $parsed = is_string($date) ? \DateTimeImmutable::createFromFormat('!Y-m-d', $date) : false;
             if ($parsed === false || $parsed->format('Y-m-d') !== $date ||
-                !is_string($url) || strpos($url, 'https://') !== 0) {
+                !is_string($url) || filter_var($url, FILTER_VALIDATE_URL) === false ||
+                parse_url($url, PHP_URL_SCHEME) !== 'https') {
                 $errors[] = "Missing dated HTTPS event evidence at $index";
             }
         }

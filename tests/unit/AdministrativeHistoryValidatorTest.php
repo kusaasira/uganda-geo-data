@@ -40,4 +40,14 @@ final class AdministrativeHistoryValidatorTest extends TestCase
         $this->assertFalse($report['valid']);
         $this->assertNotEmpty($report['errors']);
     }
+    /** @test */
+    public function rejectsEvidenceReferencesWithoutAValidHost(): void
+    {
+        $report = (new AdministrativeHistoryValidator())->validate([[
+            'id' => 'event-1', 'kind' => 'rename', 'from_ids' => ['unit:1'],
+            'to_ids' => ['unit:1'], 'effective_date' => '2024-05-01',
+            'evidence_url' => 'https://',
+        ]]);
+        $this->assertFalse($report['valid']);
+    }
 }
