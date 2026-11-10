@@ -44,11 +44,16 @@ final class SoftwareBillOfMaterials
                 throw new InvalidArgumentException('Invalid runtime dependency definition');
             }
             if ($dependency === 'php' || str_starts_with($dependency, 'ext-')) {
+                // Composer constraints are not installed versions. An SBOM
+                // consumer must not interpret ^8.2 or * as an actual runtime.
                 $components[] = [
-                    'type' => 'framework',
+                    'type' => 'platform',
                     'name' => $dependency,
-                    'version' => $constraint,
-                    'description' => 'Composer platform constraint; not an installed runtime version',
+                    'description' => 'Composer platform requirement, not the installed runtime',
+                    'properties' => [[
+                        'name' => 'composer:constraint',
+                        'value' => $constraint,
+                    ]],
                 ];
                 continue;
             }
