@@ -68,6 +68,31 @@ final class ArtifactManifestTest extends TestCase
     }
 
     /** @test */
+    public function refusesAliasesToTheSamePhysicalReleaseArtifact(): void
+    {
+        $root = sys_get_temp_dir() . '/uganda-geo-alias-' . bin2hex(random_bytes(6));
+        mkdir($root);
+        try {
+            file_put_contents($root . '/dataset.json', '{}');
+            symlink('dataset.json', $root . '/alias.json');
+            $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessage('Duplicate artifact path');
+            (new ArtifactManifest())->build($root, ['dataset.json', 'alias.json']);
+        } finally {
+            unlink($root . '/alias.json');
+            unlink($root . '/dataset.json');
+            rmdir($root);
+        }
+    }
+
+    /** @test */
+    public function refusesNormalizedPathAliasesBeforeHashing(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        (new ArtifactManifest())->build(sys_get_temp_dir(), ['./any.json']);
+    }
+
+    /** @test */
     public function rejectsAnEmptyManifestPresentedForVerification(): void
     {
         $this->expectException(InvalidArgumentException::class);
