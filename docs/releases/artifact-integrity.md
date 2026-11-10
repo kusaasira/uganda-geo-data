@@ -1,5 +1,7 @@
 # Release artifact integrity
 
+This release tooling targets **PHP 8.2 or later**. It depends on the package metadata correction and PHP support contract in PR #38. Do not merge into an integration branch that still declares PHP 7.4 as supported because the checksum implementation uses functions introduced after PHP 7.4.
+
 Release assets are built outside the source tree, then bound to immutable SHA-256 checksums. The manifest contains artifact-relative paths, byte counts and cryptographic hashes without embedding build timestamps, so reruns over identical files are deterministic.
 
 ```bash
