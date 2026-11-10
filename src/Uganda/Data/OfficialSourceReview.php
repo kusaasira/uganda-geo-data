@@ -39,7 +39,8 @@ final class OfficialSourceReview
                 throw new InvalidArgumentException("Duplicate publication ID $id");
             }
             $ids[$id] = true;
-            if (strpos($source['url'], 'https://') !== 0) {
+            if (filter_var($source['url'], FILTER_VALIDATE_URL) === false ||
+                parse_url($source['url'], PHP_URL_SCHEME) !== 'https') {
                 throw new InvalidArgumentException("Publication $id must have an HTTPS URL");
             }
             $year = $source['reference_year'] ?? null;

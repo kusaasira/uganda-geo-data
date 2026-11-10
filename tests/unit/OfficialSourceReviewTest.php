@@ -54,4 +54,14 @@ final class OfficialSourceReviewTest extends TestCase
         $this->assertFalse($report['publications'][0]['unit_identity_ready']);
         $this->assertNull($report['publications'][0]['legal_effective_date']);
     }
+    /** @test */
+    public function rejectsPublicationUrlsWithoutAValidHttpsHost(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        (new OfficialSourceReview())->review(['publications' => [[
+            'id' => 'bad-url', 'publisher' => 'UBOS', 'title' => 'Report',
+            'url' => 'https://', 'scope' => 'National reporting',
+            'status' => 'contextual_aggregate', 'unit_level_identity_verified' => false,
+        ]]]);
+    }
 }
