@@ -26,21 +26,6 @@
         "pcode2024",
         "pname2024"
       ]
-    },
-    {
-      "id": "arcgis-legacy-parishes",
-      "source_id": "arcgis-uganda-parishes-2024",
-      "url": "https://services.arcgis.com/CmINIEzurW7Tagtl/arcgis/rest/services/Uganda_Administrative_Boundaries/FeatureServer/0",
-      "kind": "arcgis_feature_layer",
-      "label": "Uganda Parish (historical comparison only)",
-      "geometry_type": "esriGeometryPolygon",
-      "source_crs": "EPSG:4326",
-      "requested_crs": "EPSG:4326",
-      "object_id_field": null,
-      "max_record_count": 1000,
-      "authority": "third_party_unverified",
-      "redistribution_status": "unverified",
-      "expected_fields": []
     }
   ]
 }

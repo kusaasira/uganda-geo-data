@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once dirname(__DIR__, 2) . '/src/Uganda/Geo/ArcGisLayerMetadata.php';
+
 $catalogue = dirname(__DIR__, 2) . '/resources/geometry/endpoints.json';
 $id = $argv[1] ?? 'arcgis-parishes-2024';
 if ($id === '' || !preg_match('/^[a-z0-9-]+$/', $id)) {
@@ -36,9 +38,10 @@ try {
         throw new RuntimeException('Layer metadata request failed or exceeded 1 MiB');
     }
     $metadata = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
-    if (!is_array($metadata) || isset($metadata['error']) || !isset($metadata['id'], $metadata['name'], $metadata['geometryType'])) {
+    if (!is_array($metadata)) {
         throw new RuntimeException('Unexpected FeatureServer layer response');
     }
+    \Uganda\Geo\ArcGisLayerMetadata::assertMatches($metadata, $matched);
     $output = [
         'endpoint_id' => $id,
         'url' => $url,
