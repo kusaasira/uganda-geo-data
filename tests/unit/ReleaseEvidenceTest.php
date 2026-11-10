@@ -14,7 +14,7 @@ final class ReleaseEvidenceTest extends TestCase
     public function itNeverInfersPublicationApprovalFromPassingTechnicalChecks(): void
     {
         $report = (new ReleaseEvidence())->aggregate(
-            ['valid' => true, 'total_units' => 80000, 'counts_by_level' => ['district' => 80000], 'errors' => []],
+            ['valid' => true, 'total_units' => 80000, 'counts_by_level' => ['district' => 79995, 'parish' => 5], 'errors' => []],
             ['feature_count' => 5, 'failed_count' => 0, 'results' => array_map(
                 static function (int $index): array {
                     return ['feature_index' => $index, 'audit' => ['status' => 'passed', 'issues' => []]];
@@ -81,7 +81,7 @@ final class ReleaseEvidenceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Parish coverage status contradicts matching evidence');
         (new ReleaseEvidence())->aggregate(
-            ['valid' => true, 'total_units' => 2, 'counts_by_level' => ['district' => 2], 'errors' => []],
+            ['valid' => true, 'total_units' => 2, 'counts_by_level' => ['parish' => 2], 'errors' => []],
             null,
             [
                 'coverage' => 'complete',
@@ -102,7 +102,7 @@ final class ReleaseEvidenceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('duplicate verified parish');
         (new ReleaseEvidence())->aggregate(
-            ['valid' => true, 'total_units' => 2, 'counts_by_level' => ['district' => 2], 'errors' => []],
+            ['valid' => true, 'total_units' => 2, 'counts_by_level' => ['parish' => 2], 'errors' => []],
             null,
             [
                 'coverage' => 'complete',
