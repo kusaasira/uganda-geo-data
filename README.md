@@ -6,166 +6,85 @@ Uganda Geo is a framework-independent PHP library for administrative location da
 
 This package gives you the leverage to access all sub levels ranging from districts, counties, subcounties, parishes to villages in Uganda. You can also access the different mentioned areas independently.
 
-## Table of Contents
+## Versions and requirements
 
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Retrieve Districts data](#retrieve-districts-data)
-  - [Retrieve Individual geo units data.](#retrieve-individual-geo-units-data)
-- [Credits](#credits)
-- [Contributions](#contributions)
-- [License](#license)
+The currently published stable package is **v1.0.0**. It exposes the chainable \`Uganda\Geo\` class. The forthcoming **v2.0.0** release is not published yet and introduces a different \`Uganda\Uganda\` object model.
 
-## Requirements
-
-In order to run this project, ensure that you have installed;
-
-- PHP 8.2 or later for the planned v2 release (the currently published v1 tag has different requirements)
-- Composer
+- **Stable v1:** Follow the requirements and API of the existing immutable v1.0.0 tag.
+- **Development v2:** Minimum PHP **8.2** and Composer 2. The PHP 8.2 branch reaches upstream end of security maintenance on 31 December 2026, so consumer deployments should plan an upgrade.
 
 ## Installation
 
-Install with Composer. **Important:** the currently published stable tag, `v1.0.0`, exposes the older `Uganda\Geo` API. The `Uganda\Uganda` examples below describe the development branch and must not be presented as installation instructions for that stable tag. Do not migrate production consumers until a compatible v2 tag is available.
+### Published stable v1
 
-```bash
-composer require kusaasira/uganda-geo
-```
+\`\`\`bash
+composer require "kusaasira/uganda-geo:^1.0"
+\`\`\`
 
-## Usage
+\`\`\`php
+<?php
 
-The examples below show examples of usage of the package and their resulting outputs
+require 'vendor/autoload.php';
 
-### Retrieve Districts data.
+use Uganda\Geo;
 
-```php
+// The v1 API is chainable and returns JSON using all().
+$json = (new Geo())->districts('Mukono')->counties()->all();
+echo $json;
+\`\`\`
+
+### Upcoming v2
+
+After a stable v2 release is published, install it with:
+
+\`\`\`bash
+composer require "kusaasira/uganda-geo:^2.0"
+\`\`\`
+
+Until then, the examples below apply only to a checkout of the \`next/2.x\` integration branch with Composer dependencies installed. They are **not** compatible with the published v1 package.
+
+## Development v2 API
+
+\`\`\`php
+<?php
+
 use Uganda\Uganda;
 
 $uganda = new Uganda();
 
-# Retrieve all districts
-$districts = $uganda->districts();
-
-# Retrieve all counties in a particular district
-$counties = $uganda
-    ->district('Mukono')
-    ->counties();
-
-# Retrieve all sub counties in a particular district
-$subCounties = $uganda
-    ->district('Mukono')
-    ->subCounties();
-
-
-# Retrieve all parishes in a particular district
-$parishes = $uganda
-    ->district('Mukono')
-    ->parishes();
-
-# Retrieve all villages in a particular district
-$villages = $uganda
-    ->district('Mukono')
-    ->villages();
-```
-
-### Retrieve County data.
-
-```php
-use Uganda\Uganda;
-
-$uganda = new Uganda();
-
-# Retrieve all counties
-$counties = $uganda->counties();
-
-# Retrieve specific county
-$county = $uganda->county('Adjumani West County');
-
-# Retrieve all sub counties in a particular county
-$subCounties = $uganda
-    ->county('Adjumani West County')
-    ->subCounties();
-
-# Retrieve all parishes in a particular county
-$parishes = $uganda
-    ->county('Adjumani West County')
-    ->parishes();
-
-# Retrieve all villages in a particular county
-$villages = $uganda
-    ->county('Adjumani West County')
-    ->villages();
-```
-
-### Retrieve Sub County data.
-
-```php
-use Uganda\Uganda;
-
-$uganda = new Uganda();
-
-# Retrieve all sub counties
-$subCounties = $uganda->subCounties();
-
-# Retrieve specific sub county
-$subCounty = $uganda->subCounty('Namasale Town Council');
-
-# Retrieve all parishes in a particular sub county
-$parishes = $uganda
-    ->subCounty('Namasale Town Council')
-    ->parishes();
-
-# Retrieve all villages in a particular sub county
-$villages = $uganda
-    ->subCounty('Namasale Town Council')
-    ->villages();
-```
-
-### Retrieve Parish data.
-
-```php
-use Uganda\Uganda;
-
-$uganda = new Uganda();
-
-# Retrieve all parishes
-$parishes = $uganda->parishes();
-
-# Retrieve specific parish
-$parish = $uganda->parish('Bunamwamba');
-
-# Retrieve all villages in a particular parish
-$villages = $uganda
-    ->parish('Bunamwamba')
-    ->villages();
-```
-
-### Retrieve Village data.
-
-```php
-use Uganda\Uganda;
-
-$uganda = new Uganda();
-
-# Retrieve all villages
-$villages = $uganda->villages();
-
-# Retrieve specific village
-$village = $uganda->village('Ayeye');
-```
-
-## Identity-safe queries (development branch)
-
-Use source IDs for identity and parent-scoped searches for repeated place names:
-
-```php
+// Access a district by name when the name is unambiguous.
 $district = $uganda->district('Mukono');
-$sameDistrict = $uganda->findById('district', $district->id());
-$subCounty = $uganda->subCounty('Namasale Town Council');
-$parishes = $uganda->searchByName('parish', 'Central', $subCounty->id());
-```
+$districtId = $district->id();
 
-Name-only global lookups can raise `AmbiguousLocationException`. Collection keys in the next major release are source IDs rather than normalized place names. The historical numeric IDs are not established official UBOS codes. See [v1-to-v2 migration](docs/migration/v1-to-v2.md).
+// Recover the same model using its stable package identity.
+$matchingDistrict = $uganda->findById('district', $districtId);
+assert($matchingDistrict === $district);
+
+// Traverse direct descendants using the actual parent model.
+foreach ($district->counties() as $county) {
+    foreach ($county->subCounties() as $subCounty) {
+        foreach ($subCounty->parishes() as $parish) {
+            foreach ($parish->villages() as $village) {
+                // Each model carries an ID and a name.
+                echo $village->id(), ': ', $village->name(), PHP_EOL;
+            }
+        }
+    }
+}
+
+// Lookups by name can have more than one result.
+$matches = $uganda->searchByName('parish', 'Central');
+
+// Scope the search to an existing parent when that parent is known.
+$subCounty = $uganda->searchByName('subcounty', 'Namasale Town Council')[0] ?? null;
+if ($subCounty !== null) {
+    $localParishes = $uganda->searchByName('parish', 'Central', $subCounty->id());
+}
+\`\`\`
+
+Global singular name methods such as \`$uganda->parish($name)\` throw an \`AmbiguousLocationException\` if multiple source units share that name. Use an ID or parent-scoped result set rather than accepting an arbitrary first match. Legacy numeric identifiers are **package source IDs**, not proven official government codes.
+
+See the [v1-to-v2 migration guide](docs/migration/v1-to-v2.md) and [official source review](docs/data/official-source-review.md) for data provenance, breaking changes and known limitations.
 
 ## Credits
 
