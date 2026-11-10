@@ -106,4 +106,26 @@ final class JsonDatasetLoaderTest extends TestCase
         $this->expectExceptionMessage('Invalid parish parent ID');
         (new JsonDatasetLoader())->load($path);
     }
+    /** @test */
+    public function rejectsOrphanedSourceRecordsInsteadOfDiscardingTheirDescendants(): void
+    {
+        $tables = [
+            'districts' => '[{"id":"1","name":"District"}]',
+            'counties' => '[{"id":"1","name":"County","district":"1"}]',
+            'sub_counties' => '[{"id":"1","name":"Subcounty","county":"1"}]',
+            'parishes' => '[{"id":"1","name":"Parish","subcounty":"1"}]',
+            'villages' => '[{"id":"1","name":"Village","parish":"1"}]',
+        ];
+        foreach ($tables as $tier => $json) {
+            file_put_contents($this->directory . '/' . $tier . '.json', $json);
+        }
+        $valid = new Uganda($this->directory);
+        $this->assertCount(1, $valid->villages());
+
+        file_put_contents($this->directory . '/villages.json',
+            '[{"id":"1","name":"Village","parish":"999"}]');
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage('Orphan village');
+        new Uganda($this->directory);
+    }
 }
