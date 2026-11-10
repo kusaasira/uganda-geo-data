@@ -29,6 +29,7 @@ final class GeometryArchiveTest extends TestCase
             }
             file_put_contents($root . '/metadata.json', json_encode([
                 'feature_count' => 1, 'publication_rights' => 'review_required',
+                'crs' => 'EPSG:4326',
                 'source_sha256' => str_repeat('a', 64),
             ], JSON_THROW_ON_ERROR));
             $manifest = (new GeometryArchive())->build($root, 'v2.0.0-rc.1', $zip);
