@@ -1,0 +1,36 @@
+name: Deterministic dataset release
+
+on:
+  pull_request:
+    branches: [main, next/2.x]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Build twice and compare exact bytes
+        run: |
+          mkdir -p build
+          php tools/release/build-dataset.php src/Uganda/Data build/first
+          php tools/release/build-dataset.php src/Uganda/Data build/second
+          cmp build/first/canonical.json build/second/canonical.json
+          cmp build/first/qa.json build/second/qa.json
+          cmp build/first/manifest.json build/second/manifest.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: canonical-release-evidence
+          path: |
+            build/first/qa.json
+            build/first/manifest.json
+          retention-days: 7
