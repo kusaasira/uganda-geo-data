@@ -56,5 +56,4 @@ final class PerformanceBudgetTest extends TestCase
             ['constructor_ms' => 750, 'index_warmup_ms' => 250, 'memory_peak_bytes' => 167772160]
         );
     }
-
 }
