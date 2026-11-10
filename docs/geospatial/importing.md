@@ -18,7 +18,7 @@ The target directory must not exist. Acquisition rejects an empty object-ID inve
 - Every ID from `returnIdsOnly=true` must appear in exactly one feature response; missing, extra or duplicate IDs fail the run.
 - Every returned geometry must be a valid structural Polygon/MultiPolygon with closed rings and finite longitude/latitude values.
 - The downloader requests `outSR=4326` and records the service's declared original CRS separately.
-- Each original GeoJSON page is saved unchanged with SHA-256, byte count, HTTP response headers, exact request URL and the requested object IDs. The downloader also spaces page requests by 150 ms to avoid unnecessarily hammering the public service.
+- Each original GeoJSON page is saved unchanged with SHA-256, byte count, a safe allowlist of HTTP response metadata (never cookies or authentication headers), exact request URL and the requested object IDs. The downloader also spaces page requests by 150 ms to avoid unnecessarily hammering the public service.
 - The final manifest records retrieval time, source URL, object ID field, raw inventory hash, page digests and total feature count.
 - The output directory is only made visible at its final path after complete acquisition. Failed runs may leave a `.partial-...` directory for inspection and manual cleanup; those partial directories must never be published.
 - Reuse rights remain `unverified`. This tool is for authorized public endpoint acquisition and local validation, **not** automatic release-asset republication.

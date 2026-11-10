@@ -8,7 +8,7 @@ $root = dirname(__DIR__, 2);
 require_once $root . '/src/Uganda/Geo/GeometryContract.php';
 require_once $root . '/src/Uganda/Geo/ArcGisFeatureImporter.php';
 
-/** @return array{body: string, headers: array<int, string>} */
+/** @return array{body: string, headers: array<string, string>} */
 function fetchArcGisJson(string $url, int $maxBytes): array
 {
     $host = parse_url($url, PHP_URL_HOST);
@@ -27,7 +27,21 @@ function fetchArcGisJson(string $url, int $maxBytes): array
     if ($body === false || strlen($body) > $maxBytes) {
         throw new RuntimeException('ArcGIS request failed or exceeded the permitted response size');
     }
-    return ['body' => $body, 'headers' => $http_response_header ?? []];
+    // Never persist Set-Cookie, Authorization or other potentially sensitive headers.
+    $safeHeaders = [];
+    $allowed = ['content-type', 'etag', 'last-modified', 'date', 'content-length'];
+    foreach ($http_response_header ?? [] as $header) {
+        if (!is_string($header) || strpos($header, ':') === false) {
+            continue;
+        }
+        [$name, $value] = explode(':', $header, 2);
+        $key = strtolower(trim($name));
+        if (in_array($key, $allowed, true)) {
+            $safeHeaders[$key] = trim($value);
+        }
+    }
+
+    return ['body' => $body, 'headers' => $safeHeaders];
 }
 
 function writeImmutableFile(string $file, string $contents): void
