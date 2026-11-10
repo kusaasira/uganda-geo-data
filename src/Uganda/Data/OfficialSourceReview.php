@@ -62,7 +62,7 @@ final class OfficialSourceReview
             if (!is_bool($source['unit_level_identity_verified'] ?? null)) {
                 throw new InvalidArgumentException("Publication $id requires a boolean identity-verification flag");
             }
-            $canResolveIdentity = $source['unit_level_identity_verified'] && $source['legal_effective_date'] !== null;
+            $canResolveIdentity = $source['unit_level_identity_verified'] && ($source['legal_effective_date'] ?? null) !== null;
             $results[] = [
                 'id' => $id,
                 'reference_year' => $year,
