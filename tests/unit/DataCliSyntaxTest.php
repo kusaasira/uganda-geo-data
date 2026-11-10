@@ -16,7 +16,7 @@ final class DataCliSyntaxTest extends TestCase
         }
 
         $root = dirname(__DIR__, 2);
-        $scripts = ['tools/validate-source-registry.php','tools/data/import-legacy.php','tools/data/validate-canonical.php'];
+        $scripts = ['tools/validate-source-registry.php', 'tools/data/import-legacy.php', 'tools/data/validate-canonical.php'];
         foreach ($scripts as $script) {
             $command = escapeshellarg(PHP_BINARY) . ' -l ' . escapeshellarg($root . '/' . $script) . ' 2>&1';
             $output = [];
