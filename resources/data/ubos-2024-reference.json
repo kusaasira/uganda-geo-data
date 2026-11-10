@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "reference_policy": "Published aggregate counts only. These are dated statistical classifications, not an exhaustive record-level crosswalk or current legal register.",
+  "publications": [
+    {
+      "id": "ubos-nphc-2024",
+      "title": "National Population and Housing Census 2024, Final Report Volume 1, Table 21.1",
+      "url": "https://www.nwoya.go.ug/sites/default/files/Census-2024-main-report.pdf",
+      "reference_year": 2024,
+      "geography_basis": "2024 census geography; districts and cities are listed as distinct classes",
+      "counts": {
+        "district": 135,
+        "city": 11,
+        "county": 312,
+        "subcounty_division": 2191,
+        "parish_ward": 10717
+      }
+    },
+    {
+      "id": "ubos-abstract-2024",
+      "title": "UBOS Annual Statistical Abstract 2024, Administrative Units in Uganda",
+      "url": "https://www.ubos.org/wp-content/uploads/publications/The-Annual-Statistical-Abstract-2024.pdf",
+      "reference_year": 2024,
+      "geography_basis": "Administrative statistical abstract classifications; do not add city totals to district totals without verifying taxonomy",
+      "counts": {
+        "district": 146,
+        "city": 11,
+        "municipality": 31,
+        "county": 309,
+        "subcounty": 2197,
+        "parish": 10717,
+        "village": 71227
+      }
+    }
+  ]
+}
