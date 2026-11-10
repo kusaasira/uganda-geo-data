@@ -12,3 +12,14 @@ Open `http://127.0.0.1:8000` to search the prebuilt public index by name or cano
 The index includes only IDs, names, levels and parent IDs from the supplied file, plus snapshot identity and the declared reference date if present. An unknown date is displayed as unverified rather than invented. Client-side rendering uses DOM text nodes, avoids injecting untrusted HTML and caps the displayed result count to 200 while keeping full result counts visible.
 
 This does not assert legal administrative accuracy, map coverage or freshness. It is an offline reference explorer and should only be published with a reviewed snapshot, source notice and current-data limitations. Builds are staged in a temporary sibling directory and appear at the final destination only after all files are present; existing destinations are not overwritten.
+
+## Browser verification
+
+The optional browser checks run without external JavaScript dependencies:
+
+```bash
+node --check resources/explorer/assets/app.js
+node --test resources/explorer/assets/app.test.js
+```
+
+They cover duplicate-name preservation, stale-selection clearing, truthful source-date labels and text-only rendering of untrusted location names. The static generator still produces only the browser HTML, CSS, application JavaScript and the reviewed data index.
