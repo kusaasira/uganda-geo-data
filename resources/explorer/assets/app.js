@@ -56,6 +56,7 @@ function render() {
     && (!search || unit.searchText.includes(search))
   );
   results.replaceChildren();
+  details.replaceChildren(createLine("p", "Select a matching location to inspect its hierarchy."));
   const count = Math.min(filtered.length, 200);
   filtered.slice(0, count).forEach((unit) => {
     const item = document.createElement("li");
