@@ -216,7 +216,10 @@ final class UnicodeSearch
         return $results;
     }
 
-    /** @param array<string, array<int, object>> $groups @return array<int, array<int, string>> */
+    /**
+     * @param array<string, array<int, object>> $groups
+     * @return array<int, array<int, string>>
+     */
     private static function lengthBuckets(array $groups): array
     {
         $buckets = [];
