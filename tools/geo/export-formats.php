@@ -82,8 +82,10 @@ try {
         (new GeometryRoundTripVerifier())->verify($prepared, $decoded);
         unlink($roundtrip);
     }
-    file_put_contents($stage . '/fields.json', json_encode($exporter->dictionary(),
-        JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n");
+    ImmutableFileWriter::write(
+        $stage . '/fields.json',
+        json_encode($exporter->dictionary(), JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n"
+    );
     file_put_contents($stage . '/metadata.json', json_encode([
         'crs' => 'EPSG:4326',
         'feature_count' => count($prepared['features']),
