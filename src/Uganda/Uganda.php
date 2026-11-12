@@ -131,7 +131,18 @@ final class Uganda
     /** @return array<int, Parish> */
     public function parishes(): array
     {
-        return iterator_to_array($this->iterate('parish'), false);
+        $parishes = [];
+        foreach ($this->districts as $district) {
+            foreach ($district->counties() as $county) {
+                foreach ($county->subCounties() as $subCounty) {
+                    foreach ($subCounty->parishes() as $parish) {
+                        $parishes[] = $parish;
+                    }
+                }
+            }
+        }
+
+        return $parishes;
     }
 
     /**
