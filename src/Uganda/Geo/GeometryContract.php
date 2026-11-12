@@ -79,9 +79,8 @@ final class GeometryContract
 
         $longitude = $position[0];
         $latitude = $position[1];
-        if ((!is_int($longitude) && !is_float($longitude)) || (!is_int($latitude) && !is_float($latitude)) ||
-            !is_finite((float) $longitude) || !is_finite((float) $latitude) ||
-            $longitude < -180 || $longitude > 180 || $latitude < -90 || $latitude > 90) {
+        // The preceding loop already guarantees numeric finite ordinates.
+        if ($longitude < -180 || $longitude > 180 || $latitude < -90 || $latitude > 90) {
             throw new InvalidArgumentException('Position must contain valid EPSG:4326 longitude and latitude');
         }
     }
