@@ -24,6 +24,28 @@ foreach (['iterations', 'retained_growth_bytes', 'memory_peak_reserved_bytes'] a
     }
 }
 
+$samples = $data['active_samples_after_release_bytes'] ?? null;
+$baseline = $data['active_baseline_bytes'] ?? null;
+$last = $data['active_last_bytes'] ?? null;
+if (!is_array($samples) || !array_is_list($samples)
+    || count($samples) !== $data['iterations']
+    || !is_int($baseline) || $baseline < 0
+    || !is_int($last) || $last < 0) {
+    fwrite(STDERR, "Invalid memory lifecycle samples\n");
+    exit(2);
+}
+foreach ($samples as $sample) {
+    if (!is_int($sample) || $sample < 0) {
+        fwrite(STDERR, "Invalid post-disposal memory sample\n");
+        exit(2);
+    }
+}
+if ($last !== $samples[count($samples) - 1]
+    || $data['retained_growth_bytes'] !== max(0, max($samples) - $baseline)) {
+    fwrite(STDERR, "Instance memory report does not agree with its samples\n");
+    exit(2);
+}
+
 if ($data['iterations'] < 2 || $data['retained_growth_bytes'] > 4194304
     || $data['memory_peak_reserved_bytes'] > 134217728) {
     fwrite(STDERR, "Repeated geography instances retained too much memory\n");
