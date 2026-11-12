@@ -46,9 +46,9 @@ $isFuzzy = str_starts_with($scenario, 'fuzzy_');
 
 // Cold startup is separately budgeted from a warmed index to avoid hiding
 // oversized first-use index construction inside a warm-only benchmark.
-$firstLimitMs = $isGlobal ? 3500.0 : 500.0;
-$warmLimitMs = $isFuzzy ? ($isGlobal ? 500.0 : 35.0) : ($isGlobal ? 50.0 : 12.0);
-$memoryLimitBytes = 167772160; // 160 MiB with optional Unicode indexes
+$firstLimitMs = $isGlobal ? 1500.0 : 250.0;
+$warmLimitMs = $isFuzzy ? ($isGlobal ? 75.0 : 10.0) : ($isGlobal ? 8.0 : 5.0);
+$memoryLimitBytes = 134217728; // 128 MiB including optional Unicode indexes
 if ($result['first_query_ms'] > $firstLimitMs
     || $result['warm_p95_ms'] > $warmLimitMs
     || $result['memory_peak_reserved_bytes'] > $memoryLimitBytes
