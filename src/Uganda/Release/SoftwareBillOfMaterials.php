@@ -66,9 +66,14 @@ final class SoftwareBillOfMaterials
         foreach ($resolved as $dependency => $package) {
             $component = ['type' => 'library', 'name' => $dependency, 'version' => $package['version']];
             if (is_array($package['license'] ?? null) && $package['license'] !== []) {
-                $component['licenses'] = array_map(static function (string $id): array {
-                    return ['license' => ['id' => $id]];
-                }, $package['license']);
+                $licenses = [];
+                foreach ($package['license'] as $id) {
+                    if (!is_string($id) || trim($id) === '') {
+                        throw new InvalidArgumentException('Invalid Composer license identity');
+                    }
+                    $licenses[] = ['license' => ['id' => $id]];
+                }
+                $component['licenses'] = $licenses;
             }
             $components[] = $component;
         }
