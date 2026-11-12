@@ -10,7 +10,7 @@ use Uganda\Release\PerformanceBudget;
 
 final class PerformanceBudgetTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itAllowsMeasurementsWithinTheirBudgets(): void
     {
         self::assertSame([], (new PerformanceBudget())->violations(
@@ -19,7 +19,7 @@ final class PerformanceBudgetTest extends TestCase
         ));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itReportsEachExceededBudget(): void
     {
         $errors = (new PerformanceBudget())->violations(
@@ -31,7 +31,7 @@ final class PerformanceBudgetTest extends TestCase
         self::assertStringContainsString('memory_peak_bytes', $errors[1]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsInvalidOrMissingMeasurements(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -40,14 +40,14 @@ final class PerformanceBudgetTest extends TestCase
             ['constructor_ms' => 500, 'index_warmup_ms' => 200, 'memory_peak_bytes' => 1024]
         );
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itAllowsAnExactBudgetWithoutFalseRejection(): void
     {
         $budgets = ['constructor_ms' => 750, 'index_warmup_ms' => 250, 'memory_peak_bytes' => 167772160];
         self::assertSame([], (new PerformanceBudget())->violations($budgets, $budgets));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsNonFiniteMeasurements(): void
     {
         $this->expectException(InvalidArgumentException::class);
