@@ -58,7 +58,6 @@ final class JsonDatasetMutationPropertyTest extends TestCase
         } finally {
             unlink($dataset);
             rmdir($folder);
-            unlink($path);
         }
     }
 
