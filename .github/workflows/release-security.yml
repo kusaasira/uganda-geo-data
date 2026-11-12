@@ -22,8 +22,25 @@ jobs:
       - name: Generate deterministic CycloneDX inventory
         run: |
           mkdir -p build
-          php tools/release/create-sbom.php 2.0.0-dev build/sbom.json
-          php -r '$d=json_decode(file_get_contents("build/sbom.json"),true,512,JSON_THROW_ON_ERROR); if($d["bomFormat"]!=="CycloneDX")exit(1);'
+          version=$(php -r '
+            $manifest=json_decode(file_get_contents("resources/releases/v2.0.1-notes.json"),true,512,JSON_THROW_ON_ERROR);
+            $base=$manifest["base_version"] ?? null;
+            if (!is_string($base) || !preg_match("/^v[0-9]+\\.[0-9]+\\.[0-9]+$/D",$base)) {
+                fwrite(STDERR,"Invalid source release version\\n");
+                exit(1);
+            }
+            echo substr($base,1)."-dev";
+          ')
+          php tools/release/create-sbom.php "$version" build/sbom.json
+          SBOM_VERSION="$version" php -r '
+            $d=json_decode(file_get_contents("build/sbom.json"),true,512,JSON_THROW_ON_ERROR);
+            if (($d["bomFormat"]??null)!=="CycloneDX"
+                || ($d["metadata"]["component"]["version"]??null)!==getenv("SBOM_VERSION")
+                || ($d["metadata"]["component"]["name"]??null)!=="kusaasira/uganda-geo") {
+                fwrite(STDERR,"SBOM package identity/version mismatch\\n");
+                exit(1);
+            }
+          '
       - uses: actions/upload-artifact@v4
         with:
           name: ubuntu-geo-runtime-sbom
