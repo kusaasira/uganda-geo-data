@@ -29,7 +29,7 @@ final class JsonDatasetLoaderTest extends TestCase
         parent::tearDown();
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsMissingFileInsteadOfReturningEmptyHierarchy(): void
     {
         $this->expectException(RuntimeException::class);
@@ -37,7 +37,7 @@ final class JsonDatasetLoaderTest extends TestCase
         (new JsonDatasetLoader())->load($this->directory . '/missing.json');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsMalformedJsonWithFileContext(): void
     {
         file_put_contents($this->directory . '/broken.json', '{broken');
@@ -46,7 +46,7 @@ final class JsonDatasetLoaderTest extends TestCase
         (new JsonDatasetLoader())->load($this->directory . '/broken.json');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsEmptyAndObjectShapedTables(): void
     {
         file_put_contents($this->directory . '/rows.json', '[]');
@@ -61,7 +61,7 @@ final class JsonDatasetLoaderTest extends TestCase
         (new JsonDatasetLoader())->load($this->directory . '/rows.json');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsInvalidRecordsAndPreservesValidRows(): void
     {
         $path = $this->directory . '/rows.json';
@@ -76,7 +76,7 @@ final class JsonDatasetLoaderTest extends TestCase
         (new JsonDatasetLoader())->load($path);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsCorruptFilesDuringActualUgandaConstruction(): void
     {
         foreach (['districts', 'counties', 'sub_counties', 'parishes', 'villages'] as $tier) {
@@ -87,7 +87,7 @@ final class JsonDatasetLoaderTest extends TestCase
         $this->expectExceptionMessage('Invalid JSON in');
         new Uganda($this->directory);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function refusesNonNumericSourceIdsBeforeCastingThem(): void
     {
         $path = $this->directory . '/rows.json';
@@ -97,7 +97,7 @@ final class JsonDatasetLoaderTest extends TestCase
         (new JsonDatasetLoader())->load($path);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsMissingParentIdsForHierarchyTables(): void
     {
         $path = $this->directory . '/villages.json';
@@ -106,7 +106,7 @@ final class JsonDatasetLoaderTest extends TestCase
         $this->expectExceptionMessage('Invalid parish parent ID');
         (new JsonDatasetLoader())->load($path);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsOrphanedSourceRecordsInsteadOfDiscardingTheirDescendants(): void
     {
         $tables = [
@@ -130,7 +130,7 @@ final class JsonDatasetLoaderTest extends TestCase
         $this->expectExceptionMessage('Orphan village');
         new Uganda($this->directory);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsIdsThatWouldOverflowNativeIntegerStorage(): void
     {
         $path = $this->directory . '/rows.json';
@@ -143,7 +143,7 @@ final class JsonDatasetLoaderTest extends TestCase
         (new JsonDatasetLoader())->load($path);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsOverflowingAdministrativeParentIdentifiers(): void
     {
         $path = $this->directory . '/villages.json';
