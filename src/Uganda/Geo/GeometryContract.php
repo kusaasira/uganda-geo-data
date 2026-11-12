@@ -12,7 +12,7 @@ final class GeometryContract
      * Validate GeoJSON polygon coordinate structure in RFC 7946 WGS84 longitude/latitude order.
      * This is not a topology, overlap or containment validator.
      *
-     * @param array<string, mixed> $geometry
+     * @param array<mixed, mixed> $geometry
      */
     public static function assertGeometry(array $geometry): void
     {
@@ -45,7 +45,16 @@ final class GeometryContract
                 }
                 $first = reset($ring);
                 $last = end($ring);
-                if (!is_array($first) || !is_array($last) || abs($first[0] - $last[0]) > 1.0e-10 || abs($first[1] - $last[1]) > 1.0e-10) {
+                $firstLon = $first[0] ?? null;
+                $firstLat = $first[1] ?? null;
+                $lastLon = $last[0] ?? null;
+                $lastLat = $last[1] ?? null;
+                if ((!is_int($firstLon) && !is_float($firstLon))
+                    || (!is_int($firstLat) && !is_float($firstLat))
+                    || (!is_int($lastLon) && !is_float($lastLon))
+                    || (!is_int($lastLat) && !is_float($lastLat))
+                    || abs($firstLon - $lastLon) > 1.0e-10
+                    || abs($firstLat - $lastLat) > 1.0e-10) {
                     throw new InvalidArgumentException('Polygon ring is not closed');
                 }
             }
@@ -53,7 +62,7 @@ final class GeometryContract
     }
 
     /**
-     * @param array<int, mixed> $position
+     * @param array<mixed, mixed> $position
      */
     public static function assertLonLat(array $position): void
     {
