@@ -82,8 +82,10 @@ final class SubCounty implements \JsonSerializable
     public function villages(): array
     {
         $villages = [];
-        foreach ($this->parishes() as $parish) {
-            array_push($villages, ...array_values($parish->villages()));
+        foreach ($this->parishes as $parish) {
+            foreach ($parish->villages() as $village) {
+                $villages[] = $village;
+            }
         }
         return $villages;
     }
