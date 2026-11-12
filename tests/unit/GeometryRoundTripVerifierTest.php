@@ -24,7 +24,7 @@ final class GeometryRoundTripVerifierTest extends TestCase
         return (new GeometryExportFields())->prepare($source);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itAcceptsPolygonPromotionWhenAttributesAndGeometryArePreserved(): void
     {
         $source = $this->reviewed();
@@ -37,7 +37,7 @@ final class GeometryRoundTripVerifierTest extends TestCase
         self::assertTrue(true);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsModifiedParentIdentifiersEvenWhenUnitIdsMatch(): void
     {
         $source = $this->reviewed();
@@ -48,7 +48,7 @@ final class GeometryRoundTripVerifierTest extends TestCase
         (new GeometryRoundTripVerifier())->verify($source, $roundTrip);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsChangedProvenanceDates(): void
     {
         $source = $this->reviewed();
@@ -59,7 +59,7 @@ final class GeometryRoundTripVerifierTest extends TestCase
         (new GeometryRoundTripVerifier())->verify($source, $roundTrip);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsMovedPolygonsThatKeepTheSameIdentity(): void
     {
         $source = $this->reviewed();
@@ -73,7 +73,7 @@ final class GeometryRoundTripVerifierTest extends TestCase
         (new GeometryRoundTripVerifier())->verify($source, $roundTrip);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsLostInteriorRings(): void
     {
         $source = $this->reviewed();
@@ -90,7 +90,7 @@ final class GeometryRoundTripVerifierTest extends TestCase
         $this->expectExceptionMessage('hole count');
         (new GeometryRoundTripVerifier())->verify($source, $roundTrip);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsRelocatedHolesEvenWhenOverallAreaAndExtentAreUnchanged(): void
     {
         $source = $this->reviewed();
@@ -111,7 +111,7 @@ final class GeometryRoundTripVerifierTest extends TestCase
         (new GeometryRoundTripVerifier())->verify($source, $roundTrip);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itAcceptsDriverChangesToPolygonRingDirection(): void
     {
         $source = $this->reviewed();
