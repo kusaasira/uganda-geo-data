@@ -42,7 +42,7 @@ final class ParishBoundaryMatcher
 
         $featureIndex = [];
         foreach ($features as $sourceId => $feature) {
-            if (!(preg_match('/\A[0-9]+\z/D', (string) $sourceId) === 1)) {
+            if (preg_match('/\A[0-9]+\z/D', (string) $sourceId) !== 1) {
                 throw new InvalidArgumentException('Feature index must use numeric source object IDs');
             }
             $id = (string) $sourceId;
@@ -67,7 +67,7 @@ final class ParishBoundaryMatcher
             }
             $objectId = (string) $decision['object_id'];
             $unitId = $decision['unit_id'];
-            if (!(preg_match('/\A[0-9]+\z/D', $objectId) === 1) || !isset($featureIndex[$objectId])) {
+            if (preg_match('/\A[0-9]+\z/D', $objectId) !== 1 || !isset($featureIndex[$objectId])) {
                 throw new InvalidArgumentException("Unrecognized source feature $objectId");
             }
             if (!isset($units[$unitId])) {
