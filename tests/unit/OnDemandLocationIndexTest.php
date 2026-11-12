@@ -25,7 +25,7 @@ final class OnDemandLocationIndexTest extends TestCase
         return new LocationIndex([1 => new District(1, 'North', [2 => $county])]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function constructingTheIndexAllocatesNoSecondaryIdentityOrNameTables(): void
     {
         $index = $this->index();
@@ -33,7 +33,7 @@ final class OnDemandLocationIndexTest extends TestCase
         self::assertSame([], $this->state($index, 'byName'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function directChildLookupIndexesOnlyItsParentAdministrativeLevel(): void
     {
         $index = $this->index();
@@ -43,7 +43,7 @@ final class OnDemandLocationIndexTest extends TestCase
         self::assertSame([], $this->state($index, 'byName'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function idFirstLookupDoesNotBuildAnyNameIndex(): void
     {
         $index = $this->index();
@@ -56,7 +56,7 @@ final class OnDemandLocationIndexTest extends TestCase
         self::assertSame(['village'], array_keys($this->state($index, 'byName')));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function firstNameLookupBuildsOnlyTheRequestedLevel(): void
     {
         $index = $this->index();
@@ -67,7 +67,7 @@ final class OnDemandLocationIndexTest extends TestCase
         self::assertSame([], $this->state($index, 'sortedNameKeys'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function onlyPrefixSearchNeedsTheSortedNameTable(): void
     {
         $index = $this->index();
