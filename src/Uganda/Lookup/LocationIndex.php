@@ -77,7 +77,9 @@ final class LocationIndex
      */
     public function byPrefix(string $level, string $prefix, ?int $parentId = null, ?int $limit = null): array
     {
-        $this->assertLevel($level);
+        if (!isset($this->indexedNames[$level])) {
+            $this->assertLevel($level);
+        }
         $prefix = self::nameKey($prefix);
         if ($prefix === '') {
             throw new InvalidArgumentException('A nonempty location name prefix is required');
@@ -86,7 +88,9 @@ final class LocationIndex
             throw new InvalidArgumentException('Prefix result limit must be positive');
         }
 
-        $this->indexNames($level);
+        if (!isset($this->indexedNames[$level])) {
+            $this->indexNames($level);
+        }
         if (!isset($this->sortedNameKeys[$level])) {
             // Numeric place names become integer keys in PHP arrays.
             $names = array_map('strval', array_keys($this->byName[$level] ?? []));
@@ -134,7 +138,6 @@ final class LocationIndex
      */
     public function childrenOf(string $level, int $parentId): array
     {
-        $this->assertLevel($level);
         if ($level === 'district') {
             throw new InvalidArgumentException('Districts have no administrative parent in this dataset');
         }
@@ -150,6 +153,10 @@ final class LocationIndex
         if ($level === 'parish') {
             $parent = $this->byId('subcounty', $parentId);
             return $parent instanceof SubCounty ? array_values($parent->parishes()) : [];
+        }
+
+        if ($level !== 'village') {
+            $this->assertLevel($level);
         }
 
         $parent = $this->byId('parish', $parentId);
