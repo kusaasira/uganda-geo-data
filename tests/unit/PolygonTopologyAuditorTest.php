@@ -9,7 +9,7 @@ use Uganda\Geo\PolygonTopologyAuditor;
 
 final class PolygonTopologyAuditorTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function acceptsAValidPolygonWithAnInteriorHole(): void
     {
         $geometry = ['type' => 'Polygon', 'coordinates' => [
@@ -21,7 +21,7 @@ final class PolygonTopologyAuditorTest extends TestCase
         $this->assertCount(2, $result['ring_report']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function flagsSelfCrossingBowTiePolygons(): void
     {
         $geometry = ['type' => 'Polygon', 'coordinates' => [
@@ -33,7 +33,7 @@ final class PolygonTopologyAuditorTest extends TestCase
         $this->assertContains('zero_area', $codes);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function flagsHolesWhoseStartingPointLiesOutsideTheShell(): void
     {
         $geometry = ['type' => 'Polygon', 'coordinates' => [
@@ -44,7 +44,7 @@ final class PolygonTopologyAuditorTest extends TestCase
         $this->assertContains('hole_outside_exterior', $codes);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function catchesHoleCrossingExteriorEvenWhenFirstVertexIsInside(): void
     {
         $geometry = ['type' => 'Polygon', 'coordinates' => [
@@ -56,7 +56,7 @@ final class PolygonTopologyAuditorTest extends TestCase
         $this->assertContains('hole_outside_exterior', array_column($issues, 'code'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsHolesTouchingTheExteriorRing(): void
     {
         $geometry = ['type' => 'Polygon', 'coordinates' => [
@@ -68,7 +68,7 @@ final class PolygonTopologyAuditorTest extends TestCase
         $this->assertContains('hole_outside_exterior', array_column($issues, 'code'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function reportsOverlappingHolesThatAreIndividuallyInsideTheExterior(): void
     {
         $geometry = ['type' => 'Polygon', 'coordinates' => [
@@ -80,7 +80,7 @@ final class PolygonTopologyAuditorTest extends TestCase
         $this->assertContains('hole_overlap', array_column($issues, 'code'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function reportsFullyNestedInteriorRingsAsAnInvalidHoleArrangement(): void
     {
         $geometry = ['type' => 'Polygon', 'coordinates' => [
@@ -94,7 +94,7 @@ final class PolygonTopologyAuditorTest extends TestCase
         );
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itFlagsIntersectingMultipolygonMembers(): void
     {
         $geometry = ['type' => 'MultiPolygon', 'coordinates' => [
@@ -105,7 +105,7 @@ final class PolygonTopologyAuditorTest extends TestCase
         $this->assertContains('multipart_overlap', $codes);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function cornerContactIsNotMisreportedAsInteriorOverlap(): void
     {
         $geometry = ['type' => 'MultiPolygon', 'coordinates' => [
@@ -116,7 +116,7 @@ final class PolygonTopologyAuditorTest extends TestCase
         $this->assertNotContains('multipart_overlap', $codes);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function includesEveryPartOfAMultipolygon(): void
     {
         $one = [[0, 0], [2, 0], [2, 2], [0, 0]];
