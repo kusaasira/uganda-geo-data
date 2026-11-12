@@ -4,7 +4,19 @@ All notable public API changes, maintenance improvements and source-data release
 
 ## Unreleased
 
-No unreleased changes recorded.
+### Fixed
+
+- Build parent-child adjacency indexes only for the administrative level actually queried, without changing the recorded source identities or child ordering.
+- Expose explicit compact JSON location representations without recursively serializing entire district hierarchies. Existing nested `toArray()` output is unchanged.
+- Isolate patch release notes from the breaking-change narrative of the v2.0.0 major release.
+
+### Added
+
+- Lazy, binary-search-based name prefix lookups with optional parent identity and result limits.
+- Deterministic warm lookup latency summaries, repeatable regressions and inspectable CI benchmark artifacts.
+- v2.0.1 release-candidate validation and published-tag verification support.
+
+The v2.0.1 patch remains unreleased while this PR is under review. These notes cover implemented changes only.
 
 ## [2.0.0] - 2026-11-10
 
