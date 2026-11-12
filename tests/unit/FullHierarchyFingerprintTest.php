@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 final class FullHierarchyFingerprintTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itProducesAStableSourceWideFingerprint(): void
     {
         $root = dirname(__DIR__, 2);
@@ -37,7 +37,7 @@ final class FullHierarchyFingerprintTest extends TestCase
         }
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsAnUnusableRepositoryDirectory(): void
     {
         $command = escapeshellarg(PHP_BINARY) . ' '
