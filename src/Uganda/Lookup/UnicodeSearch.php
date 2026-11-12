@@ -326,6 +326,12 @@ final class UnicodeSearch
 
     private static function normalizeQuery(string $value, bool $ignoreDiacritics): string
     {
+        // Bound adversarial input before requesting ICU allocations or
+        // grapheme segmentation. This never truncates a query silently.
+        if (strlen($value) > 4096) {
+            throw new InvalidArgumentException('Unicode search queries cannot exceed 4096 UTF-8 bytes');
+        }
+
         $key = UnicodeNameNormalizer::normalize($value, $ignoreDiacritics);
         if ($key === '') {
             throw new InvalidArgumentException('A nonempty Unicode search query is required');
