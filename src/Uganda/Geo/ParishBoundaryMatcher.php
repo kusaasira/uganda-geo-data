@@ -67,7 +67,7 @@ final class ParishBoundaryMatcher
             }
             $objectId = (string) $decision['object_id'];
             $unitId = $decision['unit_id'];
-            if (!ctype_digit($objectId) || !isset($featureIndex[$objectId])) {
+            if (!(preg_match('/\A[0-9]+\z/D', $objectId) === 1) || !isset($featureIndex[$objectId])) {
                 throw new InvalidArgumentException("Unrecognized source feature $objectId");
             }
             if (!isset($units[$unitId])) {
