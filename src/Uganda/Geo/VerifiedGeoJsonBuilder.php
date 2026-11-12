@@ -51,7 +51,7 @@ final class VerifiedGeoJsonBuilder
 
             $objectId = (string) $match['source_object_id'];
             $unitId = (string) $match['unit_id'];
-            if (!(preg_match('/\A[0-9]+\z/D', $objectId) === 1) || !isset($features[$objectId]) || isset($usedFeatures[$objectId])
+            if (preg_match('/\A[0-9]+\z/D', $objectId) !== 1 || !isset($features[$objectId]) || isset($usedFeatures[$objectId])
                 || $unitId === '' || isset($usedUnits[$unitId])) {
                 throw new InvalidArgumentException('Unknown or duplicate source feature or canonical unit');
             }
