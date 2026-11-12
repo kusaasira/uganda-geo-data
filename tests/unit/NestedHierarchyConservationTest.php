@@ -9,7 +9,7 @@ use Uganda\Uganda;
 
 final class NestedHierarchyConservationTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function retainsSameNamedSiblingsInNestedParishSerialization(): void
     {
         $uganda = new Uganda();
@@ -47,7 +47,7 @@ final class NestedHierarchyConservationTest extends TestCase
         $this->fail('Unable to locate the expected parent subcounty in the loaded hierarchy');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function retainsSameNamedVillagesInParishSerialization(): void
     {
         $uganda = new Uganda();
