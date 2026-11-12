@@ -27,14 +27,14 @@ final class LocationPrefixSearchTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itReturnsEveryMatchingIdentityInDeterministicNameOrder(): void
     {
         $matches = $this->index()->byPrefix('county', ' cen ');
         self::assertSame([9, 11, 8, 12], array_map(static fn ($x): int => $x->id(), $matches));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itFiltersByParentBeforeApplyingTheResultLimit(): void
     {
         $index = $this->index();
@@ -45,7 +45,7 @@ final class LocationPrefixSearchTest extends TestCase
         self::assertSame([], $index->byPrefix('county', 'cen', 999));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itKeepsExistingExactNameSearchUnchanged(): void
     {
         $index = $this->index();
@@ -55,21 +55,21 @@ final class LocationPrefixSearchTest extends TestCase
         self::assertSame([8], array_map(static fn ($x): int => $x->id(), $index->byName('county', 'Central', 1)));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsAnEmptyPrefix(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->index()->byPrefix('county', '   ');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsNonpositiveLimits(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->index()->byPrefix('county', 'ce', null, 0);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsUnsupportedLevels(): void
     {
         $this->expectException(InvalidArgumentException::class);
