@@ -69,9 +69,6 @@ final class ExplorerCoverageSummary
         }
         $sourceIds = [];
         foreach ($matches as $match) {
-            if (!is_array($match)) {
-                throw new InvalidArgumentException('Invalid verified source match');
-            }
             $sourceId = $match['source_object_id'] ?? null;
             if (!is_string($sourceId) || $sourceId === '' || isset($sourceIds[$sourceId])) {
                 throw new InvalidArgumentException('Duplicate or missing verified source geometry identity');
