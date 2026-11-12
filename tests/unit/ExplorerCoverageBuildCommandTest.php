@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 final class ExplorerCoverageBuildCommandTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function optionalReviewedCoverageIsBoundToTheCanonicalSnapshot(): void
     {
         $repo = dirname(__DIR__, 2);
