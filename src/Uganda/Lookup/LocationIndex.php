@@ -464,6 +464,20 @@ final class LocationIndex
         return $this->unicode()->byPrefix($level, $prefix, $parentId, $limit, $ignoreDiacritics);
     }
 
+    /**
+     * @return array<int, array{unit: object, distance: int}>
+     */
+    public function fuzzy(
+        string $level,
+        string $query,
+        ?int $parentId = null,
+        int $limit = 10,
+        int $maxDistance = 2,
+        bool $ignoreDiacritics = false
+    ): array {
+        return $this->unicode()->fuzzy($level, $query, $parentId, $limit, $maxDistance, $ignoreDiacritics);
+    }
+
     private function assertLevel(string $level): void
     {
         if (!in_array($level, ['district', 'county', 'subcounty', 'parish', 'village'], true)) {
