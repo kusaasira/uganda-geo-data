@@ -8,6 +8,8 @@ $scenarios = [
     'district_id', 'village_id', 'village_name', 'district_children',
     'village_children', 'village_ancestors',
     'all_counties', 'all_subcounties', 'all_parishes', 'all_villages',
+    'district_subcounties', 'district_parishes', 'district_villages',
+    'county_parishes', 'county_villages', 'subcounty_villages',
 ];
 if ($argc !== 4 || !in_array($argv[2], $scenarios, true)
     || !ctype_digit($argv[3]) || (int) $argv[3] < 100 || (int) $argv[3] > 100000) {
@@ -45,6 +47,9 @@ foreach ($geo->districts() as $district) {
             foreach ($subcounty->parishes() as $parish) {
                 foreach ($parish->villages() as $candidate) {
                     $districtId = $district->id();
+                    $selectedDistrict = $district;
+                    $selectedCounty = $county;
+                    $selectedSubcounty = $subcounty;
                     $village = $candidate;
                     break 5;
                 }
@@ -68,6 +73,12 @@ $operations = [
     'all_subcounties' => static fn () => $geo->subCounties(),
     'all_parishes' => static fn () => $geo->parishes(),
     'all_villages' => static fn () => $geo->villages(),
+    'district_subcounties' => static fn () => $selectedDistrict->subCounties(),
+    'district_parishes' => static fn () => $selectedDistrict->parishes(),
+    'district_villages' => static fn () => $selectedDistrict->villages(),
+    'county_parishes' => static fn () => $selectedCounty->parishes(),
+    'county_villages' => static fn () => $selectedCounty->villages(),
+    'subcounty_villages' => static fn () => $selectedSubcounty->villages(),
 ];
 
 $operation = $operations[$scenario];
