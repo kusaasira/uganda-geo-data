@@ -45,6 +45,21 @@ jobs:
             fi
             php -r '$b=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR);$h=json_decode(file_get_contents($argv[2]),true,512,JSON_THROW_ON_ERROR);printf("%s: identical IDs | first query %.2f -> %.2f us | warm mean %.3f -> %.3f us | peak %.1f -> %.1f MiB\\n",$b["scenario"],$b["first_query_us"],$h["first_query_us"],$b["warm_mean_us"],$h["warm_mean_us"],$b["memory_peak_bytes"]/1048576,$h["memory_peak_bytes"]/1048576);' "build/compare/base-$scenario.json" "build/compare/head-$scenario.json"
           done
+      - name: Verify every administrative identity, display name and parent link
+        run: |
+          set -euo pipefail
+          php candidate/tools/benchmarks/full-hierarchy-fingerprint.php baseline > build/compare/base-hierarchy.json
+          php candidate/tools/benchmarks/full-hierarchy-fingerprint.php candidate > build/compare/head-hierarchy.json
+          php -r '
+            $base=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR);
+            $head=json_decode(file_get_contents($argv[2]),true,512,JSON_THROW_ON_ERROR);
+            if ($base["sha256"] !== $head["sha256"] || $base["counts"] !== $head["counts"]) {
+                fwrite(STDERR,"Complete source identity or hierarchy divergence\n");
+                exit(1);
+            }
+            echo "Every source identity, displayed name and parent link matches main: "
+                .$head["sha256"]."\n";
+          ' build/compare/base-hierarchy.json build/compare/head-hierarchy.json
       - name: Publish source-comparable performance evidence
         uses: actions/upload-artifact@v4
         with:
