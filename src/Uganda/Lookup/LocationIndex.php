@@ -41,8 +41,10 @@ final class LocationIndex
 
     public function byId(string $level, int $id): ?object
     {
-        $this->assertLevel($level);
-        $this->indexIds($level);
+        if (!isset($this->indexedIds[$level])) {
+            $this->assertLevel($level);
+            $this->indexIds($level);
+        }
 
         return $this->byId[$level][$id] ?? null;
     }
@@ -50,8 +52,10 @@ final class LocationIndex
     /** @return array<int, object> */
     public function byName(string $level, string $name, ?int $parentId = null): array
     {
-        $this->assertLevel($level);
-        $this->indexNames($level);
+        if (!isset($this->indexedNames[$level])) {
+            $this->assertLevel($level);
+            $this->indexNames($level);
+        }
 
         $result = [];
         foreach ($this->byName[$level][self::nameKey($name)] ?? [] as $id) {
