@@ -236,7 +236,7 @@ final class Uganda
             }
             $seen[$id] = true;
             $parent = (int) $village['parish'];
-            $mappedVillages[$parent][$id] = new Village($id, $village['name'], $parent);
+            $mappedVillages[$parent][$id] = new Village($id, (string) $village['name'], $parent);
         }
         unset($seen);
 
@@ -252,7 +252,7 @@ final class Uganda
             $parent = (int) $parish['subcounty'];
             $mappedParishes[$parent][$id] = new Parish(
                 $id,
-                ucfirst($parish['name']),
+                ucfirst((string) $parish['name']),
                 $parent,
                 $mappedVillages[$id] ?? []
             );
@@ -273,7 +273,7 @@ final class Uganda
             $parent = (int) $subCounty['county'];
             $mappedSubCounties[$parent][$id] = new SubCounty(
                 $id,
-                ucfirst($subCounty['name']),
+                ucfirst((string) $subCounty['name']),
                 $parent,
                 $mappedParishes[$id] ?? []
             );
@@ -294,7 +294,7 @@ final class Uganda
             $parent = (int) $county['district'];
             $mappedCounties[$parent][$id] = new County(
                 $id,
-                ucfirst($county['name']),
+                ucfirst((string) $county['name']),
                 $parent,
                 $mappedSubCounties[$id] ?? []
             );
@@ -314,7 +314,7 @@ final class Uganda
             $seen[$id] = true;
             $mappedDistricts[$id] = new District(
                 $id,
-                ucfirst($district['name']),
+                ucfirst((string) $district['name']),
                 $mappedCounties[$id] ?? []
             );
             unset($mappedCounties[$id]);
