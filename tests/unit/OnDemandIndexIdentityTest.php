@@ -14,7 +14,7 @@ use Uganda\Village;
 
 final class OnDemandIndexIdentityTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function allQueryOrdersReturnTheExactSameSourceObjects(): void
     {
         $first = new Village(33, 'Central', 12);
@@ -52,7 +52,7 @@ final class OnDemandIndexIdentityTest extends TestCase
         }
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function numericNamesAndWrongParentScopeCannotCollide(): void
     {
         $countyOne = new County(11, '123', 7);
