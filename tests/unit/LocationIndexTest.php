@@ -21,7 +21,7 @@ final class LocationIndexTest extends TestCase
         ];
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function preservesDistinctSameNameLocationsAndRespectsParentIds(): void
     {
         $index = new LocationIndex($this->sample());
@@ -32,7 +32,7 @@ final class LocationIndexTest extends TestCase
         $this->assertNull($index->byId('county', 50000));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function requiresExplicitDisambiguationForSameNameSiblingCounties(): void
     {
         $district = new District(1, 'First', [
@@ -43,13 +43,13 @@ final class LocationIndexTest extends TestCase
         $district->county('same');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsUnknownHierarchyLevels(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         (new LocationIndex($this->sample()))->byName('province', 'unknown');
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function nameAndIdentityLookupsReuseTheExactSameLocationObjects(): void
     {
         $index = new LocationIndex($this->sample());
