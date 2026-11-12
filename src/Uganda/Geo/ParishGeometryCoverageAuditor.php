@@ -30,7 +30,7 @@ final class ParishGeometryCoverageAuditor
         }
         $unmatched = [];
         foreach ($sourceIds as $sourceId) {
-            if (!is_string($sourceId) || !ctype_digit($sourceId) || isset($unmatched[$sourceId])) {
+            if (!is_string($sourceId) || !(preg_match('/\A[0-9]+\z/D', $sourceId) === 1) || isset($unmatched[$sourceId])) {
                 throw new InvalidArgumentException('Matcher returned invalid or duplicate source identities');
             }
             $unmatched[$sourceId] = true;
