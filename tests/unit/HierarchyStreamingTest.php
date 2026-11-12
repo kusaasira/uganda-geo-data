@@ -54,7 +54,7 @@ final class HierarchyStreamingTest extends TestCase
             foreach ($geo->iterate($level) as $record) {
                 $actual[] = $record->id();
             }
-            self::assertSame($expected, $actual, $level);
+            self::assertSame(array_values($expected), $actual, $level);
         }
     }
 
