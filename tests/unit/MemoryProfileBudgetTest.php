@@ -24,7 +24,23 @@ final class MemoryProfileBudgetTest extends TestCase
     #[Test]
     public function unbounded_retained_memory_is_rejected(): void
     {
-        $this->assertProfile(1, ['retained_growth_second_pass_bytes' => 8388609]);
+        $this->assertProfile(1, [
+            'memory_active_after_second_pass_bytes' => 50388609,
+            'memory_peak_active_bytes' => 51000000,
+            'retained_growth_second_pass_bytes' => 8388609,
+        ]);
+    }
+
+    #[Test]
+    public function fabricated_growth_does_not_pass_the_budget_verifier(): void
+    {
+        $this->assertProfile(2, ['retained_growth_second_pass_bytes' => 1]);
+    }
+
+    #[Test]
+    public function fabricated_allocator_peaks_do_not_pass_validation(): void
+    {
+        $this->assertProfile(2, ['memory_peak_reserved_bytes' => 1000000]);
     }
 
     #[Test]
