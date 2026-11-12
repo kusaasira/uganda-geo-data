@@ -34,7 +34,7 @@ final class LatencySummary
             'p95' => $this->percentile($samples, 95),
             'p99' => $this->percentile($samples, 99),
             'max' => (float) $samples[$count - 1],
-            'mean' => array_sum($samples) / $count,
+            'mean' => (float) array_sum($samples) / $count,
         ];
     }
 
