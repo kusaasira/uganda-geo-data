@@ -11,7 +11,7 @@ use Uganda\Lookup\LocationIndex;
 
 final class PrefixSearchDifferentialTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function indexedPrefixMatchesAGroundTruthScanAcrossHundredsOfUnits(): void
     {
         $counties = [];
@@ -32,7 +32,7 @@ final class PrefixSearchDifferentialTest extends TestCase
         }
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function numericOnlyNamesAreTreatedAsTextNotArrayIndexes(): void
     {
         $counties = [
