@@ -15,6 +15,10 @@ final class LocationIndex
 {
     private const MAX_ANCESTRY_CACHE_ENTRIES = 512;
 
+    private const MAX_SCOPED_NAME_CACHE_ENTRIES = 256;
+
+    private const MAX_CACHED_SCOPED_RESULTS = 32;
+
     /** @var array<int, District> */
     private array $districts;
 
@@ -40,6 +44,14 @@ final class LocationIndex
     private array $ancestryCacheSlots = [];
 
     private int $nextAncestryCacheSlot = 0;
+
+    /** @var array<string, array<int, array<string, array<int, object>>>> */
+    private array $scopedNameCache = [];
+
+    /** @var array<int, array{level: string, parent: int, name: string}> */
+    private array $scopedNameCacheSlots = [];
+
+    private int $nextScopedNameCacheSlot = 0;
 
     /** @param array<int, District> $districts */
     public function __construct(array $districts)
@@ -68,6 +80,9 @@ final class LocationIndex
         if ($parentId !== null && $level !== 'district' && !isset($this->indexedNames[$level])) {
             $this->assertLevel($level);
             $needle = self::nameKey($name);
+            if (isset($this->scopedNameCache[$level][$parentId][$needle])) {
+                return $this->scopedNameCache[$level][$parentId][$needle];
+            }
             $matches = [];
             foreach ($this->childrenOf($level, $parentId) as $unit) {
                 if (!$unit instanceof County && !$unit instanceof SubCounty
@@ -77,6 +92,19 @@ final class LocationIndex
                 if (self::nameKey($unit->name()) === $needle) {
                     $matches[] = $unit;
                 }
+            }
+
+            // Cache only bounded scoped result sets, not arbitrary large
+            // same-name collisions or an unbounded number of parent queries.
+            if (count($matches) <= self::MAX_CACHED_SCOPED_RESULTS) {
+                $slot = $this->nextScopedNameCacheSlot;
+                if (isset($this->scopedNameCacheSlots[$slot])) {
+                    $previous = $this->scopedNameCacheSlots[$slot];
+                    unset($this->scopedNameCache[$previous['level']][$previous['parent']][$previous['name']]);
+                }
+                $this->scopedNameCache[$level][$parentId][$needle] = $matches;
+                $this->scopedNameCacheSlots[$slot] = ['level' => $level, 'parent' => $parentId, 'name' => $needle];
+                $this->nextScopedNameCacheSlot = ($slot + 1) % self::MAX_SCOPED_NAME_CACHE_ENTRIES;
             }
 
             return $matches;
@@ -289,6 +317,17 @@ final class LocationIndex
         }
 
         $this->indexedNames[$level] = true;
+
+        // Once a full name index exists, duplicate scoped result caches for
+        // the same level no longer provide value and can be released.
+        if (isset($this->scopedNameCache[$level])) {
+            unset($this->scopedNameCache[$level]);
+            foreach ($this->scopedNameCacheSlots as $slot => $entry) {
+                if ($entry['level'] === $level) {
+                    unset($this->scopedNameCacheSlots[$slot]);
+                }
+            }
+        }
     }
 
     private static function parentId(object $unit): ?int
