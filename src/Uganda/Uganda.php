@@ -63,11 +63,7 @@ final class Uganda
      */
     public function counties(): array
     {
-        $counties = [];
-        foreach ($this->districts() as $district) {
-            array_push($counties, ...array_values($district->counties()));
-        }
-        return $counties;
+        return iterator_to_array($this->iterate('county'), false);
     }
 
     /**
