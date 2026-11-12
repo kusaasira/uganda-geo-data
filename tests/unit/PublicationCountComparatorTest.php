@@ -10,7 +10,7 @@ use Uganda\Data\PublicationCountComparator;
 
 final class PublicationCountComparatorTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function preservesEachPublicationScopeAndAvoidsInferringLegalChanges(): void
     {
         $old = ['id' => 'abstract-2024', 'counts' => ['parish' => 10717, 'subcounty' => 2197]];
@@ -28,7 +28,7 @@ final class PublicationCountComparatorTest extends TestCase
         $this->assertSame('not_established', $report['status']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsMissingCountsAndInvalidMappingDefinitions(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -38,7 +38,7 @@ final class PublicationCountComparatorTest extends TestCase
             [['older' => 'not_present', 'newer' => 'parish_education_scope', 'scope_verified' => false]]
         );
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function refusesAnEmptyComparisonThatWouldClaimSuccessWithoutData(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -49,7 +49,7 @@ final class PublicationCountComparatorTest extends TestCase
         );
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsRepeatedCategoryPairsThatInflateTheComparisonInventory(): void
     {
         $pair = ['older' => 'parish', 'newer' => 'parish', 'scope_verified' => false];
