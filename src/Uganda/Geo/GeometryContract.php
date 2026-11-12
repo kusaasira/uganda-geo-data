@@ -25,7 +25,7 @@ final class GeometryContract
 
         $polygons = $type === 'Polygon' ? [$coordinates] : $coordinates;
         foreach ($polygons as $polygon) {
-            if (!is_array($polygon) || $polygon === []) {
+            if (!is_array($polygon) || !array_is_list($polygon) || $polygon === []) {
                 throw new InvalidArgumentException('Polygon must contain at least one ring');
             }
             foreach ($polygon as $ring) {
