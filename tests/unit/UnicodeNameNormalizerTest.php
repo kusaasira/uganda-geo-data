@@ -56,6 +56,22 @@ final class UnicodeNameNormalizerTest extends TestCase
     }
 
     #[Test]
+    public function every_unicode_white_space_separator_has_the_same_search_key(): void
+    {
+        if (!class_exists(Normalizer::class)) {
+            self::markTestSkipped('intl required');
+        }
+
+        foreach (["\u{0085}", "\u{1680}", "\u{2007}", "\u{2028}", "\u{2029}", "\u{205F}"] as $separator) {
+            self::assertSame(
+                'new town',
+                UnicodeNameNormalizer::normalize("  NEW{$separator}TOWN{$separator}"),
+                'Unicode whitespace normalization must include all White_Space categories'
+            );
+        }
+    }
+
+    #[Test]
     public function malformed_utf8_is_rejected_before_any_index_can_be_built(): void
     {
         $this->expectException(InvalidArgumentException::class);
