@@ -78,11 +78,11 @@ final class LocationIndex
         // without allocating a name index for the entire child level.
         // This is especially useful for small parish-level selectors.
         if ($parentId !== null && $level !== 'district' && !isset($this->indexedNames[$level])) {
-            $this->assertLevel($level);
             $needle = self::nameKey($name);
             if (isset($this->scopedNameCache[$level][$parentId][$needle])) {
                 return $this->scopedNameCache[$level][$parentId][$needle];
             }
+            $this->assertLevel($level);
             $matches = [];
             foreach ($this->childrenOf($level, $parentId) as $unit) {
                 if (!$unit instanceof County && !$unit instanceof SubCounty
