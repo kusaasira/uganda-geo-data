@@ -24,6 +24,7 @@ official UBOS identifiers.
 - `findById(string $level, int $id): ?object` resolves a level-specific ID.
 - `searchByName(string $level, string $name, ?int $parentId = null): array`
   returns every matching unit in the selected level and optional parent.
+- `searchByPrefix(string $level, string $prefix, ?int $parentId = null, ?int $limit = null): array` uses a lazily sorted name index for deterministic, parent-scoped prefix matches. Added in v2.0.1; an empty prefix and a nonpositive limit are rejected.
 - `childrenOf(string $childLevel, int $parentId): array` returns immediate
   children at the specified level.
 - `ancestorsOf(string $level, int $id): array` returns root-to-parent ancestry
