@@ -25,7 +25,7 @@ final class LocationIndexLazyChildrenTest extends TestCase
         return new LocationIndex([11 => new District(11, 'Northern', [21 => $county])]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itBuildsIndependentChildLevelIndexesWithoutChangingResults(): void
     {
         $index = $this->index();
@@ -36,7 +36,7 @@ final class LocationIndexLazyChildrenTest extends TestCase
         self::assertSame([51], array_map(static fn ($unit): int => $unit->id(), $index->childrenOf('parish', 31)));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itReusesChildIndexesForRepeatedQueries(): void
     {
         $index = $this->index();
@@ -45,7 +45,7 @@ final class LocationIndexLazyChildrenTest extends TestCase
         self::assertSame($index->childrenOf('county', 11), $index->childrenOf('county', 11));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itPreservesNameMatchesWhenOtherChildLevelsHaveBeenIndexed(): void
     {
         $index = $this->index();
@@ -57,7 +57,7 @@ final class LocationIndexLazyChildrenTest extends TestCase
         self::assertSame(92, $index->byName('village', 'Central', 51)[1]->id());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function anUnknownParentDoesNotChangeSubsequentValidLookups(): void
     {
         $index = $this->index();
