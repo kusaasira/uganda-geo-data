@@ -96,7 +96,16 @@ final class Uganda
     /** @return array<int, SubCounty> */
     public function subCounties(): array
     {
-        return iterator_to_array($this->iterate('subcounty'), false);
+        $subCounties = [];
+        foreach ($this->districts as $district) {
+            foreach ($district->counties() as $county) {
+                foreach ($county->subCounties() as $subCounty) {
+                    $subCounties[] = $subCounty;
+                }
+            }
+        }
+
+        return $subCounties;
     }
 
     /**
