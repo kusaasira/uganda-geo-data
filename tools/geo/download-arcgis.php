@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use Uganda\Geo\ArcGisFeatureImporter;
+use Uganda\Geo\ImmutableFileWriter;
 
 $root = dirname(__DIR__, 2);
 require_once $root . '/src/Uganda/Geo/GeometryContract.php';
 require_once $root . '/src/Uganda/Geo/ArcGisFeatureImporter.php';
+require_once $root . '/src/Uganda/Geo/ImmutableFileWriter.php';
 
 /** @return array{body: string, headers: array<string, string>} */
 function fetchArcGisJson(string $url, int $maxBytes): array
