@@ -180,6 +180,17 @@ final class Uganda
         throw new VillageNotFoundException(sprintf('unable to locate village called %s', $name));
     }
 
+    /**
+     * Enumerate one hierarchy level without allocating a flattened array.
+     * Consumers can stream very large village collections directly.
+     *
+     * @return \Generator<int, object>
+     */
+    public function iterate(string $level): \Generator
+    {
+        yield from $this->index()->iterate($level);
+    }
+
     public function findById(string $level, int $id): ?object
     {
         return $this->index()->byId($level, $id);
