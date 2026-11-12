@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 final class ReleaseNotesCommandSafetyTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itPreservesExistingReleaseNotesOnRejectedWrites(): void
     {
         $root = dirname(__DIR__, 2);
