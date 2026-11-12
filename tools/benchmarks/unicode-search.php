@@ -44,6 +44,7 @@ if ($prefix === '') {
 }
 $parentId = $sample->parishId();
 $typo = $normalized . 'a';
+$unicodeTypo = 'é' . $normalized;
 $operation = match ($scenario) {
     'unicode_exact_global' => static fn (): array => $geo->searchByUnicodeName('village', $normalized),
     'unicode_exact_scoped' => static fn (): array => $geo->searchByUnicodeName('village', $normalized, $parentId),
@@ -51,6 +52,8 @@ $operation = match ($scenario) {
     'unicode_prefix_scoped' => static fn (): array => $geo->searchByUnicodePrefix('village', $prefix, $parentId, 10),
     'fuzzy_global' => static fn (): array => $geo->searchFuzzy('village', $typo, null, 10, 2),
     'fuzzy_scoped' => static fn (): array => $geo->searchFuzzy('village', $typo, $parentId, 10, 2),
+    'fuzzy_unicode_global' => static fn (): array => $geo->searchFuzzy('village', $unicodeTypo, null, 10, 2),
+    'fuzzy_unicode_scoped' => static fn (): array => $geo->searchFuzzy('village', $unicodeTypo, $parentId, 10, 2),
 };
 
 $firstStart = hrtime(true);
