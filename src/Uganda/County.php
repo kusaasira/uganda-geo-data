@@ -124,8 +124,12 @@ final class County implements \JsonSerializable
     public function villages(): array
     {
         $villages = [];
-        foreach ($this->parishes() as $parish) {
-            array_push($villages, ...array_values($parish->villages()));
+        foreach ($this->subCounties as $subCounty) {
+            foreach ($subCounty->parishes() as $parish) {
+                foreach ($parish->villages() as $village) {
+                    $villages[] = $village;
+                }
+            }
         }
         return $villages;
     }
