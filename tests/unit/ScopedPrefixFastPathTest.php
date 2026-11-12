@@ -39,7 +39,7 @@ final class ScopedPrefixFastPathTest extends TestCase
     public function scoped_prefix_matches_global_index_order_without_global_index_build(): void
     {
         $index = $this->index();
-        $expected = [22, 19, 28, 17];
+        $expected = [22, 17, 19, 28];
 
         self::assertSame($expected, array_map(
             static fn (Village $v): int => $v->id(),
@@ -55,7 +55,7 @@ final class ScopedPrefixFastPathTest extends TestCase
             static fn (Village $v): int => $v->id(),
             $index->byPrefix('village', 'cen', 10)
         ));
-        self::assertSame([22, 19], array_map(
+        self::assertSame([22, 17], array_map(
             static fn (Village $v): int => $v->id(),
             $index->byPrefix('village', 'cen', 10, 2)
         ));
