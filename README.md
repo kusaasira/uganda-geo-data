@@ -155,6 +155,21 @@ Supported levels: `district`, `county`, `subcounty`, `parish` and `village`. A n
 
 See the [complete v2 API reference](docs/api/v2-reference.md) for return contracts, errors and more examples.
 
+## Development and v2.0.1 core qualification
+
+The released package remains v2.0.0 until the v2.0.1 candidate passes its complete release checks. The unreleased v2.0.1 branch includes independent PHP memory profiling and seeded property-based regression tests.
+
+For a development checkout:
+
+```bash
+composer install
+./vendor/bin/phpunit --no-coverage
+php -d memory_limit=128M tools/benchmarks/memory-profile.php cache-churn 1500
+php -d memory_limit=128M tools/benchmarks/instance-churn.php 12
+```
+
+See [v2.0.1 memory and property qualification](docs/releases/v2.0.1-memory-and-properties.md) and [core performance research](docs/releases/core-performance-research.md) for scenarios, limits and verification methodology. Passing benchmarks does not guarantee fixed latency on every machine.
+
 ## Laravel integration
 
 The production library has **no Illuminate dependency** and does not register a service provider. Use it directly through Composer autoloading:
