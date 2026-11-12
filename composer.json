@@ -46,5 +46,8 @@
         "issues": "https://github.com/kusaasira/uganda-geo-data/issues",
         "source": "https://github.com/kusaasira/uganda-geo-data",
         "docs": "https://github.com/kusaasira/uganda-geo-data/blob/main/README.md"
+    },
+    "suggest": {
+        "ext-intl": "Optional ICU dependency for Unicode-aware exact, prefix and fuzzy administrative searches"
     }
 }
