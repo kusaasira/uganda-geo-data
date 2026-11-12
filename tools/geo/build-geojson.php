@@ -30,7 +30,7 @@ try {
         if (!is_int($id) && !is_string($id)) {
             throw new UnexpectedValueException('Missing source feature object ID');
         }
-        if (!ctype_digit((string) $id) || isset($index[$id])) {
+        if (preg_match('/\A[0-9]+\z/D', (string) $id) !== 1 || isset($index[$id])) {
             throw new UnexpectedValueException('Duplicate or invalid source feature ID');
         }
         $index[$id] = $feature;
