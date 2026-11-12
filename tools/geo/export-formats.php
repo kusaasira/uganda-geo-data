@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Uganda\Geo\GeometryRoundTripVerifier;
 use Uganda\Geo\GeometryExportFields;
+use Uganda\Geo\ImmutableFileWriter;
 
 require dirname(__DIR__, 2) . '/vendor/autoload.php';
 
