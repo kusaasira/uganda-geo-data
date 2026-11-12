@@ -98,11 +98,29 @@ $encode = static function ($result): string {
 };
 $fingerprint = hash('sha256', $encode($result));
 
-$startWarm = hrtime(true);
-for ($i = 0; $i < $iterations; $i++) {
-    $result = $operation();
+// Amortize hrtime() overhead over batches while reporting distribution
+// tails independently of the total-loop mean.
+$batchCount = min(50, max(10, intdiv($iterations, 20)));
+$perBatch = intdiv($iterations, $batchCount);
+$remainder = $iterations % $batchCount;
+$sampleUs = [];
+$totalNanoseconds = 0;
+for ($batch = 0; $batch < $batchCount; $batch++) {
+    $repetitions = $perBatch + ($batch < $remainder ? 1 : 0);
+    $sampleStart = hrtime(true);
+    for ($i = 0; $i < $repetitions; $i++) {
+        $result = $operation();
+    }
+    $sampleNanoseconds = hrtime(true) - $sampleStart;
+    $totalNanoseconds += $sampleNanoseconds;
+    $sampleUs[] = $sampleNanoseconds / $repetitions / 1000;
 }
-$warmUs = (hrtime(true) - $startWarm) / $iterations / 1000;
+$warmUs = $totalNanoseconds / $iterations / 1000;
+sort($sampleUs, SORT_NUMERIC);
+$percentile = static function (float $fraction) use ($sampleUs): float {
+    $position = max(0, (int) ceil(count($sampleUs) * $fraction) - 1);
+    return round($sampleUs[$position], 4);
+};
 if (hash('sha256', $encode($result)) !== $fingerprint) {
     throw new RuntimeException('Lookup results changed between cold and warm executions');
 }
@@ -114,6 +132,10 @@ echo json_encode([
     'constructor_ms' => round($constructorMs, 3),
     'first_query_us' => round($firstLookupUs, 3),
     'warm_mean_us' => round($warmUs, 4),
+    'warm_sample_batches' => $batchCount,
+    'warm_p50_us' => $percentile(0.50),
+    'warm_p95_us' => $percentile(0.95),
+    'warm_p99_us' => $percentile(0.99),
     'memory_after_constructor_bytes' => $allocatedAtConstruct,
     'memory_after_first_query_bytes' => $allocatedAfterCold,
     'memory_peak_bytes' => memory_get_peak_usage(true),
