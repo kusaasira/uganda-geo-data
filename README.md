@@ -7,9 +7,19 @@
 [![PHP](https://img.shields.io/badge/PHP-8.2%2B-777bb4)](composer.json)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-Uganda Geo is an **open-source, framework-independent PHP library** for navigating districts, counties, subcounties, parishes and villages. Version **2.0.0** introduces ID-keyed collections, explicit ambiguity handling, deterministic source validation and separate tools for administrative-data review and geospatial processing.
+Uganda Geo is an **open-source, framework-independent PHP library** for navigating districts, counties, subcounties, parishes and villages. The **2.x** series provides ID-keyed collections, explicit ambiguity handling, deterministic source validation and separate tools for administrative-data review and geospatial processing. **2.0.1** improves memory efficiency, adds opt-in Unicode and fuzzy matching and strengthens GIS export validation without changing existing source IDs or requiring a framework.
 
 > **Data scope:** The default PHP API uses a historical bundled administrative snapshot. Its capture date and current completeness have not been independently established. Official statistics from the **Uganda Bureau of Statistics (UBOS)** are credited as comparison and reconciliation sources, not automatically substituted into the runtime dataset. See [Data sources and attribution](#data-sources-and-attribution).
+
+## What's new in 2.0.1
+
+- **Faster core lookups:** lazy ID and name indexes, parent-scoped fast paths and bounded caches lower repeated-query overhead.
+- **Unicode and fuzzy matching:** opt-in ICU-backed case folding, diacritic-insensitive search and scored typo suggestions.
+- **Memory-conscious traversal:** stream locations without materializing a complete flattened array and reuse canonical model instances.
+- **Stricter data and GIS checks:** reject invalid administrative associations, malformed GeoJSON and unsafe artifact writes.
+- **Compatibility:** PHP 8.2+ remains the minimum. `ext-intl` is optional and is required only for the advanced Unicode methods.
+
+See the [2.0.1 release notes](https://github.com/kusaasira/uganda-geo-data/releases/tag/v2.0.1) and [changelog](CHANGELOG.md) for the full change set.
 
 ## At a glance
 
