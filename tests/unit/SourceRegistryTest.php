@@ -9,7 +9,7 @@ use Uganda\Data\SourceRegistryValidator;
 
 final class SourceRegistryTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function sourceRegistryRetainsDistinctProvenanceAndRights(): void
     {
         $data = json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/resources/sources.json'), true, 512, JSON_THROW_ON_ERROR);
@@ -26,7 +26,7 @@ final class SourceRegistryTest extends TestCase
             $ids[] = $source['id'];
         }
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsInvalidCalendarDatesAndDuplicateSourceIdentifiers(): void
     {
         $registry = json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/resources/sources.json'), true, 512, JSON_THROW_ON_ERROR);
@@ -37,7 +37,7 @@ final class SourceRegistryTest extends TestCase
         $this->assertStringContainsString('Duplicate source identifier', implode(' ', $errors));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function doesNotAcceptRedistributionWithoutLicenseAndAttribution(): void
     {
         $registry = json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/resources/sources.json'), true, 512, JSON_THROW_ON_ERROR);
