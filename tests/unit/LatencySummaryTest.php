@@ -10,7 +10,7 @@ use Uganda\Release\LatencySummary;
 
 final class LatencySummaryTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itSummarizesUnsortedLatencyMeasurementsDeterministically(): void
     {
         $summary = (new LatencySummary())->summarize([9, 1, 3, 2, 5]);
@@ -24,7 +24,7 @@ final class LatencySummaryTest extends TestCase
         self::assertSame(4.0, $summary['mean']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function aSingleSampleProducesTheSameValueForEveryPercentile(): void
     {
         $summary = (new LatencySummary())->summarize([0.25]);
@@ -34,21 +34,21 @@ final class LatencySummaryTest extends TestCase
         self::assertSame(0.25, $summary['p99']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsEmptySamples(): void
     {
         $this->expectException(InvalidArgumentException::class);
         (new LatencySummary())->summarize([]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsNegativeSamples(): void
     {
         $this->expectException(InvalidArgumentException::class);
         (new LatencySummary())->summarize([1, -0.1]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsNonFiniteSamples(): void
     {
         $this->expectException(InvalidArgumentException::class);
