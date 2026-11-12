@@ -34,6 +34,24 @@ foreach ($fields as $field) {
     }
 }
 
+$measuredGrowth = max(
+    0,
+    $result['memory_active_after_second_pass_bytes'] - $result['memory_active_after_first_pass_bytes']
+);
+if ($result['retained_growth_second_pass_bytes'] !== $measuredGrowth) {
+    fwrite(STDERR, "Reported second-pass growth does not match actual samples\n");
+    exit(2);
+}
+if ($result['memory_peak_active_bytes'] < max(
+    $result['memory_active_after_constructor_bytes'],
+    $result['memory_active_after_warmup_bytes'],
+    $result['memory_active_after_first_pass_bytes'],
+    $result['memory_active_after_second_pass_bytes']
+) || $result['memory_peak_reserved_bytes'] < $result['memory_peak_active_bytes']) {
+    fwrite(STDERR, "Inconsistent active or reserved peak-memory measurements\n");
+    exit(2);
+}
+
 $peakBudget = 134217728; // 128 MiB, below ordinary PHP 256M defaults
 $retainedBudget = 8388608; // no more than 8 MiB of new live allocations
 if ($result['memory_peak_reserved_bytes'] > $peakBudget) {
