@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 final class FinalIntegrationReleaseWorkflowsTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itChecksReleaseCandidateAndReadinessOnFinalIntegrationPullRequests(): void
     {
         foreach ([
@@ -26,7 +26,7 @@ final class FinalIntegrationReleaseWorkflowsTest extends TestCase
         }
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itDocumentsTheActualReadinessEnforcementFlag(): void
     {
         $command = file_get_contents(dirname(__DIR__, 2) . '/tools/release/assess-readiness.php');
