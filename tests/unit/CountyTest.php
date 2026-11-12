@@ -38,7 +38,7 @@ final class CountyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function canAccessProperties(): void
     {
         $this->assertSame(1000, $this->county->id());
@@ -49,7 +49,7 @@ final class CountyTest extends TestCase
         $this->assertIsArray($this->county->villages());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function canAccessSpecificSubCounty(): void
     {
         $subCounty = $this->county->subCounty('Earth');
@@ -58,7 +58,7 @@ final class CountyTest extends TestCase
         $this->assertSame($this->county->id(), $subCounty->countyId());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function throwsSubCountyNotFoundExceptionWhenSubCountyDoesNotExist(): void
     {
         $this->expectException(SubCountyNotFoundException::class);
@@ -67,7 +67,7 @@ final class CountyTest extends TestCase
         $this->county->subCounty('Moon');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function canAccessSpecificParish(): void
     {
         $parish = $this->county->parish('Murica');
@@ -75,7 +75,7 @@ final class CountyTest extends TestCase
         $this->assertSame('Murica', $parish->name());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function throwsParishNotFoundExceptionWhenParishDoesNotExist(): void
     {
         $this->expectException(ParishNotFoundException::class);
@@ -84,7 +84,7 @@ final class CountyTest extends TestCase
         $this->county->parish('Germany');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function canAccessSpecificVillage(): void
     {
         $village = $this->county->village('New York');
@@ -92,7 +92,7 @@ final class CountyTest extends TestCase
         $this->assertSame('New York', $village->name());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function throwsVillageNotFoundExceptionWhenVillageDoesNotExist(): void
     {
         $this->expectException(VillageNotFoundException::class);
