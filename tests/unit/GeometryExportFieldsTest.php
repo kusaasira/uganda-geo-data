@@ -10,7 +10,7 @@ use Uganda\Geo\GeometryExportFields;
 
 final class GeometryExportFieldsTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itPreservesIdentitiesWithShortDeterministicFieldNames(): void
     {
         $collection = json_decode((string) file_get_contents(
@@ -25,7 +25,7 @@ final class GeometryExportFieldsTest extends TestCase
         }
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsUnreviewedFeatureCollections(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -33,7 +33,7 @@ final class GeometryExportFieldsTest extends TestCase
             ['type' => 'Feature', 'properties' => [], 'geometry' => []],
         ]]);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsIdentifiersThatWouldBeSilentlyTruncatedByShapefile(): void
     {
         $collection = json_decode(
@@ -48,7 +48,7 @@ final class GeometryExportFieldsTest extends TestCase
         (new GeometryExportFields())->prepare($collection);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itCountsUtf8BytesRatherThanCharactersForDbaseLimits(): void
     {
         $collection = json_decode(
@@ -62,7 +62,7 @@ final class GeometryExportFieldsTest extends TestCase
         $this->expectExceptionMessage('DBF limit');
         (new GeometryExportFields())->prepare($collection);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsThreeDimensionalGeometryThatCouldLoseAltitudeDuringExport(): void
     {
         $collection = json_decode(
