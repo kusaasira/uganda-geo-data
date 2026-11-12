@@ -453,6 +453,17 @@ final class LocationIndex
         return $this->unicode()->byName($level, $name, $parentId, $ignoreDiacritics);
     }
 
+    /** @return array<int, object> */
+    public function byUnicodePrefix(
+        string $level,
+        string $prefix,
+        ?int $parentId = null,
+        ?int $limit = null,
+        bool $ignoreDiacritics = false
+    ): array {
+        return $this->unicode()->byPrefix($level, $prefix, $parentId, $limit, $ignoreDiacritics);
+    }
+
     private function assertLevel(string $level): void
     {
         if (!in_array($level, ['district', 'county', 'subcounty', 'parish', 'village'], true)) {
