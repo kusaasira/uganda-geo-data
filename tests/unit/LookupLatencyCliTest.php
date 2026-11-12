@@ -8,19 +8,19 @@ use PHPUnit\Framework\TestCase;
 
 final class LookupLatencyCliTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsAnIterationCountBelowTheSamplingMinimum(): void
     {
         $this->assertInvalidIterations('49');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsAnIterationCountAboveTheSamplingMaximum(): void
     {
         $this->assertInvalidIterations('100001');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsUnexpectedArguments(): void
     {
         $root = dirname(__DIR__, 2);
