@@ -174,6 +174,33 @@ php -d memory_limit=128M tools/benchmarks/instance-churn.php 12
 
 See [v2.0.1 memory and property qualification](docs/releases/v2.0.1-memory-and-properties.md) and [core performance research](docs/releases/core-performance-research.md) for scenarios, limits and verification methodology. Passing benchmarks does not guarantee fixed latency on every machine.
 
+## Unicode-aware and fuzzy search (v2.0.1 candidate)
+
+The unreleased v2.0.1 branch adds Unicode-normalized exact search, prefix search and typo-tolerant suggestions. The optional PHP `ext-intl` extension provides ICU NFKC case folding and canonical Unicode normalization. **It is not required for ordinary v2 searches or package installation.** The new methods fail explicitly when `ext-intl` is unavailable.
+
+```php
+use Uganda\Uganda;
+
+$geo = new Uganda();
+
+// Compatibility-equivalent names and full Unicode case folding.
+$matches = $geo->searchByUnicodeName('district', 'ＭＵＫＯＮＯ');
+
+// Accent-insensitive search is explicitly opt-in.
+$parishes = $geo->searchByUnicodePrefix('parish', 'São', null, 10, true);
+
+// Rank transcription errors and neighboring-character transpositions.
+$suggestions = $geo->searchFuzzyWithScores('village', 'Kampalaa', null, 10, 2);
+
+foreach ($suggestions as $suggestion) {
+    echo $suggestion['unit']->name() . ': ' . $suggestion['distance'] . " edits\n";
+}
+```
+
+All suggestions preserve source IDs, duplicate names and original model instances. They are **candidates**, never authoritative identity resolution. Maximum typo distance is 3. The default is 2 and fuzzy results are capped at 100 per request.
+
+See the [Unicode and fuzzy search specification](docs/releases/v2.0.1-unicode-fuzzy-qualification.md) for matching semantics, ICU requirements, stable ranking, input limits and reproducible latency benchmarks. This capability remains part of the **same v2.0.1 patch PR**, not a separate package or Laravel release.
+
 ## Laravel integration
 
 The production library has **no Illuminate dependency** and does not register a service provider. Use it directly through Composer autoloading:
