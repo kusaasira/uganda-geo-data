@@ -15,7 +15,7 @@ use Uganda\Village;
 
 final class LocationJsonSerializationTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itSerializesAllFiveLevelsWithExplicitIdentityAndParentContext(): void
     {
         $models = [
@@ -36,7 +36,7 @@ final class LocationJsonSerializationTest extends TestCase
         ], $decoded);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itDoesNotAccidentallySerializeEveryDescendant(): void
     {
         $village = new Village(5, 'Village', 4);
@@ -53,7 +53,7 @@ final class LocationJsonSerializationTest extends TestCase
         self::assertArrayHasKey(2, $district->toArray()['counties']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function distinctSameNamePlacesRemainDistinctWhenSerialized(): void
     {
         $locations = [new Parish(10, 'Central', 3), new Parish(11, 'Central', 3)];
@@ -62,7 +62,7 @@ final class LocationJsonSerializationTest extends TestCase
         self::assertSame([10, 11], array_column($decoded, 'id'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsUnsupportedModelsRatherThanFabricatingLocationFields(): void
     {
         $this->expectException(InvalidArgumentException::class);
