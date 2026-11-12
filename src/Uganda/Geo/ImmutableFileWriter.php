@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Uganda\Geo;
 
 use RuntimeException;
-use Throwable;
 
 /**
  * Build an immutable export artifact in a same-directory temporary file, then
@@ -69,8 +68,6 @@ final class ImmutableFileWriter
             if (!@link($temporary, $path)) {
                 throw new RuntimeException('Cannot publish new export file without replacing an existing entry: ' . $path);
             }
-        } catch (Throwable $exception) {
-            throw $exception;
         } finally {
             @unlink($temporary);
         }
