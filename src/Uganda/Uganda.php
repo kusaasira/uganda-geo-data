@@ -192,6 +192,12 @@ final class Uganda
     }
 
     /** @return array<int, object> */
+    public function searchByPrefix(string $level, string $prefix, ?int $parentId = null, ?int $limit = null): array
+    {
+        return $this->index()->byPrefix($level, $prefix, $parentId, $limit);
+    }
+
+    /** @return array<int, object> */
     public function childrenOf(string $level, int $parentId): array
     {
         return $this->index()->childrenOf($level, $parentId);
