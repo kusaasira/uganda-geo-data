@@ -81,8 +81,10 @@ final class District implements \JsonSerializable
     public function subCounties(): array
     {
         $subCounties = [];
-        foreach ($this->counties() as $county) {
-            array_push($subCounties, ...array_values($county->subCounties()));
+        foreach ($this->counties as $county) {
+            foreach ($county->subCounties() as $subCounty) {
+                $subCounties[] = $subCounty;
+            }
         }
         return $subCounties;
     }
