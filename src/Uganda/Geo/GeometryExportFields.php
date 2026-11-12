@@ -78,7 +78,12 @@ final class GeometryExportFields
             ];
         }
         usort($features, static function (array $a, array $b): int {
-            return strcmp($a['id'], $b['id']);
+            $first = $a['id'] ?? null;
+            $second = $b['id'] ?? null;
+            if (!is_string($first) || !is_string($second)) {
+                throw new InvalidArgumentException('Missing reviewed unit identity during ordering');
+            }
+            return strcmp($first, $second);
         });
 
         return [
