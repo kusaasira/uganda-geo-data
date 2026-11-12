@@ -70,6 +70,10 @@ final class LocationIndex
             $needle = self::nameKey($name);
             $matches = [];
             foreach ($this->childrenOf($level, $parentId) as $unit) {
+                if (!$unit instanceof County && !$unit instanceof SubCounty
+                    && !$unit instanceof Parish && !$unit instanceof Village) {
+                    throw new \LogicException('Unexpected administrative child model');
+                }
                 if (self::nameKey($unit->name()) === $needle) {
                     $matches[] = $unit;
                 }
