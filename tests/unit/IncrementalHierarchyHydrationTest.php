@@ -27,7 +27,7 @@ final class IncrementalHierarchyHydrationTest extends TestCase
         parent::tearDown();
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itResolvesZeroPaddedIdsAcrossEveryParentLink(): void
     {
         $this->writeValidRows();
@@ -50,7 +50,7 @@ final class IncrementalHierarchyHydrationTest extends TestCase
         self::assertSame([$district, $county, $subcounty, $parish], $geo->ancestorsOf('village', 5));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function duplicateNamesWithinOneParentAreNotDeduplicated(): void
     {
         $this->writeValidRows();
@@ -65,7 +65,7 @@ final class IncrementalHierarchyHydrationTest extends TestCase
         self::assertCount(2, $geo->childrenOf('village', 4));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function aliasIdsThatCastToTheSameIntegerAreNotSilentlyOverwritten(): void
     {
         $this->writeValidRows();
