@@ -150,6 +150,10 @@ For examples that must work regardless of a particular source name, use [example
 | `searchByName($level, $name, $parentId = null)` | Return every exact normalized-name match, optionally scoped to a parent |
 | `childrenOf($childLevel, $parentId)` | Return direct children of a known parent |
 | `ancestorsOf($level, $id)` | Return ancestors from root to immediate parent |
+| `searchByUnicodeName($level, $name, $parentId = null, $ignoreDiacritics = false)` | Optional ICU NFKC casefold exact name matches |
+| `searchByUnicodePrefix($level, $prefix, $parentId = null, $limit = null, $ignoreDiacritics = false)` | Optional Unicode-normalized prefix matching |
+| `searchFuzzy($level, $query, $parentId = null, $limit = 10, $maxDistance = 2, $ignoreDiacritics = false)` | Ranked typo and transposition suggestions |
+| `searchFuzzyWithScores(...)` | Original models with explicit grapheme-edit distances |
 
 Supported levels: `district`, `county`, `subcounty`, `parish` and `village`. A name is a display property, **never a globally unique lookup key**.
 
