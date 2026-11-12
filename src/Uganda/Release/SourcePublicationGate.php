@@ -13,7 +13,7 @@ final class SourcePublicationGate
      * use. Distribution of source geometry requires explicit source approval.
      *
      * @param array<string, mixed> $registry
-     * @param array<int, string> $sourceIds
+     * @param array<int, mixed> $sourceIds
      */
     public function assertMayPublish(array $registry, array $sourceIds): void
     {
