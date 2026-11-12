@@ -14,7 +14,7 @@ use Uganda\Village;
 
 final class DirectHierarchyChildrenTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itPreservesImmediateChildIdentityAndOriginalOrder(): void
     {
         $first = new Village(24, 'Shared', 9);
@@ -32,7 +32,7 @@ final class DirectHierarchyChildrenTest extends TestCase
         self::assertSame([24, 18], array_map(static fn (Village $v): int => $v->id(), $index->childrenOf('village', 9)));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function aMatchingIdentifierAtTheWrongLevelNeverResolvesAChild(): void
     {
         $village = new Village(99, 'Village', 9);
@@ -47,7 +47,7 @@ final class DirectHierarchyChildrenTest extends TestCase
         self::assertSame([$village], $index->childrenOf('village', 9));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function lookupsForMissingParentsDoNotModifyValidResults(): void
     {
         $county = new County(5, 'County', 3);
