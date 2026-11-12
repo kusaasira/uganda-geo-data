@@ -9,8 +9,10 @@ use Uganda\Exceptions\AmbiguousLocationException;
 use Uganda\Exceptions\ParishNotFoundException;
 use Uganda\Exceptions\VillageNotFoundException;
 
-final class SubCounty
+final class SubCounty implements \JsonSerializable
 {
+    use SerializesLocation;
+
     private int $id;
 
     private string $name;
