@@ -10,7 +10,7 @@ use Uganda\Data\CanonicalSnapshotDiffer;
 
 final class CanonicalSnapshotDifferTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function reportsIdentityBasedAdditionsRemovalsAndChanges(): void
     {
         $before = ['snapshot_id' => 'old', 'units' => [
@@ -29,7 +29,7 @@ final class CanonicalSnapshotDifferTest extends TestCase
         $this->assertSame('missing_from_next_snapshot', $report['changes'][1]['kind']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function ignoresRecordOrderingAndReportsNoChange(): void
     {
         $records = [['id' => 'a', 'name' => 'One'], ['id' => 'b', 'name' => 'Two']];
@@ -40,7 +40,7 @@ final class CanonicalSnapshotDifferTest extends TestCase
         $this->assertSame([], $report['changes']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsDuplicateCanonicalIds(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -49,7 +49,7 @@ final class CanonicalSnapshotDifferTest extends TestCase
             ['units' => []]
         );
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsNonListUnitStructuresInsteadOfSilentlyDiffingAnObject(): void
     {
         $this->expectException(InvalidArgumentException::class);
