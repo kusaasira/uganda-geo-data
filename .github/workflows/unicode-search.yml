@@ -65,18 +65,5 @@ jobs:
           extensions: json
           tools: composer:v2
           coverage: none
-      - name: Prove Unicode failure is explicit when Intl is disabled
-        run: |
-          php -n -r '
-            require "src/Uganda/Lookup/UnicodeNameNormalizer.php";
-            if (class_exists("Normalizer", false)) {
-              fwrite(STDERR, "Test process unexpectedly includes ext-intl\n"); exit(1);
-            }
-            try {
-              \Uganda\Lookup\UnicodeNameNormalizer::normalize("Central");
-            } catch (\RuntimeException $e) {
-              if (str_contains($e->getMessage(), "ext-intl")) {exit(0);}
-            }
-            fwrite(STDERR, "Missing optional intl extension was not explained\n");
-            exit(1);
-          '
+      - name: Verify normal search and ICU-specific failures with all optional extensions disabled
+        run: php -n tools/ci/without-intl.php
