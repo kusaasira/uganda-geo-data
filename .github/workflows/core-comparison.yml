@@ -34,10 +34,10 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build/compare
-          for scenario in district_id village_id village_name district_children village_children village_ancestors all_counties all_subcounties all_parishes all_villages; do
+          for scenario in district_id village_id village_name district_children village_children village_ancestors all_counties all_subcounties all_parishes all_villages district_subcounties district_parishes district_villages county_parishes county_villages subcounty_villages; do
             iterations=1000
             case "$scenario" in
-              all_*) iterations=100 ;;
+              all_*|district_*counties|district_parishes|district_villages|county_parishes|county_villages|subcounty_villages) iterations=100 ;;
             esac
             php candidate/tools/benchmarks/query-scenario.php baseline "$scenario" "$iterations" > "build/compare/base-$scenario.json"
             php candidate/tools/benchmarks/query-scenario.php candidate "$scenario" "$iterations" > "build/compare/head-$scenario.json"
