@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Uganda\Lookup;
 
 use InvalidArgumentException;
+use Uganda\County;
 use Uganda\District;
+use Uganda\Parish;
+use Uganda\SubCounty;
 
 final class LocationIndex
 {
@@ -17,12 +20,6 @@ final class LocationIndex
 
     /** @var array<string, array<int, int|null>> */
     private array $parentById = [];
-
-    /** @var array<string, array<int, array<int, int>>> */
-    private array $childrenByParent = [];
-
-    /** @var array<string, bool> */
-    private array $indexedChildLevels = [];
 
     /** @var array<string, array<int, string>> */
     private array $sortedNameKeys = [];
@@ -130,7 +127,12 @@ final class LocationIndex
         return $result;
     }
 
-    /** @return array<int, object> */
+    /**
+     * Read existing child collections directly from the parent model.
+     * This avoids constructing a second parent-to-children index.
+     *
+     * @return array<int, object>
+     */
     public function childrenOf(string $level, int $parentId): array
     {
         $this->assertLevel($level);
@@ -138,23 +140,21 @@ final class LocationIndex
             throw new InvalidArgumentException('Districts have no administrative parent in this dataset');
         }
 
-        // Only index the requested level. A lookup for counties must not
-        // allocate parent-child maps for every parish and village.
-        if (!isset($this->indexedChildLevels[$level])) {
-            foreach ($this->parentById[$level] ?? [] as $childId => $idOfParent) {
-                if ($idOfParent !== null) {
-                    $this->childrenByParent[$level][$idOfParent][] = $childId;
-                }
-            }
-            $this->indexedChildLevels[$level] = true;
+        if ($level === 'county') {
+            $parent = $this->byId('district', $parentId);
+            return $parent instanceof District ? array_values($parent->counties()) : [];
+        }
+        if ($level === 'subcounty') {
+            $parent = $this->byId('county', $parentId);
+            return $parent instanceof County ? array_values($parent->subCounties()) : [];
+        }
+        if ($level === 'parish') {
+            $parent = $this->byId('subcounty', $parentId);
+            return $parent instanceof SubCounty ? array_values($parent->parishes()) : [];
         }
 
-        $children = [];
-        foreach ($this->childrenByParent[$level][$parentId] ?? [] as $id) {
-            $children[] = $this->byId[$level][$id];
-        }
-
-        return $children;
+        $parent = $this->byId('parish', $parentId);
+        return $parent instanceof Parish ? array_values($parent->villages()) : [];
     }
 
     /**
