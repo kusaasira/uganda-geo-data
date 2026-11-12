@@ -8,25 +8,25 @@ use PHPUnit\Framework\TestCase;
 
 final class QueryScenarioContractTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsUnknownQueryScenariosWithoutLoadingDatasets(): void
     {
         $this->assertInvalid('unknown', '100');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsAnUnboundedIterationCountBeforeLoadingDatasets(): void
     {
         $this->assertInvalid('village_id', '100001');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsNonnumericIterationsBeforeLoadingDatasets(): void
     {
         $this->assertInvalid('district_id', 'any');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itProducesMachineReadableResultsForAnActualSourceCheckout(): void
     {
         $root = dirname(__DIR__, 2);
