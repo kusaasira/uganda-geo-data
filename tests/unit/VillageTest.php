@@ -9,7 +9,7 @@ use Uganda\Village;
 
 final class VillageTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function canAccessProperties(): void
     {
         $village = new Village(123, 'new york', 456);
@@ -18,7 +18,7 @@ final class VillageTest extends TestCase
         $this->assertSame(456, $village->parishId());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function canConvertToArray(): void
     {
         $village = new Village(123, 'new york', 456);
