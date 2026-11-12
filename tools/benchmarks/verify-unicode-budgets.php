@@ -16,7 +16,7 @@ if (!is_array($result)
     || !in_array($result['scenario'] ?? null, [
         'unicode_exact_global', 'unicode_exact_scoped',
         'unicode_prefix_global', 'unicode_prefix_scoped',
-        'fuzzy_global', 'fuzzy_scoped',
+        'fuzzy_global', 'fuzzy_scoped', 'fuzzy_unicode_global', 'fuzzy_unicode_scoped',
     ], true)
     || !is_string($result['fingerprint'] ?? null)
     || strlen($result['fingerprint']) !== 64) {
