@@ -17,7 +17,7 @@ use Uganda\Village;
 
 final class HierarchyStreamingTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itYieldsOriginalModelsWithoutConstructingSecondaryIndexes(): void
     {
         $village = new Village(5, 'Village', 4);
@@ -36,7 +36,7 @@ final class HierarchyStreamingTest extends TestCase
         self::assertSame([], $byId);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itMatchesEveryBundledSourceRecordInOrder(): void
     {
         $geo = new Uganda();
@@ -58,14 +58,14 @@ final class HierarchyStreamingTest extends TestCase
         }
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function aGeneratorFailsForAnUnsupportedLevel(): void
     {
         $this->expectException(InvalidArgumentException::class);
         iterator_to_array((new Uganda())->iterate('province'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itSupportsEarlyTerminationWithoutMaterializingAllVillages(): void
     {
         $geo = new Uganda();
