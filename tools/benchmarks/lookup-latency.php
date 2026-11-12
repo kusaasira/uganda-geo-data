@@ -32,11 +32,13 @@ $parentId = $village->parishId();
 $geo->findById('village', $id);
 $geo->searchByName('village', $name, $parentId);
 $geo->childrenOf('village', $parentId);
+$geo->searchByPrefix('village', substr($name, 0, 3), $parentId, 10);
 $geo->ancestorsOf('village', $id);
 
 $operations = [
     'find_by_id' => static fn () => $geo->findById('village', $id),
     'name_with_parent' => static fn () => $geo->searchByName('village', $name, $parentId),
+    'prefix_name' => static fn () => $geo->searchByPrefix('village', substr($name, 0, 3), $parentId, 10),
     'children_of' => static fn () => $geo->childrenOf('village', $parentId),
     'ancestors_of' => static fn () => $geo->ancestorsOf('village', $id),
 ];
