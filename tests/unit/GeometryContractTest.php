@@ -10,7 +10,7 @@ use Uganda\Geo\GeometryContract;
 
 final class GeometryContractTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function supportsClosedPolygonsAndMultipolygons(): void
     {
         $ring = [[32, 1], [33, 1], [33, 2], [32, 1]];
@@ -19,27 +19,27 @@ final class GeometryContractTest extends TestCase
         $this->assertTrue(true);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsOpenRings(): void
     {
         $this->expectException(InvalidArgumentException::class);
         GeometryContract::assertGeometry(['type' => 'Polygon', 'coordinates' => [[[32, 1], [33, 1], [33, 2], [32, 2]]]]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsInvalidLongitudeAndLatitude(): void
     {
         $this->expectException(InvalidArgumentException::class);
         GeometryContract::assertLonLat([332, 1]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsMissingRingCoordinates(): void
     {
         $this->expectException(InvalidArgumentException::class);
         GeometryContract::assertGeometry(['type' => 'MultiPolygon', 'coordinates' => []]);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsDegenerateRingsWithOnlyTwoUniquePositions(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -49,14 +49,14 @@ final class GeometryContractTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsProjectedMetreCoordinatesAsLongitudeLatitude(): void
     {
         $this->expectException(InvalidArgumentException::class);
         GeometryContract::assertLonLat([3500000, 400000]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsNonFiniteCoordinateValues(): void
     {
         $this->expectException(InvalidArgumentException::class);
