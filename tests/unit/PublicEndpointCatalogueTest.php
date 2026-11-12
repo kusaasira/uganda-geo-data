@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 final class PublicEndpointCatalogueTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function candidateLayersHaveStableIdentifiersAndConservativeRights(): void
     {
         $catalogue = json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/resources/geometry/endpoints.json'), true, 512, JSON_THROW_ON_ERROR);
@@ -24,7 +24,7 @@ final class PublicEndpointCatalogueTest extends TestCase
             $this->assertGreaterThan(0, $entry['max_record_count']);
         }
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsLayerMetadataThatChangesObjectIdOrRequiredFields(): void
     {
         $metadata = [
