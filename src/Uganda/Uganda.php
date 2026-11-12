@@ -289,6 +289,22 @@ final class Uganda
         );
     }
 
+    /**
+     * Return the same results as searchFuzzy() with an explicit edit count.
+     *
+     * @return array<int, array{unit: object, distance: int}>
+     */
+    public function searchFuzzyWithScores(
+        string $level,
+        string $query,
+        ?int $parentId = null,
+        int $limit = 10,
+        int $maxDistance = 2,
+        bool $ignoreDiacritics = false
+    ): array {
+        return $this->index()->fuzzy($level, $query, $parentId, $limit, $maxDistance, $ignoreDiacritics);
+    }
+
     private function index(): LocationIndex
     {
         if ($this->locationIndex === null) {
