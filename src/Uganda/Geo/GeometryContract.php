@@ -66,7 +66,7 @@ final class GeometryContract
      */
     public static function assertLonLat(array $position): void
     {
-        if (count($position) < 2 || !isset($position[0], $position[1])) {
+        if (!array_is_list($position) || count($position) < 2 || !isset($position[0], $position[1])) {
             throw new InvalidArgumentException('Position must include longitude and latitude');
         }
         $longitude = $position[0];
