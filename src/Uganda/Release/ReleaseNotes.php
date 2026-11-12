@@ -15,16 +15,20 @@ final class ReleaseNotes
      */
     public function render(array $manifest, string $tag): string
     {
-        if (!preg_match('/^v2\.0\.0(?:-(?:alpha|beta|rc)\.[1-9][0-9]*)?$/D', $tag)) {
+        if (!preg_match('/^v2\.0\.(?:0|1)(?:-(?:alpha|beta|rc)\.[1-9][0-9]*)?$/D', $tag)) {
             throw new InvalidArgumentException('Expected a supported immutable Uganda Geo v2 release tag');
         }
         $sections = $manifest['sections'] ?? null;
-        if (($manifest['base_version'] ?? null) !== 'v2.0.0'
+        $baseVersion = $manifest['base_version'] ?? null;
+        if (!is_string($baseVersion) || !in_array($baseVersion, ['v2.0.0', 'v2.0.1'], true)
+            || !($tag === $baseVersion || str_starts_with($tag, $baseVersion . '-'))
             || !is_array($sections) || $sections === []) {
-            throw new InvalidArgumentException('Release-note source requires base_version and sections');
+            throw new InvalidArgumentException('Release-note source requires matching base_version and sections');
         }
-        $out = ['# Uganda Geo ' . $tag, '', '## Release summary', '',
-            'This major release changes the PHP public API and requires migration from the existing v1.0.0 package.', ''];
+        $summary = $baseVersion === 'v2.0.0'
+            ? 'This major release changes the PHP public API and requires migration from the existing v1.0.0 package.'
+            : 'This backward-compatible maintenance release hardens the Uganda Geo 2.0 core without changing its supported PHP API.';
+        $out = ['# Uganda Geo ' . $tag, '', '## Release summary', '', $summary, ''];
         $seen = [];
         foreach (self::CATEGORIES as $category) {
             if (!array_key_exists($category, $sections)) {
