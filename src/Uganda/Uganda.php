@@ -173,9 +173,9 @@ final class Uganda
             foreach ($district->counties() as $county) {
                 foreach ($county->subCounties() as $subCounty) {
                     foreach ($subCounty->parishes() as $parish) {
-                        foreach ($parish->villages() as $village) {
-                            $villages[] = $village;
-                        }
+                        // Append each small parish collection in native PHP
+                        // rather than appending every village in userland.
+                        array_push($villages, ...array_values($parish->villages()));
                     }
                 }
             }
