@@ -218,158 +218,131 @@ final class Uganda
         return $this->locationIndex;
     }
 
-    /** @return array<int, District> */
+    /**
+     * Construct the immutable hierarchy bottom-up, loading one source table
+     * at a time. Retain no decoded source arrays beyond their hydration pass.
+     *
+     * @return array<int, District>
+     */
     private function generateTree(): array
     {
-        /** @var array<int, array<string, string>> $villages */
-        $villages = $this->getFileContents($this->sourceDirectory . '/villages.json');
-
-        /** @var array<int, array<string, string>> $parishes */
-        $parishes = $this->getFileContents($this->sourceDirectory . '/parishes.json');
-
-        /** @var array<int, array<string, string>> $subCounties */
-        $subCounties = $this->getFileContents($this->sourceDirectory . '/sub_counties.json');
-
-        /** @var array<int, array<string, string>> $counties */
-        $counties = $this->getFileContents($this->sourceDirectory . '/counties.json');
-
-        /** @var array<int, array<string, string>> $districts */
-        $districts = $this->getFileContents($this->sourceDirectory . '/districts.json');
-
-        $this->validateHierarchyReferences($villages, $parishes, $subCounties, $counties, $districts);
-
-        // Keep the source identity distinct from the display name.
-        // Reject duplicate IDs rather than silently overwriting records.
-        $seenIds = [];
         /** @var array<int, array<int, Village>> $mappedVillages */
         $mappedVillages = [];
-        foreach ($villages as $village) {
+        $seen = [];
+        foreach ($this->getFileContents($this->sourceDirectory . '/villages.json') as $village) {
             $id = (int) $village['id'];
-            if (isset($seenIds['village'][$id])) {
+            if (isset($seen[$id])) {
                 throw new \UnexpectedValueException('Duplicate village ID: ' . $id);
             }
-            $seenIds['village'][$id] = true;
-            $mappedVillages[$village['parish']][$id] = new Village(
-                (int) $village['id'],
-                $village['name'],
-                (int) $village['parish']
-            );
+            $seen[$id] = true;
+            $parent = (int) $village['parish'];
+            $mappedVillages[$parent][$id] = new Village($id, $village['name'], $parent);
         }
+        unset($seen);
 
         /** @var array<int, array<int, Parish>> $mappedParishes */
         $mappedParishes = [];
-        foreach ($parishes as $parish) {
+        $seen = [];
+        foreach ($this->getFileContents($this->sourceDirectory . '/parishes.json') as $parish) {
             $id = (int) $parish['id'];
-            if (isset($seenIds['parish'][$id])) {
+            if (isset($seen[$id])) {
                 throw new \UnexpectedValueException('Duplicate parish ID: ' . $id);
             }
-            $seenIds['parish'][$id] = true;
-            $mappedParishes[$parish['subcounty']][$id] = new Parish(
-                (int) $parish['id'],
+            $seen[$id] = true;
+            $parent = (int) $parish['subcounty'];
+            $mappedParishes[$parent][$id] = new Parish(
+                $id,
                 ucfirst($parish['name']),
-                (int) $parish['subcounty'],
-                $mappedVillages[$parish['id']] ?? []
+                $parent,
+                $mappedVillages[$id] ?? []
             );
+            unset($mappedVillages[$id]);
         }
+        $this->assertNoOrphans($mappedVillages, 'village', 'parish');
+        unset($mappedVillages, $seen);
 
         /** @var array<int, array<int, SubCounty>> $mappedSubCounties */
         $mappedSubCounties = [];
-        foreach ($subCounties as $subCounty) {
+        $seen = [];
+        foreach ($this->getFileContents($this->sourceDirectory . '/sub_counties.json') as $subCounty) {
             $id = (int) $subCounty['id'];
-            if (isset($seenIds['subCounty'][$id])) {
+            if (isset($seen[$id])) {
                 throw new \UnexpectedValueException('Duplicate subCounty ID: ' . $id);
             }
-            $seenIds['subCounty'][$id] = true;
-            $mappedSubCounties[$subCounty['county']][$id] = new SubCounty(
-                (int) $subCounty['id'],
+            $seen[$id] = true;
+            $parent = (int) $subCounty['county'];
+            $mappedSubCounties[$parent][$id] = new SubCounty(
+                $id,
                 ucfirst($subCounty['name']),
-                (int) $subCounty['county'],
-                $mappedParishes[$subCounty['id']] ?? []
+                $parent,
+                $mappedParishes[$id] ?? []
             );
+            unset($mappedParishes[$id]);
         }
+        $this->assertNoOrphans($mappedParishes, 'parish', 'subcounty');
+        unset($mappedParishes, $seen);
 
         /** @var array<int, array<int, County>> $mappedCounties */
         $mappedCounties = [];
-        foreach ($counties as $county) {
+        $seen = [];
+        foreach ($this->getFileContents($this->sourceDirectory . '/counties.json') as $county) {
             $id = (int) $county['id'];
-            if (isset($seenIds['county'][$id])) {
+            if (isset($seen[$id])) {
                 throw new \UnexpectedValueException('Duplicate county ID: ' . $id);
             }
-            $seenIds['county'][$id] = true;
-            $mappedCounties[$county['district']][$id] = new County(
-                (int) $county['id'],
+            $seen[$id] = true;
+            $parent = (int) $county['district'];
+            $mappedCounties[$parent][$id] = new County(
+                $id,
                 ucfirst($county['name']),
-                (int) $county['district'],
-                $mappedSubCounties[$county['id']] ?? []
+                $parent,
+                $mappedSubCounties[$id] ?? []
             );
+            unset($mappedSubCounties[$id]);
         }
+        $this->assertNoOrphans($mappedSubCounties, 'subcounty', 'county');
+        unset($mappedSubCounties, $seen);
 
-        /** @var array<int, District> $mappedDistrict */
-        $mappedDistrict = [];
-        foreach ($districts as $district) {
+        /** @var array<int, District> $mappedDistricts */
+        $mappedDistricts = [];
+        $seen = [];
+        foreach ($this->getFileContents($this->sourceDirectory . '/districts.json') as $district) {
             $id = (int) $district['id'];
-            if (isset($seenIds['district'][$id])) {
+            if (isset($seen[$id])) {
                 throw new \UnexpectedValueException('Duplicate district ID: ' . $id);
             }
-            $seenIds['district'][$id] = true;
-            $mappedDistrict[$id] = new District(
-                (int) $district['id'],
+            $seen[$id] = true;
+            $mappedDistricts[$id] = new District(
+                $id,
                 ucfirst($district['name']),
-                $mappedCounties[$district['id']] ?? []
+                $mappedCounties[$id] ?? []
             );
+            unset($mappedCounties[$id]);
         }
+        $this->assertNoOrphans($mappedCounties, 'county', 'district');
 
-        return $mappedDistrict;
+        return $mappedDistricts;
     }
 
     /**
-     * Ensure the runtime tree cannot silently drop children with unknown parents.
+     * Every decoded child must be attached to exactly one known parent.
+     * Numeric source IDs are normalized to native integer keys before
+     * attachment, so zero-padded parent strings cannot discard records.
      *
-     * @param array<int, array<string, int|string>> $villages
-     * @param array<int, array<string, int|string>> $parishes
-     * @param array<int, array<string, int|string>> $subCounties
-     * @param array<int, array<string, int|string>> $counties
-     * @param array<int, array<string, int|string>> $districts
+     * @param array<int, array<int, object>> $orphanGroups
      */
-    private function validateHierarchyReferences(
-        array $villages,
-        array $parishes,
-        array $subCounties,
-        array $counties,
-        array $districts
-    ): void {
-        $ids = [];
-        foreach ([
-            'district' => $districts,
-            'county' => $counties,
-            'subcounty' => $subCounties,
-            'parish' => $parishes,
-        ] as $level => $rows) {
-            foreach ($rows as $row) {
-                $ids[$level][(int) $row['id']] = true;
-            }
-        }
-
-        foreach ([
-            ['village', $villages, 'parish', 'parish'],
-            ['parish', $parishes, 'subcounty', 'subcounty'],
-            ['subcounty', $subCounties, 'county', 'county'],
-            ['county', $counties, 'district', 'district'],
-        ] as $check) {
-            [$level, $rows, $parentKey, $parentLevel] = $check;
-            foreach ($rows as $row) {
-                $parent = (int) $row[$parentKey];
-                if (!isset($ids[$parentLevel][$parent])) {
-                    throw new \UnexpectedValueException(
-                        sprintf(
-                            'Orphan %s record %s: unknown %s %d',
-                            $level,
-                            (string) $row['id'],
-                            $parentLevel,
-                            $parent
-                        )
-                    );
-                }
+    private function assertNoOrphans(array $orphanGroups, string $childLevel, string $parentLevel): void
+    {
+        foreach ($orphanGroups as $parentId => $children) {
+            $childId = array_key_first($children);
+            if ($childId !== null) {
+                throw new \UnexpectedValueException(sprintf(
+                    'Orphan %s record %d: unknown %s %d',
+                    $childLevel,
+                    $childId,
+                    $parentLevel,
+                    $parentId
+                ));
             }
         }
     }
