@@ -23,6 +23,7 @@ final class ArcGisFeatureImporter
         }
         if (!is_array($collection) || ($collection['type'] ?? null) !== 'FeatureCollection' ||
             !isset($collection['features']) || !is_array($collection['features']) ||
+            !array_is_list($collection['features']) ||
             !empty($collection['exceededTransferLimit'])) {
             throw new InvalidArgumentException('Response must be a complete GeoJSON FeatureCollection');
         }
