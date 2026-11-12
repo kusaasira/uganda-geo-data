@@ -259,6 +259,17 @@ final class Uganda
         return $this->index()->byUnicodeName($level, $name, $parentId, $ignoreDiacritics);
     }
 
+    /** @return array<int, object> */
+    public function searchByUnicodePrefix(
+        string $level,
+        string $prefix,
+        ?int $parentId = null,
+        ?int $limit = null,
+        bool $ignoreDiacritics = false
+    ): array {
+        return $this->index()->byUnicodePrefix($level, $prefix, $parentId, $limit, $ignoreDiacritics);
+    }
+
     private function index(): LocationIndex
     {
         if ($this->locationIndex === null) {
