@@ -16,7 +16,7 @@ final class CanonicalIntegrityValidatorTest extends TestCase
         return json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/tests/fixtures/canonical-snapshot.json'), true, 512, JSON_THROW_ON_ERROR);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function acceptsValidSnapshotAndExplicitCounts(): void
     {
         $result = (new CanonicalIntegrityValidator())->validate($this->fixture(), ['district' => 1, 'county' => 1, 'subcounty' => 1, 'parish' => 1, 'village' => 1]);
@@ -24,7 +24,7 @@ final class CanonicalIntegrityValidatorTest extends TestCase
         $this->assertSame(5, $result['total_units']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function detectsOrphanedParents(): void
     {
         $snapshot = $this->fixture();
@@ -34,7 +34,7 @@ final class CanonicalIntegrityValidatorTest extends TestCase
         $this->assertStringContainsString('Unresolved parent', implode(' ', $result['errors']));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function detectsCycles(): void
     {
         $snapshot = $this->fixture();
@@ -44,7 +44,7 @@ final class CanonicalIntegrityValidatorTest extends TestCase
         $this->assertStringContainsString('Cycle detected', implode(' ', $result['errors']));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsWrongLevelParentsInTheKnownLegacyHierarchy(): void
     {
         $snapshot = $this->fixture();
@@ -62,7 +62,7 @@ final class CanonicalIntegrityValidatorTest extends TestCase
         $this->assertStringContainsString('Invalid legacy parent level', implode(' ', $result['errors']));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function detectsMissingRowsComparedWithOriginalCounts(): void
     {
         $snapshot = $this->fixture();
@@ -72,7 +72,7 @@ final class CanonicalIntegrityValidatorTest extends TestCase
         $this->assertStringContainsString('Record conservation', implode(' ', $result['errors']));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsRepeatedIdentityEvenWhenNamesMayRepeat(): void
     {
         $snapshot = $this->fixture();
@@ -81,7 +81,7 @@ final class CanonicalIntegrityValidatorTest extends TestCase
         $this->assertFalse($result['valid']);
         $this->assertStringContainsString('Duplicate administrative unit ID', implode(' ', $result['errors']));
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsMissingEnvelopeAndEmptySnapshots(): void
     {
         $result = (new CanonicalIntegrityValidator())->validate(['source_ids' => ['fixture'], 'units' => []]);
@@ -90,7 +90,7 @@ final class CanonicalIntegrityValidatorTest extends TestCase
         $this->assertStringContainsString('nonempty JSON list', implode(' ', $result['errors']));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsSourceRecordReusedUnderAnotherCanonicalIdentity(): void
     {
         $snapshot = $this->fixture();
@@ -102,7 +102,7 @@ final class CanonicalIntegrityValidatorTest extends TestCase
         $this->assertStringContainsString('Duplicate origin record', implode(' ', $result['errors']));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsUnsupportedStatusAndMissingCanonicalFields(): void
     {
         $snapshot = $this->fixture();
@@ -113,7 +113,7 @@ final class CanonicalIntegrityValidatorTest extends TestCase
         $this->assertStringContainsString('Invalid lifecycle status', implode(' ', $result['errors']));
         $this->assertStringContainsString('Invalid aliases', implode(' ', $result['errors']));
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function actualBundledDatasetPreservesAllRecordsAndParentLinks(): void
     {
         $directory = dirname(__DIR__, 2) . '/src/Uganda/Data';
