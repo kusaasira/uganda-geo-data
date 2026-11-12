@@ -24,9 +24,6 @@ final class JsonDatasetMutationPropertyTest extends TestCase
         ];
         $fields = ['id', 'name', 'parish'];
         $loader = new JsonDatasetLoader();
-        $path = tempnam(sys_get_temp_dir(), 'villages.json.');
-        self::assertNotFalse($path);
-
         // The loader determines parent schemas from the filename.
         $folder = sys_get_temp_dir() . '/geo-property-loader-' . bin2hex(random_bytes(6));
         mkdir($folder);
