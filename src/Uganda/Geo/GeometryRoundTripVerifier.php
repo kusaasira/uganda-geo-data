@@ -78,7 +78,7 @@ final class GeometryRoundTripVerifier
     }
 
     /**
-     * @param array<string, mixed> $geometry
+     * @param array<mixed, mixed> $geometry
      * @return array{polygon_count:int, ring_count:int, bounds:array<int, float>, area:float}
      */
     private function summarize(array $geometry): array
@@ -125,7 +125,7 @@ final class GeometryRoundTripVerifier
      * Compare undirected polygon edges rounded to 7 decimal places instead,
      * preserving hole placement and all boundaries at approximately 1 cm.
      *
-     * @param array<string, mixed> $geometry
+     * @param array<mixed, mixed> $geometry
      */
     private function edgeFingerprint(array $geometry): string
     {
