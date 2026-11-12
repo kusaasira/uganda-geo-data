@@ -87,8 +87,10 @@ final class County implements \JsonSerializable
     public function parishes(): array
     {
         $parishes = [];
-        foreach ($this->subCounties() as $subCounty) {
-            array_push($parishes, ...array_values($subCounty->parishes()));
+        foreach ($this->subCounties as $subCounty) {
+            foreach ($subCounty->parishes() as $parish) {
+                $parishes[] = $parish;
+            }
         }
         return $parishes;
     }
