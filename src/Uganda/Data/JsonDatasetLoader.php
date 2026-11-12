@@ -31,7 +31,7 @@ final class JsonDatasetLoader
             throw new RuntimeException('Invalid JSON in ' . $path, 0, $exception);
         }
 
-        if (!is_array($rows) || $rows === [] || array_keys($rows) !== array_keys(array_values($rows))) {
+        if (!is_array($rows) || $rows === [] || !array_is_list($rows)) {
             throw new RuntimeException('Expected a nonempty list of dataset records: ' . $path);
         }
 
