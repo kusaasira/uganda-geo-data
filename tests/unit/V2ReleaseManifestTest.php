@@ -11,9 +11,9 @@ use Uganda\Release\ReleaseNotes;
 final class V2ReleaseManifestTest extends TestCase
 {
     /**
-     * @test
      * @throws JsonException
      */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itKeepsMajorReleaseChangesAndDataLimitationsExplicit(): void
     {
         $path = dirname(__DIR__, 2) . '/resources/releases/v2-notes.json';
