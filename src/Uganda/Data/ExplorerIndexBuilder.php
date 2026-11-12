@@ -77,7 +77,7 @@ final class ExplorerIndexBuilder
             if ($parentId === null) {
                 continue;
             }
-            if ($parentId === '' || !isset($index[$parentId])) {
+            if (!isset($index[$parentId])) {
                 throw new InvalidArgumentException('Missing canonical parent for unit ' . $id);
             }
             $visited = [$id => true];
