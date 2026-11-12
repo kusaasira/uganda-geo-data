@@ -48,6 +48,7 @@ jobs:
               exit 1
             fi
             php -r '$b=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR);$h=json_decode(file_get_contents($argv[2]),true,512,JSON_THROW_ON_ERROR);printf("%s: identical IDs | first query %.2f -> %.2f us | warm mean %.3f -> %.3f us | peak %.1f -> %.1f MiB\\n",$b["scenario"],$b["first_query_us"],$h["first_query_us"],$b["warm_mean_us"],$h["warm_mean_us"],$b["memory_peak_bytes"]/1048576,$h["memory_peak_bytes"]/1048576);' "build/compare/base-$scenario.json" "build/compare/head-$scenario.json"
+            php -r '$b=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR);$h=json_decode(file_get_contents($argv[2]),true,512,JSON_THROW_ON_ERROR);printf("  warm p50 %.3f -> %.3f us | p95 %.3f -> %.3f us | p99 %.3f -> %.3f us\n",$b["warm_p50_us"],$h["warm_p50_us"],$b["warm_p95_us"],$h["warm_p95_us"],$b["warm_p99_us"],$h["warm_p99_us"]);' "build/compare/base-$scenario.json" "build/compare/head-$scenario.json"
           done
       - name: Verify every administrative identity, display name and parent link
         run: |
