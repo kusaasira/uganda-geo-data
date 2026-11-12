@@ -7,6 +7,7 @@ declare(strict_types=1);
 $scenarios = [
     'district_id', 'village_id', 'village_name', 'district_children',
     'village_children', 'village_ancestors',
+    'all_counties', 'all_subcounties', 'all_parishes', 'all_villages',
 ];
 if ($argc !== 4 || !in_array($argv[2], $scenarios, true)
     || !ctype_digit($argv[3]) || (int) $argv[3] < 100 || (int) $argv[3] > 100000) {
@@ -63,6 +64,10 @@ $operations = [
     'district_children' => static fn () => $geo->childrenOf('county', $districtId),
     'village_children' => static fn () => $geo->childrenOf('village', $village->parishId()),
     'village_ancestors' => static fn () => $geo->ancestorsOf('village', $village->id()),
+    'all_counties' => static fn () => $geo->counties(),
+    'all_subcounties' => static fn () => $geo->subCounties(),
+    'all_parishes' => static fn () => $geo->parishes(),
+    'all_villages' => static fn () => $geo->villages(),
 ];
 
 $operation = $operations[$scenario];
