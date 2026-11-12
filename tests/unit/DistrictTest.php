@@ -44,7 +44,7 @@ final class DistrictTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function canAccessProperties(): void
     {
         $this->assertSame(9999, $this->district->id());
@@ -55,7 +55,7 @@ final class DistrictTest extends TestCase
         $this->assertIsArray($this->district->villages());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function canAccessSpecificCounty(): void
     {
         $county = $this->district->county('Space');
@@ -64,7 +64,7 @@ final class DistrictTest extends TestCase
         $this->assertSame($this->district->id(), $county->districtId());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function throwsCountyNotFoundExceptionWhenCountyDoesNotExist(): void
     {
         $this->expectException(CountyNotFoundException::class);
@@ -73,7 +73,7 @@ final class DistrictTest extends TestCase
         $this->district->county('Not Space');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function canAccessSpecificSubCounty(): void
     {
         $subCounty = $this->district->subCounty('Earth');
@@ -81,7 +81,7 @@ final class DistrictTest extends TestCase
         $this->assertSame('Earth', $subCounty->name());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function throwsSubCountyNotFoundExceptionWhenSubCountyDoesNotExist(): void
     {
         $this->expectException(SubCountyNotFoundException::class);
@@ -90,7 +90,7 @@ final class DistrictTest extends TestCase
         $this->district->subCounty('Moon');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function canAccessSpecificParish(): void
     {
         $parish = $this->district->parish('Murica');
@@ -98,7 +98,7 @@ final class DistrictTest extends TestCase
         $this->assertSame('Murica', $parish->name());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function throwsParishNotFoundExceptionWhenParishDoesNotExist(): void
     {
         $this->expectException(ParishNotFoundException::class);
@@ -107,7 +107,7 @@ final class DistrictTest extends TestCase
         $this->district->parish('Germany');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function canAccessSpecificVillage(): void
     {
         $village = $this->district->village('New York');
@@ -115,7 +115,7 @@ final class DistrictTest extends TestCase
         $this->assertSame('New York', $village->name());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function throwsVillageNotFoundExceptionWhenVillageDoesNotExist(): void
     {
         $this->expectException(VillageNotFoundException::class);
