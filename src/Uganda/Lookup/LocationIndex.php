@@ -159,7 +159,6 @@ final class LocationIndex
     /** @return array<int, object> */
     public function ancestorsOf(string $level, int $id): array
     {
-        $this->assertLevel($level);
         $unit = $this->byId($level, $id);
         if ($unit === null) {
             return [];
@@ -178,7 +177,10 @@ final class LocationIndex
                 throw new InvalidArgumentException('Missing administrative parent for ' . $level . ' ' . $id);
             }
             $level = $parentLevels[$level];
-            $parent = $this->byId($level, $parentId);
+            if (!isset($this->indexedIds[$level])) {
+                $this->indexIds($level);
+            }
+            $parent = $this->byId[$level][$parentId] ?? null;
             if ($parent === null) {
                 throw new InvalidArgumentException('Unknown administrative parent for ' . $level . ' ' . $parentId);
             }
