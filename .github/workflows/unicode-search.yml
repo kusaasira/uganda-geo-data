@@ -35,6 +35,22 @@ jobs:
         run: composer install --no-interaction --prefer-dist --no-progress
       - name: Unicode normalization, fuzzy metrics and compatibility tests
         run: ./vendor/bin/phpunit --no-coverage --display-phpunit-deprecations --fail-on-phpunit-deprecation --filter 'Unicode|Fuzzy'
+      - name: Profile Unicode and fuzzy searches on the real administrative dataset
+        if: matrix.php == '8.4'
+        run: |
+          set -euo pipefail
+          mkdir -p build/unicode-search
+          for scenario in unicode_exact_global unicode_exact_scoped unicode_prefix_global unicode_prefix_scoped fuzzy_global fuzzy_scoped; do
+            php -d memory_limit=160M tools/benchmarks/unicode-search.php "$scenario" 20 > "build/unicode-search/$scenario.json"
+            php tools/benchmarks/verify-unicode-budgets.php "build/unicode-search/$scenario.json"
+          done
+      - name: Upload inspectable Unicode latency distributions
+        if: matrix.php == '8.4'
+        uses: actions/upload-artifact@v4
+        with:
+          name: unicode-search-latency
+          path: build/unicode-search/*.json
+          retention-days: 14
       - name: Static analysis of new runtime classes
         run: ./vendor/bin/phpstan analyse src/Uganda/Lookup --level 9
 
