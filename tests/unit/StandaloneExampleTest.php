@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 final class StandaloneExampleTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function documentedStandaloneExampleReturnsValidLookupData(): void
     {
         $output = [];
