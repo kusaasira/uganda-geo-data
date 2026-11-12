@@ -106,7 +106,7 @@ try {
         throw new RuntimeException('Unable to create staging directory');
     }
 
-    writeImmutableFile($stage . '/object-ids.json', $idsPayload);
+    ImmutableFileWriter::write($stage . '/object-ids.json', $idsPayload);
     $seen = [];
     $pages = [];
     $reader = new ArcGisFeatureImporter();
@@ -136,7 +136,7 @@ try {
             $seen[$featureId] = true;
         }
         $file = sprintf('page-%05d.geojson', $pageNumber + 1);
-        writeImmutableFile($stage . '/' . $file, $raw);
+        ImmutableFileWriter::write($stage . '/' . $file, $raw);
         $pages[] = [
             'file' => $file,
             'request_url' => $url,
@@ -165,7 +165,7 @@ try {
         'object_id_inventory_sha256' => hash('sha256', $idsPayload),
         'pages' => $pages,
     ];
-    writeImmutableFile($stage . '/manifest.json', json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n");
+    ImmutableFileWriter::write($stage . '/manifest.json', json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n");
     if (!rename($stage, $destination)) {
         throw new RuntimeException('Unable to atomically publish completed acquisition');
     }
