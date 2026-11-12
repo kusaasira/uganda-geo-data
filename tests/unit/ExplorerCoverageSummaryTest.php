@@ -10,7 +10,7 @@ use Uganda\Data\ExplorerCoverageSummary;
 
 final class ExplorerCoverageSummaryTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itOnlyExposesSafeAggregateCounts(): void
     {
         $index = ['units' => [
@@ -37,7 +37,7 @@ final class ExplorerCoverageSummaryTest extends TestCase
         self::assertArrayNotHasKey('reviewer', $result);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsUnmatchedCanonicalIdentifiers(): void
     {
         $this->expectException(InvalidArgumentException::class);
