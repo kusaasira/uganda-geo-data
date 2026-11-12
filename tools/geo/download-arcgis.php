@@ -100,6 +100,7 @@ try {
     if (!mkdir($stage, 0700)) {
         throw new RuntimeException('Unable to create staging directory');
     }
+    $stageCreated = true;
 
     ImmutableFileWriter::write($stage . '/object-ids.json', $idsPayload);
     $seen = [];
