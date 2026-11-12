@@ -2,7 +2,9 @@
 
 All notable public API changes, maintenance improvements and source-data releases are recorded here. Package versions use [Semantic Versioning](https://semver.org/). Dataset reference dates and source identities are tracked independently from Composer versions.
 
-## Unreleased
+## [2.0.1] - 2026-11-12
+
+**Backward-compatible maintenance release.** The existing PHP 8.2+ public API, source IDs and bundled historical dataset remain intact. Advanced Unicode search is available through opt-in methods with optional `ext-intl`.
 
 ### Fixed
 
@@ -23,7 +25,24 @@ All notable public API changes, maintenance improvements and source-data release
 - Bounded Unicode dictionaries with histogram-pruned fuzzy candidates and independent multilingual latency benchmarks.
 - Strict malformed UTF-8 handling, adversarial query limits and Unicode compatibility verification across PHP 8.2–8.5.
 
-The v2.0.1 patch remains unreleased while this PR is under review. These notes cover implemented changes only.
+### Changed
+
+- Load administrative ID and name indexes lazily, stream hierarchy traversal and bound lookup caches to reduce unnecessary allocations.
+- Apply parent-scoped exact and prefix search fast paths while retaining stable collection order and distinct source identities.
+- Guard performance and allocator memory with reproducible cold/warm benchmarks, property-based tests and PHP 8.2–8.5 CI coverage.
+
+### Security and GIS integrity
+
+- Reject malformed UTF-8, invalid GeoJSON coordinate structures and nonfinite position ordinates.
+- Reject invalid source IDs and orphaned parent references before accepting administrative or geometry data.
+- Publish acquired GIS artifacts through atomic no-overwrite staged writes that refuse existing symlinks.
+- Preserve explicit separation between bundled historical data, third-party geometry and approved redistribution rights.
+
+### Compatibility
+
+- Preserve package installation without `ext-intl` or `ext-ctype`. Unicode-aware methods require optional `ext-intl` and fail explicitly if absent.
+- Keep Laravel framework integration optional with no new mandatory PHP services.
+
 
 ## [2.0.0] - 2026-11-10
 
@@ -75,5 +94,6 @@ The v2.0.1 patch remains unreleased while this PR is under review. These notes c
 
 Initial stable release with the historical `Uganda\Geo` chainable API and the original packaged administrative records.
 
+[2.0.1]: https://github.com/kusaasira/uganda-geo-data/releases/tag/v2.0.1
 [2.0.0]: https://github.com/kusaasira/uganda-geo-data/releases/tag/v2.0.0
 [1.0.0]: https://github.com/kusaasira/uganda-geo-data/releases/tag/1.0.0
