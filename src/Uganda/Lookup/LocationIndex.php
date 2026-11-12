@@ -62,6 +62,22 @@ final class LocationIndex
     /** @return array<int, object> */
     public function byName(string $level, string $name, ?int $parentId = null): array
     {
+        // A scoped lookup can inspect the parent's canonical child list
+        // without allocating a name index for the entire child level.
+        // This is especially useful for small parish-level selectors.
+        if ($parentId !== null && $level !== 'district' && !isset($this->indexedNames[$level])) {
+            $this->assertLevel($level);
+            $needle = self::nameKey($name);
+            $matches = [];
+            foreach ($this->childrenOf($level, $parentId) as $unit) {
+                if (self::nameKey($unit->name()) === $needle) {
+                    $matches[] = $unit;
+                }
+            }
+
+            return $matches;
+        }
+
         if (!isset($this->indexedNames[$level])) {
             $this->assertLevel($level);
             $this->indexNames($level);
