@@ -10,7 +10,7 @@ use Uganda\Release\SourcePublicationGate;
 
 final class SourcePublicationGateTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itAcceptsDocumentedRedistributionGrants(): void
     {
         (new SourcePublicationGate())->assertMayPublish(['sources' => [
@@ -20,7 +20,7 @@ final class SourcePublicationGateTest extends TestCase
         self::assertTrue(true);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsPubliclyAccessibleButUnverifiedSources(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -28,7 +28,7 @@ final class SourcePublicationGateTest extends TestCase
             ['id' => 'public', 'redistribution_status' => 'unverified'],
         ]], ['public']);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsConflictingSourceRegistryIdentities(): void
     {
         $this->expectException(InvalidArgumentException::class);

@@ -42,7 +42,7 @@ try {
         'repositories' => [[
             'type' => 'path',
             'url' => $root,
-            'options' => ['symlink' => false, 'versions' => ['kusaasira/uganda-geo' => '2.0.0']],
+            'options' => ['symlink' => false, 'versions' => ['kusaasira/uganda-geo' => '2.0.1']],
         ]],
         'require' => $requirements,
         'config' => ['allow-plugins' => false],

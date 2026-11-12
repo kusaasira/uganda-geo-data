@@ -23,6 +23,7 @@ final class ArcGisFeatureImporter
         }
         if (!is_array($collection) || ($collection['type'] ?? null) !== 'FeatureCollection' ||
             !isset($collection['features']) || !is_array($collection['features']) ||
+            !array_is_list($collection['features']) ||
             !empty($collection['exceededTransferLimit'])) {
             throw new InvalidArgumentException('Response must be a complete GeoJSON FeatureCollection');
         }
@@ -35,12 +36,17 @@ final class ArcGisFeatureImporter
                 throw new InvalidArgumentException("Malformed GeoJSON feature at index $index");
             }
 
-            if (isset($feature['properties'][$objectIdField], $feature['id']) &&
-                (string) $feature['properties'][$objectIdField] !== (string) $feature['id']) {
-                throw new InvalidArgumentException("Conflicting GeoJSON feature identifiers at index $index");
+            if (isset($feature['properties'][$objectIdField], $feature['id'])) {
+                $propertyId = $feature['properties'][$objectIdField];
+                $featureId = $feature['id'];
+                if ((!is_int($propertyId) && !is_string($propertyId))
+                    || (!is_int($featureId) && !is_string($featureId))
+                    || (string) $propertyId !== (string) $featureId) {
+                    throw new InvalidArgumentException("Conflicting GeoJSON feature identifiers at index $index");
+                }
             }
             $rawId = $feature['properties'][$objectIdField] ?? $feature['id'] ?? null;
-            if ((!is_int($rawId) && !is_string($rawId)) || !ctype_digit((string) $rawId)) {
+            if ((!is_int($rawId) && !is_string($rawId)) || preg_match('/\A[0-9]+\z/D', (string) $rawId) !== 1) {
                 throw new InvalidArgumentException("Feature at index $index has no numeric object ID");
             }
             $id = (string) $rawId;

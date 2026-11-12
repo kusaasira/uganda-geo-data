@@ -9,7 +9,7 @@ use Uganda\Uganda;
 
 final class LosslessHierarchyTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function retainsEveryBundledRowAtEveryHierarchyLevel(): void
     {
         $uganda = new Uganda();
@@ -31,7 +31,7 @@ final class LosslessHierarchyTest extends TestCase
         }
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function preservesSiblingRecordsEvenWhenTheirNamesMatch(): void
     {
         $uganda = new Uganda();
@@ -63,7 +63,7 @@ final class LosslessHierarchyTest extends TestCase
         }
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function supportsIdBasedCollectionsAndExistingUniqueDistrictLookup(): void
     {
         $uganda = new Uganda();

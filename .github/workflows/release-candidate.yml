@@ -8,7 +8,7 @@ on:
       version:
         description: 'Candidate tag label (verification only; no tag will be created)'
         required: true
-        default: 'v2.0.0-rc.1'
+        default: 'v2.0.1-rc.1'
         type: string
 
 permissions:
@@ -28,11 +28,11 @@ jobs:
       - run: composer install --no-interaction --prefer-dist --no-progress
       - name: Assemble candidate notes and dataset validation
         env:
-          CANDIDATE: ${{ inputs.version || 'v2.0.0-rc.1' }}
+          CANDIDATE: ${{ inputs.version || 'v2.0.1-rc.1' }}
         run: |
           set -euo pipefail
           mkdir -p build/candidate
-          php tools/release/build-notes.php resources/releases/v2-notes.json "$CANDIDATE" build/candidate/RELEASE_NOTES.md
+          php tools/release/build-notes.php resources/releases/v2.0.1-notes.json "$CANDIDATE" build/candidate/RELEASE_NOTES.md
           php tools/data/import-legacy.php src/Uganda/Data build/candidate/canonical.json
           php tools/data/validate-canonical.php build/candidate/canonical.json src/Uganda/Data > build/candidate/qa.json
           php tools/release/create-manifest.php build/candidate build/candidate-manifest.json RELEASE_NOTES.md canonical.json qa.json

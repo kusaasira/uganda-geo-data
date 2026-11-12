@@ -1,0 +1,69 @@
+name: Unicode and fuzzy search compatibility
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: unicode-search-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unicode:
+    name: Unicode & fuzzy PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4', '8.5']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: intl, json
+          tools: composer:v2
+          coverage: none
+      - name: Confirm optional ICU support for Unicode tests
+        run: |
+          php -r 'if (!extension_loaded("intl") || !class_exists("Normalizer") || !defined("Normalizer::FORM_KC_CF")) {fwrite(STDERR, "ICU NFKC_Casefold is required for Unicode tests\n"); exit(1);}'
+      - name: Install test dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Unicode normalization, fuzzy metrics and compatibility tests
+        run: ./vendor/bin/phpunit --no-coverage --display-phpunit-deprecations --fail-on-phpunit-deprecation --filter 'Unicode|Fuzzy'
+      - name: Profile Unicode and fuzzy searches on the real administrative dataset
+        if: matrix.php == '8.4'
+        run: |
+          set -euo pipefail
+          mkdir -p build/unicode-search
+          for scenario in unicode_exact_global unicode_exact_scoped unicode_prefix_global unicode_prefix_scoped fuzzy_global fuzzy_scoped fuzzy_unicode_global fuzzy_unicode_scoped; do
+            php -d memory_limit=160M tools/benchmarks/unicode-search.php "$scenario" 20 > "build/unicode-search/$scenario.json"
+            php tools/benchmarks/verify-unicode-budgets.php "build/unicode-search/$scenario.json"
+          done
+      - name: Upload inspectable Unicode latency distributions
+        if: matrix.php == '8.4'
+        uses: actions/upload-artifact@v4
+        with:
+          name: unicode-search-latency
+          path: build/unicode-search/*.json
+          retention-days: 14
+      - name: Static analysis of new runtime classes
+        run: ./vendor/bin/phpstan analyse src/Uganda/Lookup --level 9
+
+  without-intl:
+    name: Dependency-free legacy compatibility
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: json
+          tools: composer:v2
+          coverage: none
+      - name: Verify normal search and ICU-specific failures with all optional extensions disabled
+        run: php -n tools/ci/without-intl.php

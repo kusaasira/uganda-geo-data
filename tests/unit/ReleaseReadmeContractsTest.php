@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 final class ReleaseReadmeContractsTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function publishedReadmeUsesExistingEntrypointsAndScopedExampleInputs(): void
     {
         $root = dirname(__DIR__, 2);

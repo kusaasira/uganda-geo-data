@@ -1,0 +1,53 @@
+name: Bounded core memory profiling
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: memory-profiling-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  memory:
+    name: Profile PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.4', '8.5']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2
+          coverage: none
+      - name: Install project dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Profile constructor, complete indexes and sustained query workloads
+        run: |
+          set -euo pipefail
+          mkdir -p build/memory
+          for scenario in construct full-index cache-churn stream flatten; do
+            iterations=3
+            case "$scenario" in
+              cache-churn) iterations=1500 ;;
+            esac
+            php -d memory_limit=128M tools/benchmarks/memory-profile.php "$scenario" "$iterations" > "build/memory/$scenario.json"
+            php tools/benchmarks/verify-memory-profile.php "build/memory/$scenario.json"
+          done
+      - name: Profile repeated construction and destruction
+        run: |
+          php -d memory_limit=128M tools/benchmarks/instance-churn.php 12 > build/memory/instance-churn.json
+          php tools/benchmarks/verify-instance-churn.php build/memory/instance-churn.json
+      - name: Preserve complete profile measurements
+        uses: actions/upload-artifact@v4
+        with:
+          name: memory-profiles-php${{ matrix.php }}
+          path: build/memory/*.json
+          retention-days: 14

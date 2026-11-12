@@ -12,7 +12,7 @@ final class ReleaseReadinessTest extends TestCase
 {
     private const SHA = 'dddddddddddddddddddddddddddddddddddddddd';
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsEmptyAttestationsAndUnknownCommitHeads(): void
     {
         $report = (new ReleaseReadiness())->assess(['integration_sha' => 'invalid', 'gates' => []], self::SHA);
@@ -21,7 +21,7 @@ final class ReleaseReadinessTest extends TestCase
         self::assertFalse($report['release_ready']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function evenCompleteEvidenceRequiresHumanPublicationApproval(): void
     {
         $gates = [];
@@ -42,13 +42,13 @@ final class ReleaseReadinessTest extends TestCase
         self::assertFalse($report['release_ready']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function invalidCommitHashNeverPasses(): void
     {
         $this->expectException(InvalidArgumentException::class);
         (new ReleaseReadiness())->assess([], 'bad');
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsUnknownAttestationGatesRatherThanIgnoringThem(): void
     {
         $report = (new ReleaseReadiness())->assess([

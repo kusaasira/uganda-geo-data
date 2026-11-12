@@ -24,7 +24,7 @@ final class LegacyIdentityCrosswalkTest extends TestCase
         ];
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function keepsDuplicateNameUnitsSeparateAndUnverified(): void
     {
         $report = (new LegacyIdentityCrosswalk())->build($this->snapshot());
@@ -36,7 +36,7 @@ final class LegacyIdentityCrosswalkTest extends TestCase
         $this->assertNull($report['mappings'][1]['canonical_id']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function requiresDatedEvidenceBeforeApprovingAnExternalMapping(): void
     {
         $decision = ['legacy_id' => 'legacy:parish:4', 'canonical_id' => 'canonical:parish:x',
@@ -48,7 +48,7 @@ final class LegacyIdentityCrosswalkTest extends TestCase
         $this->assertSame('unverified', $report['mappings'][1]['verification_status']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsUnsupportedMergesInsteadOfAssigningArbitraryIdentity(): void
     {
         $one = ['legacy_id' => 'legacy:parish:4', 'canonical_id' => 'canonical:parish:x',
@@ -61,7 +61,7 @@ final class LegacyIdentityCrosswalkTest extends TestCase
         (new LegacyIdentityCrosswalk())->build($this->snapshot(), [$one, $two]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsUnverifiedCandidateProof(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -71,7 +71,7 @@ final class LegacyIdentityCrosswalkTest extends TestCase
             'reviewer' => 'reviewer',
         ]]);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsMalformedHttpsEvidenceEvenWithTheExpectedPrefix(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -81,7 +81,7 @@ final class LegacyIdentityCrosswalkTest extends TestCase
             'reviewer' => 'human-reviewer',
         ]]);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function cannotPresentHistoricalPackageIdsAsVerifiedCanonicalIds(): void
     {
         $this->expectException(InvalidArgumentException::class);

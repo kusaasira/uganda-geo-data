@@ -21,3 +21,14 @@ jobs:
       - run: composer install --no-interaction --prefer-dist --no-progress
       - name: Check bounded initialization and lookup memory
         run: php tools/benchmarks/check-budgets.php
+      - name: Measure warm lookup latency distributions
+        run: |
+          mkdir -p build/benchmarks
+          php tools/benchmarks/lookup-latency.php 1000 > build/benchmarks/lookup-latency.json
+          cat build/benchmarks/lookup-latency.json
+      - name: Retain measured lookup distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: lookup-latency-php84
+          path: build/benchmarks/lookup-latency.json
+          retention-days: 14

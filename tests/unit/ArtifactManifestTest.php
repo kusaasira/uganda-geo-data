@@ -10,7 +10,7 @@ use Uganda\Release\ArtifactManifest;
 
 final class ArtifactManifestTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function generatesSortedChecksumsAndDetectsTampering(): void
     {
         $root = sys_get_temp_dir() . '/uganda-geo-release-' . bin2hex(random_bytes(6));
@@ -33,7 +33,7 @@ final class ArtifactManifestTest extends TestCase
         }
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function refusesPathTraversalAndUnlistedSiblingPaths(): void
     {
         $root = sys_get_temp_dir();
@@ -41,7 +41,7 @@ final class ArtifactManifestTest extends TestCase
         (new ArtifactManifest())->build($root, ['../etc/passwd']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function emptyManifestIsRejected(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -49,7 +49,7 @@ final class ArtifactManifestTest extends TestCase
         (new ArtifactManifest())->build(sys_get_temp_dir(), []);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function refusesAnIncompleteReleaseInventory(): void
     {
         $root = sys_get_temp_dir() . '/uganda-geo-assets-' . bin2hex(random_bytes(6));
@@ -67,7 +67,7 @@ final class ArtifactManifestTest extends TestCase
         }
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function refusesAliasesToTheSamePhysicalReleaseArtifact(): void
     {
         $root = sys_get_temp_dir() . '/uganda-geo-alias-' . bin2hex(random_bytes(6));
@@ -85,14 +85,14 @@ final class ArtifactManifestTest extends TestCase
         }
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function refusesNormalizedPathAliasesBeforeHashing(): void
     {
         $this->expectException(InvalidArgumentException::class);
         (new ArtifactManifest())->build(sys_get_temp_dir(), ['./any.json']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function verifiesThatNoTwoManifestEntriesAliasTheSameFile(): void
     {
         $root = sys_get_temp_dir() . '/uganda-geo-verify-alias-' . bin2hex(random_bytes(6));
@@ -116,7 +116,7 @@ final class ArtifactManifestTest extends TestCase
         }
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsAnEmptyManifestPresentedForVerification(): void
     {
         $this->expectException(InvalidArgumentException::class);

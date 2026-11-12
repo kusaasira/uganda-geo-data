@@ -13,7 +13,7 @@ final class LegacyIdentityCrosswalk
      * external mappings require explicit proof; no name-based matches are made.
      *
      * @param array<string, mixed> $snapshot
-     * @param array<int, array<string, mixed>> $decisions
+     * @param array<int, mixed> $decisions
      * @return array<string, mixed>
      */
     public function build(array $snapshot, array $decisions = []): array
@@ -57,7 +57,7 @@ final class LegacyIdentityCrosswalk
             if (isset($byLegacy[$legacy])) {
                 throw new InvalidArgumentException("Conflicting decisions for $legacy");
             }
-            if (!preg_match('/^[A-Za-z0-9:_-]+$/', $canonical) || $canonical === '' ||
+            if (!preg_match('/^[A-Za-z0-9:_-]+$/', $canonical) ||
                 strpos($canonical, 'legacy:') === 0) {
                 throw new InvalidArgumentException("Invalid canonical identifier for $legacy");
             }

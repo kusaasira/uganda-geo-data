@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 final class VerifiedGeoJsonCommandTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itExportsReviewedCoordinatesAndNeverOverwritesAnExistingFile(): void
     {
         $directory = sys_get_temp_dir() . '/uganda-geojson-' . bin2hex(random_bytes(8));

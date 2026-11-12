@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 final class ConsumerInstallCommandTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsUnknownModesBeforeRunningComposer(): void
     {
         $output = [];

@@ -10,7 +10,7 @@ use Uganda\Release\SoftwareBillOfMaterials;
 
 final class SoftwareBillOfMaterialsTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRecordsOnlyProductionDependenciesDeterministically(): void
     {
         $composer = [
@@ -32,7 +32,7 @@ final class SoftwareBillOfMaterialsTest extends TestCase
         self::assertSame($bom, $builder->build($composer, null, '2.0.0-dev'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRequiresLockedVersionsOfThirdPartyProductionDependencies(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -42,7 +42,7 @@ final class SoftwareBillOfMaterialsTest extends TestCase
             'require' => ['vendor/external' => '^1'],
         ], null, '2.0.0');
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itIncludesTransitiveLockedRuntimeDependencies(): void
     {
         $composer = [

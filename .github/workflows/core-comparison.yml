@@ -1,0 +1,74 @@
+name: Compare stable core lookup baselines
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: core-comparison-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out stable base
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha || 'main' }}
+          path: baseline
+      - name: Check out candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: candidate
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+      - name: Compare source-identical query workloads
+        run: |
+          set -euo pipefail
+          mkdir -p build/compare
+          for scenario in district_id village_id village_name district_children village_children village_ancestors all_counties all_subcounties all_parishes all_villages district_subcounties district_parishes district_villages county_parishes county_villages subcounty_villages; do
+            iterations=1000
+            case "$scenario" in
+              all_*|district_*counties|district_parishes|district_villages|county_parishes|county_villages|subcounty_villages) iterations=100 ;;
+            esac
+            php candidate/tools/benchmarks/query-scenario.php baseline "$scenario" "$iterations" > "build/compare/base-$scenario.json"
+            php candidate/tools/benchmarks/query-scenario.php candidate "$scenario" "$iterations" > "build/compare/head-$scenario.json"
+            base=$(php -r 'echo json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR)["fingerprint"];' "build/compare/base-$scenario.json")
+            head=$(php -r 'echo json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR)["fingerprint"];' "build/compare/head-$scenario.json")
+            if [ "$base" != "$head" ]; then
+              echo "::error::Incompatible lookup results in $scenario"
+              exit 1
+            fi
+            php -r '$b=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR);$h=json_decode(file_get_contents($argv[2]),true,512,JSON_THROW_ON_ERROR);printf("%s: identical IDs | first query %.2f -> %.2f us | warm mean %.3f -> %.3f us | peak %.1f -> %.1f MiB\\n",$b["scenario"],$b["first_query_us"],$h["first_query_us"],$b["warm_mean_us"],$h["warm_mean_us"],$b["memory_peak_bytes"]/1048576,$h["memory_peak_bytes"]/1048576);' "build/compare/base-$scenario.json" "build/compare/head-$scenario.json"
+            php -r '$b=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR);$h=json_decode(file_get_contents($argv[2]),true,512,JSON_THROW_ON_ERROR);printf("  warm p50 %.3f -> %.3f us | p95 %.3f -> %.3f us | p99 %.3f -> %.3f us\n",$b["warm_p50_us"],$h["warm_p50_us"],$b["warm_p95_us"],$h["warm_p95_us"],$b["warm_p99_us"],$h["warm_p99_us"]);' "build/compare/base-$scenario.json" "build/compare/head-$scenario.json"
+            php candidate/tools/benchmarks/verify-relative-budgets.php "build/compare/base-$scenario.json" "build/compare/head-$scenario.json"
+          done
+      - name: Verify every administrative identity, display name and parent link
+        run: |
+          set -euo pipefail
+          php candidate/tools/benchmarks/full-hierarchy-fingerprint.php baseline > build/compare/base-hierarchy.json
+          php candidate/tools/benchmarks/full-hierarchy-fingerprint.php candidate > build/compare/head-hierarchy.json
+          php -r '
+            $base=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR);
+            $head=json_decode(file_get_contents($argv[2]),true,512,JSON_THROW_ON_ERROR);
+            if ($base["sha256"] !== $head["sha256"] || $base["counts"] !== $head["counts"]) {
+                fwrite(STDERR,"Complete source identity or hierarchy divergence\n");
+                exit(1);
+            }
+            echo "Every source identity, displayed name and parent link matches main: "
+                .$head["sha256"]."\n";
+          ' build/compare/base-hierarchy.json build/compare/head-hierarchy.json
+      - name: Publish source-comparable performance evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-comparison-php84
+          path: build/compare/*.json
+          retention-days: 14

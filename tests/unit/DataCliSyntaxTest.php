@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 final class DataCliSyntaxTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function allMaintainerCliScriptsHaveValidPhpSyntax(): void
     {
         if (!function_exists('exec')) {

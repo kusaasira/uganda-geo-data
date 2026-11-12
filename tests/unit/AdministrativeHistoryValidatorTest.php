@@ -9,7 +9,7 @@ use Uganda\Data\AdministrativeHistoryValidator;
 
 final class AdministrativeHistoryValidatorTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function recordsDocumentedRenamesAndSplits(): void
     {
         $events = [
@@ -23,14 +23,14 @@ final class AdministrativeHistoryValidatorTest extends TestCase
         $this->assertSame(2, $report['count']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsBadCardinalityAndUnverifiedDates(): void
     {
         $events = [['id' => 'e1', 'kind' => 'split', 'from_ids' => ['unit:1'], 'to_ids' => ['unit:2'],
             'effective_date' => '2025-02-30', 'evidence_url' => 'http://example.org/notice']];
         $this->assertFalse((new AdministrativeHistoryValidator())->validate($events)['valid']);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsRenamesThatSilentlyChangeAnAdministrativeIdentity(): void
     {
         $events = [['id' => 'event-1', 'kind' => 'rename', 'from_ids' => ['unit:1'],
@@ -40,7 +40,7 @@ final class AdministrativeHistoryValidatorTest extends TestCase
         $this->assertFalse($report['valid']);
         $this->assertNotEmpty($report['errors']);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsEvidenceReferencesWithoutAValidHost(): void
     {
         $report = (new AdministrativeHistoryValidator())->validate([[
@@ -50,7 +50,7 @@ final class AdministrativeHistoryValidatorTest extends TestCase
         ]]);
         $this->assertFalse($report['valid']);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsDictionaryShapedHistoryThatHasNoStableEventOrdering(): void
     {
         $report = (new AdministrativeHistoryValidator())->validate([

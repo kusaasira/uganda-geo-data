@@ -10,7 +10,7 @@ use Uganda\Release\ReleaseEvidence;
 
 final class ReleaseEvidenceTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itNeverInfersPublicationApprovalFromPassingTechnicalChecks(): void
     {
         $report = (new ReleaseEvidence())->aggregate(
@@ -41,7 +41,7 @@ final class ReleaseEvidenceTest extends TestCase
         self::assertFalse($report['release_ready']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itPreservesMissingEvidenceAsUnverified(): void
     {
         $report = (new ReleaseEvidence())->aggregate(['valid' => true, 'total_units' => 2, 'counts_by_level' => ['district' => 2], 'errors' => []], null, null);
@@ -49,7 +49,7 @@ final class ReleaseEvidenceTest extends TestCase
         self::assertSame('unverified', $report['checks']['input_parish_matching']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsImpossibleTopologyCounts(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -59,7 +59,7 @@ final class ReleaseEvidenceTest extends TestCase
             null
         );
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsFakePassingTopologyCounts(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -75,7 +75,7 @@ final class ReleaseEvidenceTest extends TestCase
         );
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsCompleteCoverageClaimsWithUnmappedUnits(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -96,7 +96,7 @@ final class ReleaseEvidenceTest extends TestCase
         );
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsDuplicateUnitMappingsDespiteMatchingTotals(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -119,7 +119,7 @@ final class ReleaseEvidenceTest extends TestCase
             ]
         );
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsClaimedValidCanonicalEvidenceWithMissingRows(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -132,7 +132,7 @@ final class ReleaseEvidenceTest extends TestCase
         ], null, null);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsCanonicalEvidenceWithoutErrorInventory(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -143,7 +143,7 @@ final class ReleaseEvidenceTest extends TestCase
             'counts_by_level' => ['district' => 1],
         ], null, null);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsPassingSampleCoverageForAFullCanonicalParishSnapshot(): void
     {
         $this->expectException(InvalidArgumentException::class);

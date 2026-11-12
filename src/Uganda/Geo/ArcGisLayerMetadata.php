@@ -48,7 +48,10 @@ final class ArcGisLayerMetadata
             throw new RuntimeException('ArcGIS catalogue has no required field list');
         }
         foreach ($requiredFields as $field) {
-            if (!is_string($field) || !isset($fields[$field])) {
+            if (!is_string($field)) {
+                throw new RuntimeException('ArcGIS catalogue contains an invalid required field');
+            }
+            if (!isset($fields[$field])) {
                 throw new RuntimeException("ArcGIS layer missing expected field $field");
             }
         }

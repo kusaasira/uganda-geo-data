@@ -10,7 +10,7 @@ use Uganda\Geo\ParishGeometryCoverageAuditor;
 
 final class ParishGeometryCoverageAuditorTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function distinguishesReviewedUnresolvedAndUnmatchedParishPolygons(): void
     {
         $features = [
@@ -34,7 +34,7 @@ final class ParishGeometryCoverageAuditorTest extends TestCase
         $this->assertSame('incomplete', $report['coverage']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsUnresolvedIdsThatAreAlreadyVerified(): void
     {
         $features = [101 => ['type' => 'Feature']];
@@ -49,13 +49,13 @@ final class ParishGeometryCoverageAuditorTest extends TestCase
         (new ParishGeometryCoverageAuditor())->audit($features, $snapshot, $decisions, ['101']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function requiresAtLeastOneActualPolygonAndUnitForFullCoverage(): void
     {
         $report = (new ParishGeometryCoverageAuditor())->audit([], ['units' => []], []);
         $this->assertSame('incomplete', $report['coverage']);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsAssociativeUnresolvedInventoriesThatHideSourceOrder(): void
     {
         $this->expectException(InvalidArgumentException::class);

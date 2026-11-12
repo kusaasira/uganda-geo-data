@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Uganda;
 
-final class Village
+final class Village implements \JsonSerializable
 {
+    use SerializesLocation;
+
     private int $id;
 
     private string $name;

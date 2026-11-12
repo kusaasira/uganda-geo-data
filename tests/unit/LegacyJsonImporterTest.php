@@ -39,7 +39,7 @@ final class LegacyJsonImporterTest extends TestCase
         file_put_contents($this->dir . '/' . $file, json_encode($rows, JSON_THROW_ON_ERROR));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function preservesSameNameRowsAndParentIds(): void
     {
         $snapshot = (new LegacyJsonImporter())->import($this->dir);
@@ -56,7 +56,7 @@ final class LegacyJsonImporterTest extends TestCase
         $this->assertSame([], json_decode($json, true, 512, JSON_THROW_ON_ERROR)['units'][0]['external_codes']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsDuplicateIdsInsteadOfOverwriting(): void
     {
         $this->write('parishes.json', [['id' => '4', 'name' => 'A', 'subcounty' => '3'], ['id' => '4', 'name' => 'B', 'subcounty' => '3']]);
@@ -65,7 +65,7 @@ final class LegacyJsonImporterTest extends TestCase
         (new LegacyJsonImporter())->import($this->dir);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsMissingParentReferences(): void
     {
         $this->write('counties.json', [['id' => '2', 'name' => 'County']]);
@@ -73,7 +73,7 @@ final class LegacyJsonImporterTest extends TestCase
         (new LegacyJsonImporter())->import($this->dir);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsMalformedJson(): void
     {
         file_put_contents($this->dir . '/villages.json', '{broken');
@@ -81,7 +81,7 @@ final class LegacyJsonImporterTest extends TestCase
         $this->expectExceptionMessage('Invalid JSON');
         (new LegacyJsonImporter())->import($this->dir);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsObjectShapedSourceTables(): void
     {
         file_put_contents($this->dir . '/districts.json', '{"unit":{"id":"1","name":"Sample"}}');
@@ -90,7 +90,7 @@ final class LegacyJsonImporterTest extends TestCase
         (new LegacyJsonImporter())->import($this->dir);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsEmptyRequiredHierarchyTables(): void
     {
         $this->write('villages.json', []);

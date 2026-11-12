@@ -1,0 +1,36 @@
+{
+  "base_version": "v2.0.1",
+  "sections": {
+    "Added": [
+      "Provide opt-in ICU-backed Unicode exact-name and prefix queries with canonical-equivalent matching and explicit accent-insensitive modes.",
+      "Offer grapheme-aware fuzzy location suggestions with bounded edit distances, adjacent-transposition support and deterministic ranked scores.",
+      "Expose lazy per-level streaming and independently measured cold and warm query latency distributions."
+    ],
+    "Changed": [
+      "Defer construction of administrative ID and name indexes until the requested lookup requires them, preserving existing source models and identifiers.",
+      "Replace redundant hierarchy flattening allocations with direct traversal and bounded scoped search caches.",
+      "Keep Unicode dictionaries lazy with a two-index retention limit and prune impossible fuzzy candidates before edit-distance evaluation."
+    ],
+    "Fixed": [
+      "Preserve every same-name administrative identity and parent association without silently overwriting source records.",
+      "Reject orphaned hierarchy records, duplicate numeric source identities and invalid packaged dataset records before accepting a hierarchy.",
+      "Preserve order and object identity in nested model collections and parent-scoped prefix results.",
+      "Remove an undeclared ctype extension dependency from core dataset loading and geographic export validation.",
+      "Keep patch release notes isolated from the v2.0.0 major-version upgrade warning."
+    ],
+    "Security": [
+      "Reject malformed UTF-8, empty Unicode search queries and oversized search inputs before expensive normalization or indexing.",
+      "Preserve distinct source IDs for Unicode-equivalent names and avoid treating visually confusable text as authoritative identity.",
+      "Keep optional Intl functionality isolated so legacy PHP search works without the extension."
+    ],
+    "Documentation": [
+      "Document stable query semantics, optional Unicode runtime requirements and bounded fuzzy-search complexity.",
+      "Publish inspectable memory profiles, seeded property-based test evidence and before-and-after lookup benchmarks.",
+      "Explain legacy dataset provenance, GIS publication limits and the independent checks required before tagging a stable release."
+    ],
+    "Upgrade": [
+      "Existing v2.0.0 application method signatures remain unchanged; the new Unicode APIs are opt-in and require ext-intl when used.",
+      "No Laravel service provider, mandatory database or third-party runtime service is introduced by this patch."
+    ]
+  }
+}

@@ -25,7 +25,7 @@ final class ParishBoundaryMatcherTest extends TestCase
         return [10 => ['type' => 'Feature'], 11 => ['type' => 'Feature']];
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function refusesToAssignPolygonsUsingMatchingNamesAlone(): void
     {
         $report = (new ParishBoundaryMatcher())->match($this->features(), $this->snapshot());
@@ -34,7 +34,7 @@ final class ParishBoundaryMatcherTest extends TestCase
         $this->assertSame(['parish:1', 'parish:2'], $report['unmatched_canonical_unit_ids']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function joinsOnlyExplicitVerifiedParentScopedMappings(): void
     {
         $reviewed = ['object_id' => 10, 'unit_id' => 'parish:2',
@@ -46,7 +46,7 @@ final class ParishBoundaryMatcherTest extends TestCase
         $this->assertSame(['10'], array_values(array_map('strval', [$report['matches'][0]['source_object_id']])));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsWrongParentEvidence(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -58,7 +58,7 @@ final class ParishBoundaryMatcherTest extends TestCase
         ]]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsASecondAssignmentForOneCanonicalUnit(): void
     {
         $one = ['object_id' => 10, 'unit_id' => 'parish:1',
@@ -69,20 +69,20 @@ final class ParishBoundaryMatcherTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         (new ParishBoundaryMatcher())->match($this->features(), $this->snapshot(), [$one, $two]);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function unmatchedSourceObjectIdsAreConsistentlyStrings(): void
     {
         $report = (new ParishBoundaryMatcher())->match($this->features(), $this->snapshot());
         $this->assertSame(['10', '11'], $report['unmatched_source_object_ids']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function emptyInputsCannotClaimCompleteGeographicCoverage(): void
     {
         $report = (new ParishBoundaryMatcher())->match([], ['units' => []]);
         $this->assertSame('incomplete', $report['status']);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsEvidenceWithoutAnActualHttpsHost(): void
     {
         $decision = ['object_id' => 10, 'unit_id' => 'parish:1',
@@ -91,7 +91,7 @@ final class ParishBoundaryMatcherTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         (new ParishBoundaryMatcher())->match($this->features(), $this->snapshot(), [$decision]);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function refusesDictionaryShapedMappingDecisions(): void
     {
         $decision = [

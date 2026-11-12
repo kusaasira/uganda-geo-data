@@ -10,7 +10,7 @@ use Uganda\Data\AdministrativeCountReconciler;
 
 final class AdministrativeCountReconcilerEdgeCasesTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function neverSilentlyDiscardSameNameRowsFromAggregateTotals(): void
     {
         $snapshot = ['snapshot_id' => 'fixture', 'units' => [
@@ -25,7 +25,7 @@ final class AdministrativeCountReconcilerEdgeCasesTest extends TestCase
         $this->assertSame(0, $result['reports'][0]['comparisons']['parish']['arithmetic_difference']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsBrokenCanonicalSnapshotRows(): void
     {
         $this->expectException(InvalidArgumentException::class);

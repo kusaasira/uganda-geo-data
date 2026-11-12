@@ -12,24 +12,24 @@ final class GeometryContract
      * Validate GeoJSON polygon coordinate structure in RFC 7946 WGS84 longitude/latitude order.
      * This is not a topology, overlap or containment validator.
      *
-     * @param array<string, mixed> $geometry
+     * @param array<mixed, mixed> $geometry
      */
     public static function assertGeometry(array $geometry): void
     {
         $type = $geometry['type'] ?? null;
         $coordinates = $geometry['coordinates'] ?? null;
 
-        if (!in_array($type, ['Polygon', 'MultiPolygon'], true) || !is_array($coordinates) || $coordinates === []) {
+        if (!in_array($type, ['Polygon', 'MultiPolygon'], true) || !is_array($coordinates) || !array_is_list($coordinates) || $coordinates === []) {
             throw new InvalidArgumentException('Expected a non-empty GeoJSON Polygon or MultiPolygon');
         }
 
         $polygons = $type === 'Polygon' ? [$coordinates] : $coordinates;
         foreach ($polygons as $polygon) {
-            if (!is_array($polygon) || $polygon === []) {
+            if (!is_array($polygon) || !array_is_list($polygon) || $polygon === []) {
                 throw new InvalidArgumentException('Polygon must contain at least one ring');
             }
             foreach ($polygon as $ring) {
-                if (!is_array($ring) || count($ring) < 4) {
+                if (!is_array($ring) || !array_is_list($ring) || count($ring) < 4) {
                     throw new InvalidArgumentException('Polygon ring must contain at least four positions');
                 }
                 $distinct = [];
@@ -45,7 +45,16 @@ final class GeometryContract
                 }
                 $first = reset($ring);
                 $last = end($ring);
-                if (!is_array($first) || !is_array($last) || abs($first[0] - $last[0]) > 1.0e-10 || abs($first[1] - $last[1]) > 1.0e-10) {
+                $firstLon = $first[0] ?? null;
+                $firstLat = $first[1] ?? null;
+                $lastLon = $last[0] ?? null;
+                $lastLat = $last[1] ?? null;
+                if ((!is_int($firstLon) && !is_float($firstLon))
+                    || (!is_int($firstLat) && !is_float($firstLat))
+                    || (!is_int($lastLon) && !is_float($lastLon))
+                    || (!is_int($lastLat) && !is_float($lastLat))
+                    || abs($firstLon - $lastLon) > 1.0e-10
+                    || abs($firstLat - $lastLat) > 1.0e-10) {
                     throw new InvalidArgumentException('Polygon ring is not closed');
                 }
             }
@@ -53,18 +62,25 @@ final class GeometryContract
     }
 
     /**
-     * @param array<int, mixed> $position
+     * @param array<mixed, mixed> $position
      */
     public static function assertLonLat(array $position): void
     {
-        if (count($position) < 2 || !isset($position[0], $position[1])) {
+        if (!array_is_list($position) || count($position) < 2 || !isset($position[0], $position[1])) {
             throw new InvalidArgumentException('Position must include longitude and latitude');
         }
+        // RFC 7946 requires every position ordinate to be a finite number.
+        // Elevation and any additional optional dimensions cannot be strings.
+        foreach ($position as $ordinate) {
+            if ((!is_int($ordinate) && !is_float($ordinate)) || !is_finite((float) $ordinate)) {
+                throw new InvalidArgumentException('GeoJSON positions must contain only finite numeric ordinates');
+            }
+        }
+
         $longitude = $position[0];
         $latitude = $position[1];
-        if ((!is_int($longitude) && !is_float($longitude)) || (!is_int($latitude) && !is_float($latitude)) ||
-            !is_finite((float) $longitude) || !is_finite((float) $latitude) ||
-            $longitude < -180 || $longitude > 180 || $latitude < -90 || $latitude > 90) {
+        // The preceding loop already guarantees numeric finite ordinates.
+        if ($longitude < -180 || $longitude > 180 || $latitude < -90 || $latitude > 90) {
             throw new InvalidArgumentException('Position must contain valid EPSG:4326 longitude and latitude');
         }
     }

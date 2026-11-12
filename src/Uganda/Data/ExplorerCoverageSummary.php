@@ -51,6 +51,9 @@ final class ExplorerCoverageSummary
         }
         $verified = [];
         foreach ($matches as $match) {
+            if (!is_array($match)) {
+                throw new InvalidArgumentException('Invalid verified geometry match');
+            }
             $id = $match['unit_id'] ?? null;
             if (!is_string($id) || !isset($ids[$id]) || isset($verified[$id])) {
                 throw new InvalidArgumentException('Invalid or duplicate verified geometry unit');

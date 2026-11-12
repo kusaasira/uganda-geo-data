@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Uganda\Geo\GeometryRoundTripVerifier;
 use Uganda\Geo\GeometryExportFields;
+use Uganda\Geo\ImmutableFileWriter;
 
 require dirname(__DIR__, 2) . '/vendor/autoload.php';
 
@@ -56,8 +57,10 @@ try {
     if (!mkdir($stage, 0700) || !mkdir($stage . '/shapefile', 0700)) {
         throw new RuntimeException('Unable to create isolated export stage');
     }
-    file_put_contents($stage . '/parishes.geojson',
-        json_encode($prepared, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n");
+    ImmutableFileWriter::write(
+        $stage . '/parishes.geojson',
+        json_encode($prepared, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n"
+    );
     executeGdal(['ogr2ogr', '-f', 'GPKG', $stage . '/parishes.gpkg', $stage . '/parishes.geojson',
         '-nln', 'parishes', '-nlt', 'PROMOTE_TO_MULTI', '-t_srs', 'EPSG:4326']);
     executeGdal(['ogr2ogr', '-f', 'ESRI Shapefile', $stage . '/shapefile/parishes.shp',
@@ -79,9 +82,11 @@ try {
         (new GeometryRoundTripVerifier())->verify($prepared, $decoded);
         unlink($roundtrip);
     }
-    file_put_contents($stage . '/fields.json', json_encode($exporter->dictionary(),
-        JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n");
-    file_put_contents($stage . '/metadata.json', json_encode([
+    ImmutableFileWriter::write(
+        $stage . '/fields.json',
+        json_encode($exporter->dictionary(), JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n"
+    );
+    ImmutableFileWriter::write($stage . '/metadata.json', json_encode([
         'crs' => 'EPSG:4326',
         'feature_count' => count($prepared['features']),
         'source_sha256' => hash_file('sha256', $input),

@@ -10,7 +10,7 @@ use Uganda\Data\AdministrativeCountReconciler;
 
 final class AdministrativeCountReconcilerTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function recordsDifferencesWithoutCallingThemMissingUnits(): void
     {
         $snapshot = [
@@ -37,7 +37,7 @@ final class AdministrativeCountReconcilerTest extends TestCase
         $this->assertFalse($report['reports'][0]['comparisons']['district']['classification_verified']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsMalformedSourceCounts(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -46,7 +46,7 @@ final class AdministrativeCountReconcilerTest extends TestCase
             ['publications' => [['id' => 'ref', 'url' => 'https://example.org', 'counts' => ['parish' => -1]]]]
         );
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsDuplicateCanonicalUnitsInsteadOfInflatingCounts(): void
     {
         $unit = ['id' => 'legacy:parish:1', 'level' => 'parish'];
@@ -59,7 +59,7 @@ final class AdministrativeCountReconcilerTest extends TestCase
         );
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsDuplicatePublicationIds(): void
     {
         $pub = ['id' => 'official', 'url' => 'https://www.ubos.org/', 'counts' => ['parish' => 1]];

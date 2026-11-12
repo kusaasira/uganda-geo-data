@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use Uganda\Geo\ArcGisFeatureImporter;
+use Uganda\Geo\ImmutableFileWriter;
 
 $root = dirname(__DIR__, 2);
 require_once $root . '/src/Uganda/Geo/GeometryContract.php';
 require_once $root . '/src/Uganda/Geo/ArcGisFeatureImporter.php';
+require_once $root . '/src/Uganda/Geo/ImmutableFileWriter.php';
 
 /** @return array{body: string, headers: array<string, string>} */
 function fetchArcGisJson(string $url, int $maxBytes): array
@@ -44,13 +46,6 @@ function fetchArcGisJson(string $url, int $maxBytes): array
     return ['body' => $body, 'headers' => $safeHeaders];
 }
 
-function writeImmutableFile(string $file, string $contents): void
-{
-    if (file_exists($file) || file_put_contents($file, $contents, LOCK_EX) !== strlen($contents)) {
-        throw new RuntimeException('Unable to write complete immutable acquisition file');
-    }
-}
-
 $id = $argv[1] ?? null;
 $destination = $argv[2] ?? null;
 if ($id === null || $destination === null || !preg_match('/^[a-z0-9-]+$/', $id)) {
@@ -58,6 +53,8 @@ if ($id === null || $destination === null || !preg_match('/^[a-z0-9-]+$/', $id))
     exit(2);
 }
 
+$stage = null;
+$stageCreated = false;
 try {
     $catalogue = json_decode((string) file_get_contents($root . '/resources/geometry/endpoints.json'), true, 512, JSON_THROW_ON_ERROR);
     $endpoint = null;
@@ -70,7 +67,7 @@ try {
     if ($endpoint === null || !is_string($endpoint['object_id_field']) || $endpoint['object_id_field'] === '') {
         throw new RuntimeException('Unknown endpoint or missing object ID field');
     }
-    if (file_exists($destination)) {
+    if (file_exists($destination) || is_link($destination)) {
         throw new RuntimeException('Destination exists; choose a new directory for an immutable acquisition');
     }
     $parent = dirname($destination);
@@ -100,11 +97,12 @@ try {
     }
 
     $stage = $destination . '.partial-' . bin2hex(random_bytes(4));
-    if (!mkdir($stage, 0775)) {
+    if (!mkdir($stage, 0700)) {
         throw new RuntimeException('Unable to create staging directory');
     }
+    $stageCreated = true;
 
-    writeImmutableFile($stage . '/object-ids.json', $idsPayload);
+    ImmutableFileWriter::write($stage . '/object-ids.json', $idsPayload);
     $seen = [];
     $pages = [];
     $reader = new ArcGisFeatureImporter();
@@ -134,7 +132,7 @@ try {
             $seen[$featureId] = true;
         }
         $file = sprintf('page-%05d.geojson', $pageNumber + 1);
-        writeImmutableFile($stage . '/' . $file, $raw);
+        ImmutableFileWriter::write($stage . '/' . $file, $raw);
         $pages[] = [
             'file' => $file,
             'request_url' => $url,
@@ -163,12 +161,22 @@ try {
         'object_id_inventory_sha256' => hash('sha256', $idsPayload),
         'pages' => $pages,
     ];
-    writeImmutableFile($stage . '/manifest.json', json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n");
+    ImmutableFileWriter::write($stage . '/manifest.json', json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n");
     if (!rename($stage, $destination)) {
         throw new RuntimeException('Unable to atomically publish completed acquisition');
     }
     fwrite(STDOUT, 'Acquired ' . count($seen) . ' polygon features into ' . $destination . "\n");
 } catch (Throwable $exception) {
+    // Failed or interrupted downloads must not leave plausible but partial
+    // source inventories. Only delete the stage this invocation created.
+    if ($stageCreated && is_string($stage) && is_dir($stage)) {
+        foreach (glob($stage . '/*') ?: [] as $file) {
+            if (is_file($file) || is_link($file)) {
+                @unlink($file);
+            }
+        }
+        @rmdir($stage);
+    }
     fwrite(STDERR, 'ArcGIS acquisition failed: ' . $exception->getMessage() . "\n");
     exit(1);
 }

@@ -4,7 +4,26 @@ All notable public API changes, maintenance improvements and source-data release
 
 ## Unreleased
 
-No unreleased changes recorded.
+### Fixed
+
+- Build parent-child adjacency indexes only for the administrative level actually queried, without changing the recorded source identities or child ordering.
+- Expose explicit compact JSON location representations without recursively serializing entire district hierarchies. Existing nested `toArray()` output is unchanged.
+- Isolate patch release notes from the breaking-change narrative of the v2.0.0 major release.
+
+### Added
+
+- Lazy, binary-search-based name prefix lookups with optional parent identity and result limits.
+- Deterministic warm lookup latency summaries, repeatable regressions and inspectable CI benchmark artifacts.
+- v2.0.1 release-candidate validation and published-tag verification support.
+- Independent active-versus-reserved memory profiling for construction, indexes, caches, streaming and flattened collections.
+- Bounded memory-regression verification across PHP 8.2, 8.4 and 8.5, including repeated snapshot construction and release.
+- Deterministic seeded hierarchy property tests, mutated dataset rejection, mixed-query cache invariants and standalone adversarial CI.
+- Opt-in ICU-backed NFKC casefold name matching, Unicode prefix navigation and accent-insensitive matching without replacing source identities.
+- Ranked grapheme-aware fuzzy suggestions with adjacent-transposition handling and explicit edit-distance scores.
+- Bounded Unicode dictionaries with histogram-pruned fuzzy candidates and independent multilingual latency benchmarks.
+- Strict malformed UTF-8 handling, adversarial query limits and Unicode compatibility verification across PHP 8.2–8.5.
+
+The v2.0.1 patch remains unreleased while this PR is under review. These notes cover implemented changes only.
 
 ## [2.0.0] - 2026-11-10
 

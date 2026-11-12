@@ -32,7 +32,7 @@ final class SubCountyTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function canAccessProperties(): void
     {
         $this->assertSame(789, $this->subCounty->id());
@@ -42,7 +42,7 @@ final class SubCountyTest extends TestCase
         $this->assertIsArray($this->subCounty->villages());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function canAccessSpecificParish(): void
     {
         $parish = $this->subCounty->parish('Murica');
@@ -51,7 +51,7 @@ final class SubCountyTest extends TestCase
         $this->assertSame($this->subCounty->id(), $parish->subCountyId());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function throwsParishNotFoundExceptionWhenParishDoesNotExist(): void
     {
         $this->expectException(ParishNotFoundException::class);
@@ -60,7 +60,7 @@ final class SubCountyTest extends TestCase
         $this->subCounty->parish('Germany');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function canAccessSpecificVillage(): void
     {
         $village = $this->subCounty->village('New York');
@@ -68,7 +68,7 @@ final class SubCountyTest extends TestCase
         $this->assertSame('New York', $village->name());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function throwsVillageNotFoundExceptionWhenVillageDoesNotExist(): void
     {
         $this->expectException(VillageNotFoundException::class);

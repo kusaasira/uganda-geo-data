@@ -22,7 +22,7 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y gdal-bin unzip
       - run: composer install --no-interaction --prefer-dist --no-progress
       - name: Verify archived artifact contract
-        run: ./vendor/bin/phpunit --filter GeometryArchiveTest
+        run: ./vendor/bin/phpunit --no-coverage --filter GeometryArchiveTest
       - name: Export real polygon and multipolygon fixtures with GDAL
         run: |
           set -euo pipefail

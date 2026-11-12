@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 final class PackageMetadataTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function composerMetadataMatchesTheDistributionContract(): void
     {
         $path = dirname(__DIR__, 2) . '/composer.json';
@@ -22,7 +22,7 @@ final class PackageMetadataTest extends TestCase
         $this->assertSame('src/Uganda/', $composer['autoload']['psr-4']['Uganda' . chr(92)]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function frameworkDiscoveryNeverReferencesAnUninstalledProvider(): void
     {
         $raw = file_get_contents(dirname(__DIR__, 2) . '/composer.json');

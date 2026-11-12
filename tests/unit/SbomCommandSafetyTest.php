@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 final class SbomCommandSafetyTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function existingOutputIsNeverDeletedOrOverwritten(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'uganda-geo-sbom-');

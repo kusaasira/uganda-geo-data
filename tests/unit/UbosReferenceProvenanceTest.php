@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 final class UbosReferenceProvenanceTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function usesOfficialUbosPublicationHostsForBothReferenceDocuments(): void
     {
         $path = dirname(__DIR__, 2) . '/resources/data/ubos-2024-reference.json';

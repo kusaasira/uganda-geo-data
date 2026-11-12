@@ -10,7 +10,7 @@ use Uganda\Data\OfficialSourceReview;
 
 final class OfficialSourceReviewTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function keepsStatisticalAndLegalReferenceDatesDistinct(): void
     {
         $manifest = [
@@ -31,7 +31,7 @@ final class OfficialSourceReviewTest extends TestCase
         $this->assertNull($result['publications'][0]['legal_effective_date']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsImpossiblePublicationDates(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -41,7 +41,7 @@ final class OfficialSourceReviewTest extends TestCase
             'publication_date' => '2025-02-30', 'unit_level_identity_verified' => false,
         ]]]);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function missingOptionalLegalDateDoesNotProduceFalseIdentityReadiness(): void
     {
         $report = (new OfficialSourceReview())->review(['publications' => [[
@@ -54,7 +54,7 @@ final class OfficialSourceReviewTest extends TestCase
         $this->assertFalse($report['publications'][0]['unit_identity_ready']);
         $this->assertNull($report['publications'][0]['legal_effective_date']);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsPublicationUrlsWithoutAValidHttpsHost(): void
     {
         $this->expectException(InvalidArgumentException::class);

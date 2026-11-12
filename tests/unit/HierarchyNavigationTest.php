@@ -25,7 +25,7 @@ final class HierarchyNavigationTest extends TestCase
         return new LocationIndex([1 => new District(1, 'North', [2 => $county])]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRetrievesChildrenThroughExactParentIdentity(): void
     {
         $index = $this->index();
@@ -36,7 +36,7 @@ final class HierarchyNavigationTest extends TestCase
         $this->assertSame(2, $index->childrenOf('county', 1)[0]->id());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itReturnsAllAncestorsInRootFirstOrder(): void
     {
         $index = $this->index();
@@ -48,7 +48,7 @@ final class HierarchyNavigationTest extends TestCase
         $this->assertSame([], $index->ancestorsOf('village', 999));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function repeatedChildNamesArePreservedAndTheLazyIndexIsReusable(): void
     {
         $first = new County(2, 'Central', 1, []);
@@ -63,7 +63,7 @@ final class HierarchyNavigationTest extends TestCase
         $this->assertCount(2, $index->byName('county', 'Central', 1));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rootCannotBeQueriedAsAChildOfAnUnknownParent(): void
     {
         $this->expectException(InvalidArgumentException::class);

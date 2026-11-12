@@ -30,3 +30,7 @@ exceeded.
 The JSON output includes all individual samples and aggregated metrics so
 changes can be reviewed. Tighten budgets only after collecting comparable
 baseline measurements on the same CI runner class.
+
+## Query latency distributions
+
+Run `php tools/benchmarks/lookup-latency.php 1000` to collect warm p50/p95/p99 latency for ID, scoped-name, prefix-name, child and ancestor queries. Measurements are recorded in microseconds per operation and uploaded as inspectable CI artifacts. See [warm lookup latency methodology](lookup-latency.md).

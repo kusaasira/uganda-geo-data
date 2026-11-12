@@ -14,7 +14,7 @@ use Uganda\Village;
 
 final class ReadmeExamplesTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function aDocumentedDistrictAndItsChildrenResolve(): void
     {
         $uganda = new Uganda();
@@ -26,7 +26,7 @@ final class ReadmeExamplesTest extends TestCase
         $this->assertNotEmpty($district->villages());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function eachDocumentedHierarchyMethodTraversesTheRightParentType(): void
     {
         $village = new Village(5, 'Example Village', 4);

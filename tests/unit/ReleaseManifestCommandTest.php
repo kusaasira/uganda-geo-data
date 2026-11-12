@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 final class ReleaseManifestCommandTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itEnforcesTheIndependentInventoryAndRefusesToOverwriteExistingManifests(): void
     {
         $directory = sys_get_temp_dir() . '/uganda-geo-release-cmd-' . bin2hex(random_bytes(8));

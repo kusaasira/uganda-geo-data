@@ -8,8 +8,10 @@ use Uganda\Exceptions\AmbiguousLocationException;
 
 use Uganda\Exceptions\VillageNotFoundException;
 
-final class Parish
+final class Parish implements \JsonSerializable
 {
+    use SerializesLocation;
+
     private int $id;
 
     private string $name;

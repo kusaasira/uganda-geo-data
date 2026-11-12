@@ -11,7 +11,7 @@ use Uganda\Uganda;
 
 final class AdministrativeNameSearchTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function returnsAllGlobalNameMatchesInsteadOfChoosingArbitrarily(): void
     {
         $uganda = new Uganda();
@@ -23,7 +23,7 @@ final class AdministrativeNameSearchTest extends TestCase
         $uganda->parish($fixture['name']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function scopesRepeatedParishNamesToTheirActualParent(): void
     {
         $uganda = new Uganda();
@@ -35,7 +35,7 @@ final class AdministrativeNameSearchTest extends TestCase
         }
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function preservesSameParentParishNameCollisionsForSearch(): void
     {
         $uganda = new Uganda();
@@ -54,7 +54,7 @@ final class AdministrativeNameSearchTest extends TestCase
         $this->fail('Required same-parent parish name fixture is absent');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function unknownSearchLevelsFailRatherThanReturningMisleadingEmptyResults(): void
     {
         $uganda = new Uganda();

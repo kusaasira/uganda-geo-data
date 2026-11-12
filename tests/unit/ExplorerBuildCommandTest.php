@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 final class ExplorerBuildCommandTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itBuildsACompleteStaticExplorerAndRefusesOverwrites(): void
     {
         $repo = dirname(__DIR__, 2);

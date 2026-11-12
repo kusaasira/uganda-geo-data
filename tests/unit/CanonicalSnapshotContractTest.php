@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 final class CanonicalSnapshotContractTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function schemaAndFixtureAgreeOnIdentityAndParentLinks(): void
     {
         $root = dirname(__DIR__, 2);

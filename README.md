@@ -150,10 +150,56 @@ For examples that must work regardless of a particular source name, use [example
 | `searchByName($level, $name, $parentId = null)` | Return every exact normalized-name match, optionally scoped to a parent |
 | `childrenOf($childLevel, $parentId)` | Return direct children of a known parent |
 | `ancestorsOf($level, $id)` | Return ancestors from root to immediate parent |
+| `searchByUnicodeName($level, $name, $parentId = null, $ignoreDiacritics = false)` | Optional ICU NFKC casefold exact name matches |
+| `searchByUnicodePrefix($level, $prefix, $parentId = null, $limit = null, $ignoreDiacritics = false)` | Optional Unicode-normalized prefix matching |
+| `searchFuzzy($level, $query, $parentId = null, $limit = 10, $maxDistance = 2, $ignoreDiacritics = false)` | Ranked typo and transposition suggestions |
+| `searchFuzzyWithScores(...)` | Original models with explicit grapheme-edit distances |
 
 Supported levels: `district`, `county`, `subcounty`, `parish` and `village`. A name is a display property, **never a globally unique lookup key**.
 
 See the [complete v2 API reference](docs/api/v2-reference.md) for return contracts, errors and more examples.
+
+## Development and v2.0.1 core qualification
+
+The released package remains v2.0.0 until the v2.0.1 candidate passes its complete release checks. The unreleased v2.0.1 branch includes independent PHP memory profiling and seeded property-based regression tests.
+
+For a development checkout:
+
+```bash
+composer install
+./vendor/bin/phpunit --no-coverage
+php -d memory_limit=128M tools/benchmarks/memory-profile.php cache-churn 1500
+php -d memory_limit=128M tools/benchmarks/instance-churn.php 12
+```
+
+See [v2.0.1 memory and property qualification](docs/releases/v2.0.1-memory-and-properties.md) and [core performance research](docs/releases/core-performance-research.md) for scenarios, limits and verification methodology. Passing benchmarks does not guarantee fixed latency on every machine.
+
+## Unicode-aware and fuzzy search (v2.0.1 candidate)
+
+The unreleased v2.0.1 branch adds Unicode-normalized exact search, prefix search and typo-tolerant suggestions. The optional PHP `ext-intl` extension provides ICU NFKC case folding and canonical Unicode normalization. **It is not required for ordinary v2 searches or package installation.** The new methods fail explicitly when `ext-intl` is unavailable.
+
+```php
+use Uganda\Uganda;
+
+$geo = new Uganda();
+
+// Compatibility-equivalent names and full Unicode case folding.
+$matches = $geo->searchByUnicodeName('district', 'ＭＵＫＯＮＯ');
+
+// Accent-insensitive search is explicitly opt-in.
+$parishes = $geo->searchByUnicodePrefix('parish', 'São', null, 10, true);
+
+// Rank transcription errors and neighboring-character transpositions.
+$suggestions = $geo->searchFuzzyWithScores('village', 'Kampalaa', null, 10, 2);
+
+foreach ($suggestions as $suggestion) {
+    echo $suggestion['unit']->name() . ': ' . $suggestion['distance'] . " edits\n";
+}
+```
+
+All suggestions preserve source IDs, duplicate names and original model instances. They are **candidates**, never authoritative identity resolution. Maximum typo distance is 3. The default is 2 and fuzzy results are capped at 100 per request.
+
+See the [Unicode and fuzzy search specification](docs/releases/v2.0.1-unicode-fuzzy-qualification.md) for matching semantics, ICU requirements, stable ranking, input limits and reproducible latency benchmarks. This capability remains part of the **same v2.0.1 patch PR**, not a separate package or Laravel release.
 
 ## Laravel integration
 

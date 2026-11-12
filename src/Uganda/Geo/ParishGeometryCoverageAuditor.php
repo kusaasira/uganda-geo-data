@@ -15,7 +15,7 @@ final class ParishGeometryCoverageAuditor
      * @param array<int|string, array<string, mixed>> $features
      * @param array<string, mixed> $snapshot
      * @param array<int, array<string, mixed>> $decisions
-     * @param array<int, string> $unresolvedSourceIds
+     * @param array<int, mixed> $unresolvedSourceIds
      * @return array<string, mixed>
      */
     public function audit(array $features, array $snapshot, array $decisions, array $unresolvedSourceIds = []): array
@@ -28,10 +28,16 @@ final class ParishGeometryCoverageAuditor
         if (!is_array($sourceIds)) {
             throw new InvalidArgumentException('Matcher returned an invalid source inventory');
         }
-        $unmatched = array_fill_keys($sourceIds, true);
+        $unmatched = [];
+        foreach ($sourceIds as $sourceId) {
+            if (!is_string($sourceId) || preg_match('/\A[0-9]+\z/D', $sourceId) !== 1 || isset($unmatched[$sourceId])) {
+                throw new InvalidArgumentException('Matcher returned invalid or duplicate source identities');
+            }
+            $unmatched[$sourceId] = true;
+        }
         $unresolved = [];
         foreach ($unresolvedSourceIds as $index => $id) {
-            if (!is_string($id) || !ctype_digit($id) || !isset($unmatched[$id]) ||
+            if (!is_string($id) || preg_match('/\A[0-9]+\z/D', $id) !== 1 || !isset($unmatched[$id]) ||
                 isset($unresolved[$id])) {
                 throw new InvalidArgumentException("Invalid, duplicate or already matched unresolved source ID at index $index");
             }

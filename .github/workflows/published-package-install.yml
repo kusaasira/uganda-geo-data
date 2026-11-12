@@ -10,6 +10,8 @@ on:
         options:
           - v2.0.0-rc.1
           - v2.0.0
+          - v2.0.1-rc.1
+          - v2.0.1
   release:
     types: [published]
 
@@ -32,7 +34,7 @@ jobs:
       - name: Verify supported 2.0 release tag
         run: |
           case "$TAG" in
-            v2.0.0-rc.1|v2.0.0) ;;
+            v2.0.0-rc.1|v2.0.0|v2.0.1-rc.1|v2.0.1) ;;
             *) echo "Unsupported release version: $TAG" >&2; exit 2 ;;
           esac
       - uses: shivammathur/setup-php@v2

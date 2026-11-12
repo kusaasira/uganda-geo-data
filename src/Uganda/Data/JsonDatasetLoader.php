@@ -31,7 +31,7 @@ final class JsonDatasetLoader
             throw new RuntimeException('Invalid JSON in ' . $path, 0, $exception);
         }
 
-        if (!is_array($rows) || $rows === [] || array_keys($rows) !== array_keys(array_values($rows))) {
+        if (!is_array($rows) || $rows === [] || !array_is_list($rows)) {
             throw new RuntimeException('Expected a nonempty list of dataset records: ' . $path);
         }
 
@@ -68,6 +68,7 @@ final class JsonDatasetLoader
             }
         }
 
+        /** @var array<int, array<string, int|string>> $rows */
         return $rows;
     }
 
@@ -79,10 +80,17 @@ final class JsonDatasetLoader
      */
     private function isPositiveNativeId($value): bool
     {
-        if ((!is_int($value) && !is_string($value)) || !ctype_digit((string) $value)) {
+        if (!is_int($value) && !is_string($value)) {
             return false;
         }
-        $decimal = ltrim((string) $value, '0');
+
+        // strspn is a core string function. ctype_digit() would add an
+        // undeclared ext-ctype dependency to an otherwise standalone package.
+        $digits = (string) $value;
+        if ($digits === '' || strspn($digits, '0123456789') !== strlen($digits)) {
+            return false;
+        }
+        $decimal = ltrim($digits, '0');
         if ($decimal === '') {
             return false;
         }

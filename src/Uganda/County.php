@@ -10,8 +10,10 @@ use Uganda\Exceptions\ParishNotFoundException;
 use Uganda\Exceptions\SubCountyNotFoundException;
 use Uganda\Exceptions\VillageNotFoundException;
 
-final class County
+final class County implements \JsonSerializable
 {
+    use SerializesLocation;
+
     private int $id;
 
     private string $name;
@@ -85,8 +87,10 @@ final class County
     public function parishes(): array
     {
         $parishes = [];
-        foreach ($this->subCounties() as $subCounty) {
-            array_push($parishes, ...array_values($subCounty->parishes()));
+        foreach ($this->subCounties as $subCounty) {
+            foreach ($subCounty->parishes() as $parish) {
+                $parishes[] = $parish;
+            }
         }
         return $parishes;
     }
@@ -120,8 +124,12 @@ final class County
     public function villages(): array
     {
         $villages = [];
-        foreach ($this->parishes() as $parish) {
-            array_push($villages, ...array_values($parish->villages()));
+        foreach ($this->subCounties as $subCounty) {
+            foreach ($subCounty->parishes() as $parish) {
+                foreach ($parish->villages() as $village) {
+                    $villages[] = $village;
+                }
+            }
         }
         return $villages;
     }
