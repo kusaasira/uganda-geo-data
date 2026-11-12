@@ -34,9 +34,13 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build/compare
-          for scenario in district_id village_id village_name district_children village_children village_ancestors; do
-            php candidate/tools/benchmarks/query-scenario.php baseline "$scenario" 1000 > "build/compare/base-$scenario.json"
-            php candidate/tools/benchmarks/query-scenario.php candidate "$scenario" 1000 > "build/compare/head-$scenario.json"
+          for scenario in district_id village_id village_name district_children village_children village_ancestors all_counties all_subcounties all_parishes all_villages; do
+            iterations=1000
+            case "$scenario" in
+              all_*) iterations=100 ;;
+            esac
+            php candidate/tools/benchmarks/query-scenario.php baseline "$scenario" "$iterations" > "build/compare/base-$scenario.json"
+            php candidate/tools/benchmarks/query-scenario.php candidate "$scenario" "$iterations" > "build/compare/head-$scenario.json"
             base=$(php -r 'echo json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR)["fingerprint"];' "build/compare/base-$scenario.json")
             head=$(php -r 'echo json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR)["fingerprint"];' "build/compare/head-$scenario.json")
             if [ "$base" != "$head" ]; then
