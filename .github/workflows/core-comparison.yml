@@ -1,0 +1,53 @@
+name: Compare stable core lookup baselines
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: core-comparison-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out stable base
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha || 'main' }}
+          path: baseline
+      - name: Check out candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: candidate
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+      - name: Compare source-identical query workloads
+        run: |
+          set -euo pipefail
+          mkdir -p build/compare
+          for scenario in district_id village_id village_name district_children village_children village_ancestors; do
+            php candidate/tools/benchmarks/query-scenario.php baseline "$scenario" 1000 > "build/compare/base-$scenario.json"
+            php candidate/tools/benchmarks/query-scenario.php candidate "$scenario" 1000 > "build/compare/head-$scenario.json"
+            base=$(php -r 'echo json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR)["fingerprint"];' "build/compare/base-$scenario.json")
+            head=$(php -r 'echo json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR)["fingerprint"];' "build/compare/head-$scenario.json")
+            if [ "$base" != "$head" ]; then
+              echo "::error::Incompatible lookup results in $scenario"
+              exit 1
+            fi
+            printf '%s: results identical\n' "$scenario"
+          done
+      - name: Publish source-comparable performance evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-comparison-php84
+          path: build/compare/*.json
+          retention-days: 14
