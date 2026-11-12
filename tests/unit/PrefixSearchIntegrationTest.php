@@ -10,7 +10,7 @@ use Uganda\Uganda;
 
 final class PrefixSearchIntegrationTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function prefixSearchFindsTheSameRealDistrictIdentityAsExactSearch(): void
     {
         $geo = new Uganda();
@@ -24,7 +24,7 @@ final class PrefixSearchIntegrationTest extends TestCase
         }
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function aOneResultLimitDoesNotChangeExactSearchResults(): void
     {
         $geo = new Uganda();
