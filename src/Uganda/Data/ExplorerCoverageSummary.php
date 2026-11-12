@@ -51,6 +51,9 @@ final class ExplorerCoverageSummary
         }
         $verified = [];
         foreach ($matches as $match) {
+            if (!is_array($match)) {
+                throw new InvalidArgumentException('Invalid verified geometry match');
+            }
             $id = $match['unit_id'] ?? null;
             if (!is_string($id) || !isset($ids[$id]) || isset($verified[$id])) {
                 throw new InvalidArgumentException('Invalid or duplicate verified geometry unit');
@@ -66,6 +69,9 @@ final class ExplorerCoverageSummary
         }
         $sourceIds = [];
         foreach ($matches as $match) {
+            if (!is_array($match)) {
+                throw new InvalidArgumentException('Invalid verified source match');
+            }
             $sourceId = $match['source_object_id'] ?? null;
             if (!is_string($sourceId) || $sourceId === '' || isset($sourceIds[$sourceId])) {
                 throw new InvalidArgumentException('Duplicate or missing verified source geometry identity');
