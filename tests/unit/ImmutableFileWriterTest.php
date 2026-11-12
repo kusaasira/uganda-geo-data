@@ -23,6 +23,7 @@ final class ImmutableFileWriterTest extends TestCase
             self::assertSame($payload, file_get_contents($path));
             self::assertSame(strlen($payload), filesize($path));
             self::assertSame(hash('sha256', $payload), hash_file('sha256', $path));
+            self::assertSame([], glob($folder . '/.uganda-geo-stage-*') ?: []);
         } finally {
             $this->removeFixtureDirectory($folder);
         }
