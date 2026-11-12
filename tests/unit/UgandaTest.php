@@ -19,14 +19,14 @@ final class UgandaTest extends TestCase
         $this->uganda = new Uganda();
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function canAccessDistricts(): void
     {
         $this->assertIsArray($this->uganda->districts());
         $this->assertNotEmpty($this->uganda->districts());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function canAccessSpecificDistrict(): void
     {
         $district = new District(126, "Bukomansimbi", []);
@@ -35,7 +35,7 @@ final class UgandaTest extends TestCase
         $this->assertIsArray($this->uganda->district("Bukomansimbi")->toArray());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function throwsDistrictNotFoundExceptionWhenDistrictDoesNotExist(): void
     {
         $this->expectException(DistrictNotFoundException::class);
