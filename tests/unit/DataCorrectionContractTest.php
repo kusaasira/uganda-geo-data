@@ -9,7 +9,7 @@ use Symfony\Component\Yaml\Yaml;
 
 final class DataCorrectionContractTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function correctionIssueFormRequiresIdentityParentAndSourceEvidence(): void
     {
         $root = dirname(__DIR__, 2);
@@ -40,7 +40,7 @@ final class DataCorrectionContractTest extends TestCase
         }
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function correctionSchemaPreservesReviewStatusAndDatedEvidence(): void
     {
         $schema = json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/resources/schemas/data-correction.schema.json'), true, 512, JSON_THROW_ON_ERROR);
