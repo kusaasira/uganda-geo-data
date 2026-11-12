@@ -29,7 +29,7 @@ final class GeometryContract
                 throw new InvalidArgumentException('Polygon must contain at least one ring');
             }
             foreach ($polygon as $ring) {
-                if (!is_array($ring) || count($ring) < 4) {
+                if (!is_array($ring) || !array_is_list($ring) || count($ring) < 4) {
                     throw new InvalidArgumentException('Polygon ring must contain at least four positions');
                 }
                 $distinct = [];
