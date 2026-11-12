@@ -68,6 +68,7 @@ final class JsonDatasetLoader
             }
         }
 
+        /** @var array<int, array<string, int|string>> $rows */
         return $rows;
     }
 
