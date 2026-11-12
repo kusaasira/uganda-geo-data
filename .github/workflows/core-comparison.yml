@@ -43,7 +43,7 @@ jobs:
               echo "::error::Incompatible lookup results in $scenario"
               exit 1
             fi
-            printf '%s: results identical\n' "$scenario"
+            php -r '$b=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR);$h=json_decode(file_get_contents($argv[2]),true,512,JSON_THROW_ON_ERROR);printf("%s: identical IDs | first query %.2f -> %.2f us | warm mean %.3f -> %.3f us | peak %.1f -> %.1f MiB\\n",$b["scenario"],$b["first_query_us"],$h["first_query_us"],$b["warm_mean_us"],$h["warm_mean_us"],$b["memory_peak_bytes"]/1048576,$h["memory_peak_bytes"]/1048576);' "build/compare/base-$scenario.json" "build/compare/head-$scenario.json"
           done
       - name: Publish source-comparable performance evidence
         uses: actions/upload-artifact@v4
