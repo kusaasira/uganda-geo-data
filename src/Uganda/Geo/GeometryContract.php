@@ -69,6 +69,14 @@ final class GeometryContract
         if (!array_is_list($position) || count($position) < 2 || !isset($position[0], $position[1])) {
             throw new InvalidArgumentException('Position must include longitude and latitude');
         }
+        // RFC 7946 requires every position ordinate to be a finite number.
+        // Elevation and any additional optional dimensions cannot be strings.
+        foreach ($position as $ordinate) {
+            if ((!is_int($ordinate) && !is_float($ordinate)) || !is_finite((float) $ordinate)) {
+                throw new InvalidArgumentException('GeoJSON positions must contain only finite numeric ordinates');
+            }
+        }
+
         $longitude = $position[0];
         $latitude = $position[1];
         if ((!is_int($longitude) && !is_float($longitude)) || (!is_int($latitude) && !is_float($latitude)) ||
