@@ -243,14 +243,22 @@ final class UnicodeSearch
         return $groups;
     }
 
-    /** @return array<int, object> */
+    /** @return array<int, County|SubCounty|Parish|Village> */
     private function scopedChildren(string $level, int $parentId): array
     {
         if ($level === 'district') {
             return [];
         }
 
-        return $this->locations->childrenOf($level, $parentId);
+        $children = $this->locations->childrenOf($level, $parentId);
+        foreach ($children as $child) {
+            if (!$child instanceof County && !$child instanceof SubCounty
+                && !$child instanceof Parish && !$child instanceof Village) {
+                throw new LogicException('Unexpected administrative child model');
+            }
+        }
+
+        return $children;
     }
 
     private function ensureIndex(string $level, bool $ignoreDiacritics): string
