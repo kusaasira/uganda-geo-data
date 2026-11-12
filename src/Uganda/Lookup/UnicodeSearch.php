@@ -175,6 +175,11 @@ final class UnicodeSearch
         $candidates = [];
         for ($n = max(0, $length - $maxDistance); $n <= $length + $maxDistance; $n++) {
             foreach ($buckets[$n] ?? [] as $key) {
+                $candidateSignature = $signatures[$key] ?? FuzzyCandidateFilter::signature($key);
+                if (!FuzzyCandidateFilter::mayMatch($querySignature, $candidateSignature, $maxDistance)) {
+                    continue;
+                }
+
                 $distance = UnicodeEditDistance::within($needle, $key, $maxDistance);
                 if ($distance !== null) {
                     $candidates[] = ['key' => $key, 'distance' => $distance];
