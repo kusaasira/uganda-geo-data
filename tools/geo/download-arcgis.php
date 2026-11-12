@@ -46,13 +46,6 @@ function fetchArcGisJson(string $url, int $maxBytes): array
     return ['body' => $body, 'headers' => $safeHeaders];
 }
 
-function writeImmutableFile(string $file, string $contents): void
-{
-    if (file_exists($file) || file_put_contents($file, $contents, LOCK_EX) !== strlen($contents)) {
-        throw new RuntimeException('Unable to write complete immutable acquisition file');
-    }
-}
-
 $id = $argv[1] ?? null;
 $destination = $argv[2] ?? null;
 if ($id === null || $destination === null || !preg_match('/^[a-z0-9-]+$/', $id)) {
