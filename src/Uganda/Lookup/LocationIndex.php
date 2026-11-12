@@ -19,6 +19,8 @@ final class LocationIndex
 
     private const MAX_CACHED_SCOPED_RESULTS = 32;
 
+    private ?UnicodeSearch $unicodeSearch = null;
+
     /** @var array<int, District> */
     private array $districts;
 
