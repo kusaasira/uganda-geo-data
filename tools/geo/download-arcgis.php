@@ -65,7 +65,7 @@ try {
     if ($endpoint === null || !is_string($endpoint['object_id_field']) || $endpoint['object_id_field'] === '') {
         throw new RuntimeException('Unknown endpoint or missing object ID field');
     }
-    if (file_exists($destination)) {
+    if (file_exists($destination) || is_link($destination)) {
         throw new RuntimeException('Destination exists; choose a new directory for an immutable acquisition');
     }
     $parent = dirname($destination);
@@ -95,7 +95,7 @@ try {
     }
 
     $stage = $destination . '.partial-' . bin2hex(random_bytes(4));
-    if (!mkdir($stage, 0775)) {
+    if (!mkdir($stage, 0700)) {
         throw new RuntimeException('Unable to create staging directory');
     }
 
