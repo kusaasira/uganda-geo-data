@@ -32,4 +32,5 @@ jobs:
       - name: Verify generated hierarchies, corrupted input and cache properties
         run: |
           ./vendor/bin/phpunit --no-coverage \
+            --display-phpunit-deprecations --fail-on-phpunit-deprecation \
             --filter 'Property|Mutation|Churn|Budget|Fingerprint|CacheBound'
