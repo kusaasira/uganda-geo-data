@@ -26,7 +26,7 @@ final class VerifiedGeoJsonBuilder
         // Never accept a caller-supplied "verified" result. Re-evaluate every
         // decision against the canonical units and actual source features.
         /** @var array{
-         *   matches: array<int, array<string, mixed>>,
+         *   matches: array<int, mixed>,
          *   status: string,
          *   unmatched_source_object_ids: array<int, string>,
          *   unmatched_canonical_unit_ids: array<int, string>
@@ -56,7 +56,7 @@ final class VerifiedGeoJsonBuilder
                 throw new InvalidArgumentException('Unknown or duplicate source feature or canonical unit');
             }
             $feature = $features[$objectId];
-            if (!is_array($feature) || !isset($feature['geometry']) || !is_array($feature['geometry'])) {
+            if (!isset($feature['geometry']) || !is_array($feature['geometry'])) {
                 throw new InvalidArgumentException('Verified feature is missing polygon geometry');
             }
             GeometryContract::assertGeometry($feature['geometry']);
