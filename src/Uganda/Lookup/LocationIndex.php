@@ -154,6 +154,36 @@ final class LocationIndex
             throw new InvalidArgumentException('Prefix result limit must be positive');
         }
 
+        // A parent-scoped prefix request can inspect only that parent's
+        // canonical children. Preserve the global prefix contract: sorted
+        // normalized names with stable identity order within each name.
+        if ($parentId !== null && $level !== 'district' && !isset($this->indexedNames[$level])) {
+            $groups = [];
+            foreach ($this->childrenOf($level, $parentId) as $unit) {
+                if (!$unit instanceof County && !$unit instanceof SubCounty
+                    && !$unit instanceof Parish && !$unit instanceof Village) {
+                    throw new \LogicException('Unexpected administrative child model');
+                }
+                $key = self::nameKey($unit->name());
+                if (str_starts_with($key, $prefix)) {
+                    $groups[$key][] = $unit;
+                }
+            }
+            ksort($groups, SORT_STRING);
+
+            $scoped = [];
+            foreach ($groups as $sameName) {
+                foreach ($sameName as $unit) {
+                    $scoped[] = $unit;
+                    if ($limit !== null && count($scoped) >= $limit) {
+                        return $scoped;
+                    }
+                }
+            }
+
+            return $scoped;
+        }
+
         if (!isset($this->indexedNames[$level])) {
             $this->indexNames($level);
         }
