@@ -10,7 +10,7 @@ use Uganda\Release\ReleaseNotes;
 
 final class ReleaseNotesTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itProducesDeterministicOrderedMajorReleaseNotes(): void
     {
         $manifest = ['base_version' => 'v2.0.0', 'sections' => [
@@ -27,14 +27,14 @@ final class ReleaseNotesTest extends TestCase
         self::assertStringNotContainsString('exact-tag Packagist installation pass', $notes);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsUnsupportedReleaseVersions(): void
     {
         $this->expectException(InvalidArgumentException::class);
         (new ReleaseNotes())->render(['base_version' => 'v2.0.0', 'sections' => ['Added' => ['X']]], 'v1.0.0');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsUndocumentedChangeCategories(): void
     {
         $this->expectException(InvalidArgumentException::class);
