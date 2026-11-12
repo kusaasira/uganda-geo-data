@@ -86,7 +86,7 @@ try {
         $stage . '/fields.json',
         json_encode($exporter->dictionary(), JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n"
     );
-    file_put_contents($stage . '/metadata.json', json_encode([
+    ImmutableFileWriter::write($stage . '/metadata.json', json_encode([
         'crs' => 'EPSG:4326',
         'feature_count' => count($prepared['features']),
         'source_sha256' => hash_file('sha256', $input),
