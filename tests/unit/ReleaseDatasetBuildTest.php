@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 final class ReleaseDatasetBuildTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itBuildsBitForBitIdenticalSnapshotsAndReports(): void
     {
         $root = dirname(__DIR__, 2);
@@ -52,7 +52,7 @@ final class ReleaseDatasetBuildTest extends TestCase
             rmdir($base);
         }
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRefusesToOverwriteExistingSnapshots(): void
     {
         $repo = dirname(__DIR__, 2);
