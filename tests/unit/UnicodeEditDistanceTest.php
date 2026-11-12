@@ -62,10 +62,8 @@ final class UnicodeEditDistanceTest extends TestCase
 
     private static function reference(string $left, string $right): int
     {
-        $a = preg_split('/\X/u', $left, -1, PREG_SPLIT_NO_EMPTY);
-        $b = preg_split('/\X/u', $right, -1, PREG_SPLIT_NO_EMPTY);
-        // preg_split on a grapheme delimiter removes all characters: use
-        // preg_match_all to obtain the complete reference sequence instead.
+        // The reference implementation computes the complete, unbanded
+        // OSA matrix independently from UnicodeEditDistance's optimized DP.
         preg_match_all('/\X/u', $left, $first);
         preg_match_all('/\X/u', $right, $second);
         $a = $first[0];
