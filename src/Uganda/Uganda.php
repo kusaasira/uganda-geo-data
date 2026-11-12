@@ -244,6 +244,21 @@ final class Uganda
         return $this->index()->ancestorsOf($level, $id);
     }
 
+    /**
+     * Unicode NFKC casefold name matching. The optional ext-intl extension
+     * is required; legacy searchByName() retains its ASCII semantics.
+     *
+     * @return array<int, object>
+     */
+    public function searchByUnicodeName(
+        string $level,
+        string $name,
+        ?int $parentId = null,
+        bool $ignoreDiacritics = false
+    ): array {
+        return $this->index()->byUnicodeName($level, $name, $parentId, $ignoreDiacritics);
+    }
+
     private function index(): LocationIndex
     {
         if ($this->locationIndex === null) {
