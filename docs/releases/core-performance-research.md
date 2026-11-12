@@ -51,4 +51,4 @@ All cold/warm timing values are observations on GitHub-hosted runners, not appli
 
 ## Future research
 
-Broader prefix workloads, Unicode case folding and fuzzy matching may need separate curated fixtures, algorithmic benchmarks and explicit opt-in semantics. Optional database and binary formats must demonstrate advantages over the selected in-memory representation before becoming part of the default runtime.
+Broader prefix workloads are measured by the differential performance workflow. Opt-in ICU Unicode folding and fuzzy matching now have their own indexed candidate search, seeded property oracles and real-dataset latency budgets. See [Unicode and fuzzy qualification](v2.0.1-unicode-fuzzy-qualification.md). Optional database and binary formats must demonstrate advantages over the selected in-memory representation before becoming part of the default runtime.
