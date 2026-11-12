@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 final class UbosReconciliationCliTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function generatesAnHonestMachineReadableReferenceReport(): void
     {
         if (!function_exists('exec')) {
