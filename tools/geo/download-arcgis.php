@@ -167,6 +167,16 @@ try {
     }
     fwrite(STDOUT, 'Acquired ' . count($seen) . ' polygon features into ' . $destination . "\n");
 } catch (Throwable $exception) {
+    // Failed or interrupted downloads must not leave plausible but partial
+    // source inventories. Only delete the stage this invocation created.
+    if ($stageCreated && is_string($stage) && is_dir($stage)) {
+        foreach (glob($stage . '/*') ?: [] as $file) {
+            if (is_file($file) || is_link($file)) {
+                @unlink($file);
+            }
+        }
+        @rmdir($stage);
+    }
     fwrite(STDERR, 'ArcGIS acquisition failed: ' . $exception->getMessage() . "\n");
     exit(1);
 }
