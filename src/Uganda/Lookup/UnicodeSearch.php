@@ -170,6 +170,8 @@ final class UnicodeSearch
         }
 
         $length = count(UnicodeNameNormalizer::graphemes($needle));
+        $querySignature = FuzzyCandidateFilter::signature($needle);
+        $signatures = $parentId === null ? $this->histogramSignatures[$token] : [];
         $candidates = [];
         for ($n = max(0, $length - $maxDistance); $n <= $length + $maxDistance; $n++) {
             foreach ($buckets[$n] ?? [] as $key) {
