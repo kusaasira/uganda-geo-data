@@ -54,9 +54,11 @@ final class UnicodeNameNormalizer
             }
         }
 
-        // All whitespace separators are search-equivalent. Zero-width format
-        // characters are handled by NFKC_Casefold, not stripped arbitrarily.
-        $collapsed = preg_replace('/[\p{Z}\x{0009}-\x{000D}]+/u', ' ', $folded);
+        // The Unicode White_Space property also includes U+0085 (NEL), which
+        // is not in Z* or the ASCII tab/newline range. Do not silently treat
+        // those equivalent location separators as different names.
+        // NFKC_Casefold owns format characters; do not strip them ad hoc.
+        $collapsed = preg_replace('/\p{White_Space}+/u', ' ', $folded);
         if ($collapsed === null) {
             throw new RuntimeException('Unable to normalize location search whitespace');
         }
