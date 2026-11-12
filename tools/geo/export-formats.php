@@ -57,8 +57,10 @@ try {
     if (!mkdir($stage, 0700) || !mkdir($stage . '/shapefile', 0700)) {
         throw new RuntimeException('Unable to create isolated export stage');
     }
-    file_put_contents($stage . '/parishes.geojson',
-        json_encode($prepared, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n");
+    ImmutableFileWriter::write(
+        $stage . '/parishes.geojson',
+        json_encode($prepared, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n"
+    );
     executeGdal(['ogr2ogr', '-f', 'GPKG', $stage . '/parishes.gpkg', $stage . '/parishes.geojson',
         '-nln', 'parishes', '-nlt', 'PROMOTE_TO_MULTI', '-t_srs', 'EPSG:4326']);
     executeGdal(['ogr2ogr', '-f', 'ESRI Shapefile', $stage . '/shapefile/parishes.shp',
