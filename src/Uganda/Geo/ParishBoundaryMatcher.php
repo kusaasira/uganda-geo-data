@@ -14,7 +14,7 @@ final class ParishBoundaryMatcher
      *
      * @param array<int|string, array<string, mixed>> $features
      * @param array<string, mixed> $snapshot
-     * @param array<int, array<string, mixed>> $decisions
+     * @param array<int, mixed> $decisions
      * @return array<string, mixed>
      */
     public function match(array $features, array $snapshot, array $decisions = []): array
