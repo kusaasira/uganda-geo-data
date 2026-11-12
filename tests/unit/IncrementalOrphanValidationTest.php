@@ -9,7 +9,7 @@ use Uganda\Uganda;
 
 final class IncrementalOrphanValidationTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsAnOrphanAtEveryAdministrativeLevel(): void
     {
         $base = [
