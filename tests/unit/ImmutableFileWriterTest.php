@@ -65,6 +65,7 @@ final class ImmutableFileWriterTest extends TestCase
             }
             self::assertTrue(is_link($path));
             self::assertFileDoesNotExist($folder . '/missing-target');
+            self::assertSame([], glob($folder . '/.uganda-geo-stage-*') ?: []);
         } finally {
             $this->removeFixtureDirectory($folder);
         }
