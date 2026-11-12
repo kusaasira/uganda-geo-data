@@ -25,7 +25,7 @@ final class ParishTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function canAccessProperties(): void
     {
         $this->assertSame(456, $this->parish->id());
@@ -35,14 +35,14 @@ final class ParishTest extends TestCase
         $this->assertCount(2, $this->parish->villages());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function canAccessSpecificVillage(): void
     {
         $village = $this->parish->village('Boston');
         $this->assertSame('Boston', $village->name());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function throwsVillageNotFoundExceptionWhenVillageDoesNotExist(): void
     {
         $this->expectException(VillageNotFoundException::class);
