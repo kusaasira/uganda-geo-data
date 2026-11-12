@@ -478,6 +478,11 @@ final class LocationIndex
         return $this->unicode()->fuzzy($level, $query, $parentId, $limit, $maxDistance, $ignoreDiacritics);
     }
 
+    private function unicode(): UnicodeSearch
+    {
+        return $this->unicodeSearch ??= new UnicodeSearch($this);
+    }
+
     private function assertLevel(string $level): void
     {
         if (!in_array($level, ['district', 'county', 'subcounty', 'parish', 'village'], true)) {
