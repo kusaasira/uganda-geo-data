@@ -236,17 +236,17 @@ final class LocationIndex
 
     private static function parentId(object $unit): ?int
     {
-        if ($unit instanceof County) {
-            return $unit->districtId();
-        }
-        if ($unit instanceof SubCounty) {
-            return $unit->countyId();
+        if ($unit instanceof Village) {
+            return $unit->parishId();
         }
         if ($unit instanceof Parish) {
             return $unit->subCountyId();
         }
-        if ($unit instanceof Village) {
-            return $unit->parishId();
+        if ($unit instanceof SubCounty) {
+            return $unit->countyId();
+        }
+        if ($unit instanceof County) {
+            return $unit->districtId();
         }
         return null;
     }
