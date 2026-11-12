@@ -1,8 +1,9 @@
 <?php
 
-use Symplify\EasyCodingStandard\Config\ECSConfig;
-use Symplify\EasyCodingStandard\ValueObject\Set\SetList;
+declare(strict_types=1);
 
-return static function (ECSConfig $ecsConfig): void {
-    $ecsConfig->sets([SetList::PSR_12]);
-};
+use Symplify\EasyCodingStandard\Config\ECSConfig;
+
+return ECSConfig::configure()
+    ->withPaths([__DIR__ . '/src', __DIR__ . '/tests'])
+    ->withPreparedSets(psr12: true);
