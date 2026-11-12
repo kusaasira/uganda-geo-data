@@ -161,6 +161,10 @@ final class UnicodeSearch
             $groups = $this->namesByIndex[$token];
             if (!isset($this->keysByLength[$token])) {
                 $this->keysByLength[$token] = self::lengthBuckets($groups);
+                foreach (array_keys($groups) as $groupKey) {
+                    $key = (string) $groupKey;
+                    $this->histogramSignatures[$token][$key] = FuzzyCandidateFilter::signature($key);
+                }
             }
             $buckets = $this->keysByLength[$token];
         }
