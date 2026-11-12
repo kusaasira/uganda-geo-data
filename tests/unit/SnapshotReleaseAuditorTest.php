@@ -9,7 +9,7 @@ use Uganda\Data\SnapshotReleaseAuditor;
 
 final class SnapshotReleaseAuditorTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function categorizesAdditionsAbsencesAndFieldChangesWithoutConflatingThem(): void
     {
         $before = ['snapshot_id' => 'old', 'units' => [
@@ -36,7 +36,7 @@ final class SnapshotReleaseAuditorTest extends TestCase
         $this->assertSame('Missing', $report['changes'][1]['before']['name']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function returnsAnUnchangedReportForEquivalentSnapshotContent(): void
     {
         $rows = [['id' => 'a', 'name' => 'Same'], ['id' => 'b', 'name' => 'Same']];
