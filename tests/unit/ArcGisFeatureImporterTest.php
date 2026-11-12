@@ -20,7 +20,7 @@ final class ArcGisFeatureImporterTest extends TestCase
         ];
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function preservesFeaturesByObjectIdEvenWhenNamesRepeat(): void
     {
         $page = json_encode(['type' => 'FeatureCollection', 'features' => [$this->feature(1), $this->feature(2)]], JSON_THROW_ON_ERROR);
@@ -30,7 +30,7 @@ final class ArcGisFeatureImporterTest extends TestCase
         $this->assertArrayHasKey(2, $features);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsDuplicateObjectIds(): void
     {
         $page = json_encode(['type' => 'FeatureCollection', 'features' => [$this->feature(1), $this->feature(1)]], JSON_THROW_ON_ERROR);
@@ -38,7 +38,7 @@ final class ArcGisFeatureImporterTest extends TestCase
         (new ArcGisFeatureImporter())->parsePage($page, 'FID');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsTruncatedFeatureCollections(): void
     {
         $page = json_encode(['type' => 'FeatureCollection', 'exceededTransferLimit' => true, 'features' => [$this->feature(1)]], JSON_THROW_ON_ERROR);
@@ -46,7 +46,7 @@ final class ArcGisFeatureImporterTest extends TestCase
         (new ArcGisFeatureImporter())->parsePage($page, 'FID');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsMalformedPolygonCoordinates(): void
     {
         $feature = $this->feature(1);
@@ -55,7 +55,7 @@ final class ArcGisFeatureImporterTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         (new ArcGisFeatureImporter())->parsePage($page, 'FID');
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsConflictingFeatureAndObjectIdentifiers(): void
     {
         $feature = $this->feature(1);
@@ -66,7 +66,7 @@ final class ArcGisFeatureImporterTest extends TestCase
         (new ArcGisFeatureImporter())->parsePage($page, 'FID');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsAFeatureMissingItsObjectIdentifier(): void
     {
         $feature = $this->feature(1);
