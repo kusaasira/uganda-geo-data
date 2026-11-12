@@ -13,7 +13,7 @@ $iterations = $argv[2] ?? '';
 $allowed = [
     'unicode_exact_global', 'unicode_exact_scoped',
     'unicode_prefix_global', 'unicode_prefix_scoped',
-    'fuzzy_global', 'fuzzy_scoped',
+    'fuzzy_global', 'fuzzy_scoped', 'fuzzy_unicode_global', 'fuzzy_unicode_scoped',
 ];
 if ($argc !== 3 || !in_array($scenario, $allowed, true)
     || !ctype_digit($iterations) || (int) $iterations < 5 || (int) $iterations > 100) {
