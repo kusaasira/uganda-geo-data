@@ -41,6 +41,10 @@ jobs:
             php -d memory_limit=128M tools/benchmarks/memory-profile.php "$scenario" "$iterations" > "build/memory/$scenario.json"
             php tools/benchmarks/verify-memory-profile.php "build/memory/$scenario.json"
           done
+      - name: Profile repeated construction and destruction
+        run: |
+          php -d memory_limit=128M tools/benchmarks/instance-churn.php 12 > build/memory/instance-churn.json
+          php tools/benchmarks/verify-instance-churn.php build/memory/instance-churn.json
       - name: Preserve complete profile measurements
         uses: actions/upload-artifact@v4
         with:
