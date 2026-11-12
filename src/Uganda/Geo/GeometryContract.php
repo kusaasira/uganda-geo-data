@@ -19,7 +19,7 @@ final class GeometryContract
         $type = $geometry['type'] ?? null;
         $coordinates = $geometry['coordinates'] ?? null;
 
-        if (!in_array($type, ['Polygon', 'MultiPolygon'], true) || !is_array($coordinates) || $coordinates === []) {
+        if (!in_array($type, ['Polygon', 'MultiPolygon'], true) || !is_array($coordinates) || !array_is_list($coordinates) || $coordinates === []) {
             throw new InvalidArgumentException('Expected a non-empty GeoJSON Polygon or MultiPolygon');
         }
 
