@@ -24,7 +24,7 @@ final class AncestryMemoizationTest extends TestCase
         return new LocationIndex([1 => new District(1, 'District', [2 => $county])]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itCachesSuccessfulAncestryWithoutChangingObjectIdentity(): void
     {
         $index = $this->index();
@@ -40,7 +40,7 @@ final class AncestryMemoizationTest extends TestCase
         self::assertSame($first, $cache['village'][5]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itDoesNotCacheArbitraryUnknownIds(): void
     {
         $index = $this->index();
@@ -51,7 +51,7 @@ final class AncestryMemoizationTest extends TestCase
         self::assertArrayNotHasKey('village', $cache);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function modifyingAResultArrayCannotMutateTheCachedPath(): void
     {
         $index = $this->index();
@@ -63,7 +63,7 @@ final class AncestryMemoizationTest extends TestCase
         self::assertCount(4, $repeat);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function aDistrictWithoutParentsReturnsAnEmptyValidPath(): void
     {
         $index = $this->index();
