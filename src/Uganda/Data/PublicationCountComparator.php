@@ -13,7 +13,7 @@ final class PublicationCountComparator
      *
      * @param array<string, mixed> $older
      * @param array<string, mixed> $newer
-     * @param array<int, array<string, mixed>> $mappings
+     * @param array<int, mixed> $mappings
      * @return array<string, mixed>
      */
     public function compare(array $older, array $newer, array $mappings): array
