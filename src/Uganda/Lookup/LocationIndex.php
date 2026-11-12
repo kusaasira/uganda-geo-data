@@ -314,6 +314,18 @@ final class LocationIndex
         }
     }
 
+    /**
+     * Enumerate an administrative level without constructing any secondary
+     * ID or name index. Hydrated model objects retain their original identity.
+     *
+     * @return \Generator<int, object>
+     */
+    public function iterate(string $level): \Generator
+    {
+        $this->assertLevel($level);
+        yield from $this->unitsAtLevel($level);
+    }
+
     private function assertLevel(string $level): void
     {
         if (!in_array($level, ['district', 'county', 'subcounty', 'parish', 'village'], true)) {
