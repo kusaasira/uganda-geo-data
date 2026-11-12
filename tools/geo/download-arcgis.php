@@ -53,6 +53,8 @@ if ($id === null || $destination === null || !preg_match('/^[a-z0-9-]+$/', $id))
     exit(2);
 }
 
+$stage = null;
+$stageCreated = false;
 try {
     $catalogue = json_decode((string) file_get_contents($root . '/resources/geometry/endpoints.json'), true, 512, JSON_THROW_ON_ERROR);
     $endpoint = null;
