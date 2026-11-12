@@ -10,7 +10,7 @@ use Uganda\Release\GeometryArchive;
 
 final class GeometryArchiveTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itPackagesExplicitFilesWithoutPublicationApproval(): void
     {
         if (!class_exists(\ZipArchive::class)) {
@@ -51,7 +51,7 @@ final class GeometryArchiveTest extends TestCase
         }
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsUnlistedReleaseVersion(): void
     {
         $this->expectException(InvalidArgumentException::class);
