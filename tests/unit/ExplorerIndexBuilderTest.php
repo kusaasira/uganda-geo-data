@@ -10,7 +10,7 @@ use Uganda\Data\ExplorerIndexBuilder;
 
 final class ExplorerIndexBuilderTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function retainsDuplicateNamesByDistinctCanonicalIdentity(): void
     {
         $snapshot = ['schema_version' => 1, 'snapshot_id' => 'test-v1', 'source_ids' => ['test-fixture'], 'units' => [
@@ -28,7 +28,7 @@ final class ExplorerIndexBuilderTest extends TestCase
         $this->assertSame('test-v1', $index['snapshot_id']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsAnEmptyCanonicalDatasetRatherThanPublishingAFalseExplorer(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -42,7 +42,7 @@ final class ExplorerIndexBuilderTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsDuplicateIdsInsteadOfOverwriting(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -52,7 +52,7 @@ final class ExplorerIndexBuilderTest extends TestCase
             ['id' => 'district:1', 'name' => 'Second', 'level' => 'district', 'parent_id' => null, 'source_id' => 'test-fixture'],
         ]]);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsAnOrphanRatherThanDisplayingAFalseCompleteHierarchy(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -62,7 +62,7 @@ final class ExplorerIndexBuilderTest extends TestCase
         ]]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsCyclicAdministrativeAncestry(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -73,13 +73,13 @@ final class ExplorerIndexBuilderTest extends TestCase
         ]]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsAnUnidentifiedSnapshot(): void
     {
         $this->expectException(InvalidArgumentException::class);
         (new ExplorerIndexBuilder())->build(['schema_version' => 1, 'source_ids' => ['test-fixture'], 'units' => []]);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsMalformedOrDuplicateSourceManifests(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -92,7 +92,7 @@ final class ExplorerIndexBuilderTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsAssociativeSourceLists(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -104,7 +104,7 @@ final class ExplorerIndexBuilderTest extends TestCase
             'units' => [],
         ]);
     }
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function itRejectsNonStringSnapshotIdentityBeforeNormalization(): void
     {
         $this->expectException(InvalidArgumentException::class);
