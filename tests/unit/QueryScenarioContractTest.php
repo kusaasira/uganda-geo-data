@@ -44,6 +44,11 @@ final class QueryScenarioContractTest extends TestCase
         self::assertSame('district_id', $result['scenario']);
         self::assertSame(100, $result['samples']);
         self::assertSame(64, strlen($result['fingerprint']));
+        self::assertGreaterThanOrEqual(10, $result['warm_sample_batches']);
+        self::assertLessThanOrEqual(50, $result['warm_sample_batches']);
+        self::assertTrue($result['warm_p50_us'] <= $result['warm_p95_us']);
+        self::assertTrue($result['warm_p95_us'] <= $result['warm_p99_us']);
+        self::assertGreaterThanOrEqual(0, $result['warm_mean_us']);
     }
 
     private function assertInvalid(string $scenario, string $iterations): void
