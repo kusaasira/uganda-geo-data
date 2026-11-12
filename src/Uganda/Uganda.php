@@ -270,6 +270,25 @@ final class Uganda
         return $this->index()->byUnicodePrefix($level, $prefix, $parentId, $limit, $ignoreDiacritics);
     }
 
+    /**
+     * Return models ranked by grapheme-aware edit distance.
+     *
+     * @return array<int, object>
+     */
+    public function searchFuzzy(
+        string $level,
+        string $query,
+        ?int $parentId = null,
+        int $limit = 10,
+        int $maxDistance = 2,
+        bool $ignoreDiacritics = false
+    ): array {
+        return array_map(
+            static fn (array $match): object => $match['unit'],
+            $this->index()->fuzzy($level, $query, $parentId, $limit, $maxDistance, $ignoreDiacritics)
+        );
+    }
+
     private function index(): LocationIndex
     {
         if ($this->locationIndex === null) {
