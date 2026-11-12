@@ -10,8 +10,10 @@ use Uganda\Exceptions\ParishNotFoundException;
 use Uganda\Exceptions\SubCountyNotFoundException;
 use Uganda\Exceptions\VillageNotFoundException;
 
-final class County
+final class County implements \JsonSerializable
 {
+    use SerializesLocation;
+
     private int $id;
 
     private string $name;
