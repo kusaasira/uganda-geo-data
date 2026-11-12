@@ -36,6 +36,9 @@ final class UnicodeSearch
     /** @var array<string, array<int, string>> */
     private array $sortedKeys = [];
 
+    /** @var array<string, array<string, string|null>> */
+    private array $histogramSignatures = [];
+
     /** @var array<int, string> */
     private array $indexOrder = [];
 
