@@ -31,6 +31,18 @@ final class ArcGisFeatureImporterTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
+    public function rejects_a_feature_object_instead_of_a_geojson_feature_array(): void
+    {
+        $page = json_encode([
+            'type' => 'FeatureCollection',
+            'features' => ['one' => $this->feature(1)],
+        ], JSON_THROW_ON_ERROR);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('FeatureCollection');
+        (new ArcGisFeatureImporter())->parsePage($page, 'FID');
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsDuplicateObjectIds(): void
     {
         $page = json_encode(['type' => 'FeatureCollection', 'features' => [$this->feature(1), $this->feature(1)]], JSON_THROW_ON_ERROR);
