@@ -45,7 +45,7 @@ final class ArcGisFeatureImporter
                 }
             }
             $rawId = $feature['properties'][$objectIdField] ?? $feature['id'] ?? null;
-            if ((!is_int($rawId) && !is_string($rawId)) || !ctype_digit((string) $rawId)) {
+            if ((!is_int($rawId) && !is_string($rawId)) || !(preg_match('/\A[0-9]+\z/D', (string) $rawId) === 1)) {
                 throw new InvalidArgumentException("Feature at index $index has no numeric object ID");
             }
             $id = (string) $rawId;
