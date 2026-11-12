@@ -9,7 +9,7 @@ use InvalidArgumentException;
 final class LatencySummary
 {
     /**
-     * @param array<int, float|int> $samples
+     * @param array<int, mixed> $samples
      * @return array{count: int, min: float, p50: float, p95: float, p99: float, max: float, mean: float}
      */
     public function summarize(array $samples): array
@@ -18,12 +18,15 @@ final class LatencySummary
             throw new InvalidArgumentException('Latency samples must not be empty');
         }
 
+        $validated = [];
         foreach ($samples as $sample) {
             if ((!is_int($sample) && !is_float($sample)) || !is_finite((float) $sample) || $sample < 0) {
                 throw new InvalidArgumentException('Latency samples must be finite nonnegative numbers');
             }
+            $validated[] = (float) $sample;
         }
 
+        $samples = $validated;
         sort($samples, SORT_NUMERIC);
         $count = count($samples);
 
