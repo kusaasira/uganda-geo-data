@@ -10,7 +10,7 @@ use Uganda\Geo\VerifiedGeoJsonBuilder;
 
 final class VerifiedGeoJsonBuilderTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function exportsOnlyReviewedPolygonsWithStableCanonicalIdentities(): void
     {
         $geometry = ['type' => 'Polygon', 'coordinates' => [
@@ -38,7 +38,7 @@ final class VerifiedGeoJsonBuilderTest extends TestCase
         $this->assertArrayNotHasKey('evidence_url', $result['features'][0]['properties']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function refusesAReviewedIdentityWithoutAMatchingSourcePolygon(): void
     {
         $snapshot = ['units' => [
@@ -54,7 +54,7 @@ final class VerifiedGeoJsonBuilderTest extends TestCase
         (new VerifiedGeoJsonBuilder())->build([], $snapshot, $decisions, 'source');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsForgedParentChainsBeforeAnyExport(): void
     {
         $geometry = ['type' => 'Polygon', 'coordinates' => [
@@ -74,7 +74,7 @@ final class VerifiedGeoJsonBuilderTest extends TestCase
         (new VerifiedGeoJsonBuilder())->build([12 => ['geometry' => $geometry]], $snapshot, $decisions, 'source');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function anEmptyReviewedSetCannotClaimCompleteSourceCoverage(): void
     {
         $result = (new VerifiedGeoJsonBuilder())->build([], ['units' => []], [], 'source');
