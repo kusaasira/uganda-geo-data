@@ -1,0 +1,15 @@
+{
+  "base_version": "v2.0.1",
+  "sections": {
+    "Changed": [
+      "Build administrative parent-child indexes on demand for the queried level instead of allocating unrelated level indexes."
+    ],
+    "Fixed": [
+      "Keep generated release notes tied to their matching semantic version so v2.0.1 cannot inherit v2.0.0's major-version migration statement.",
+      "Preserve same-name administrative identities and historical runtime data without silently substituting other source datasets."
+    ],
+    "Documentation": [
+      "Provide repeatable latency measurements for exact IDs, parent-scoped names, direct children and ancestry lookups."
+    ]
+  }
+}
