@@ -41,7 +41,7 @@ final class FuzzyCandidateFilterTest extends TestCase
         $unrelated = FuzzyCandidateFilter::signature('zimbabwe');
         self::assertNotNull($query);
         self::assertNotNull($unrelated);
-        self::assertSame(41, strlen($query));
+        self::assertSame(73, strlen($query));
         self::assertFalse(FuzzyCandidateFilter::mayMatch($query, $unrelated, 2));
         self::assertTrue(FuzzyCandidateFilter::mayMatch(
             $query,
@@ -51,11 +51,21 @@ final class FuzzyCandidateFilterTest extends TestCase
     }
 
     #[Test]
-    public function unsupported_unicode_alphabets_and_very_long_words_fail_open_to_verification(): void
+    public function unicode_grapheme_histograms_are_safe_and_saturated_counts_never_reject_true_matches(): void
     {
-        self::assertNull(FuzzyCandidateFilter::signature('École'));
-        self::assertNull(FuzzyCandidateFilter::signature('東京'));
+        self::assertSame(73, strlen(FuzzyCandidateFilter::signature('École')));
+        self::assertSame(73, strlen(FuzzyCandidateFilter::signature('東京')));
         self::assertTrue(FuzzyCandidateFilter::mayMatch(null, FuzzyCandidateFilter::signature('ecole'), 0));
+        self::assertTrue(FuzzyCandidateFilter::mayMatch(
+            FuzzyCandidateFilter::signature('école'),
+            FuzzyCandidateFilter::signature('ecole'),
+            1
+        ));
+        self::assertTrue(FuzzyCandidateFilter::mayMatch(
+            FuzzyCandidateFilter::signature('🇺🇬🇰🇪'),
+            FuzzyCandidateFilter::signature('🇰🇪🇺🇬'),
+            1
+        ));
         self::assertTrue(FuzzyCandidateFilter::mayMatch(
             FuzzyCandidateFilter::signature(str_repeat('a', 300)),
             FuzzyCandidateFilter::signature(str_repeat('a', 299)),
