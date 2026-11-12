@@ -1,0 +1,66 @@
+name: Unicode and fuzzy search compatibility
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: unicode-search-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unicode:
+    name: Unicode & fuzzy PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4', '8.5']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: intl, json
+          tools: composer:v2
+          coverage: none
+      - name: Confirm optional ICU support for Unicode tests
+        run: |
+          php -r 'if (!extension_loaded("intl") || !class_exists("Normalizer") || !defined("Normalizer::FORM_KC_CF")) {fwrite(STDERR, "ICU NFKC_Casefold is required for Unicode tests\n"); exit(1);}'
+      - name: Install test dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Unicode normalization, fuzzy metrics and compatibility tests
+        run: ./vendor/bin/phpunit --no-coverage --display-phpunit-deprecations --fail-on-phpunit-deprecation --filter 'Unicode|Fuzzy'
+      - name: Static analysis of new runtime classes
+        run: ./vendor/bin/phpstan analyse src/Uganda/Lookup --level 9
+
+  without-intl:
+    name: Dependency-free legacy compatibility
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: json
+          tools: composer:v2
+          coverage: none
+      - name: Prove Unicode failure is explicit when Intl is disabled
+        run: |
+          php -n -r '
+            require "src/Uganda/Lookup/UnicodeNameNormalizer.php";
+            if (class_exists("Normalizer", false)) {
+              fwrite(STDERR, "Test process unexpectedly includes ext-intl\n"); exit(1);
+            }
+            try {
+              \Uganda\Lookup\UnicodeNameNormalizer::normalize("Central");
+            } catch (\RuntimeException $e) {
+              if (str_contains($e->getMessage(), "ext-intl")) {exit(0);}
+            }
+            fwrite(STDERR, "Missing optional intl extension was not explained\n");
+            exit(1);
+          '
