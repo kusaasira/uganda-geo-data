@@ -42,7 +42,7 @@ final class ParishBoundaryMatcher
 
         $featureIndex = [];
         foreach ($features as $sourceId => $feature) {
-            if (!ctype_digit((string) $sourceId)) {
+            if (!(preg_match('/\A[0-9]+\z/D', (string) $sourceId) === 1)) {
                 throw new InvalidArgumentException('Feature index must use numeric source object IDs');
             }
             $id = (string) $sourceId;
