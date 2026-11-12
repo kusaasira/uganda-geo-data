@@ -30,14 +30,14 @@ final class ParishGeometryCoverageAuditor
         }
         $unmatched = [];
         foreach ($sourceIds as $sourceId) {
-            if (!is_string($sourceId) || !(preg_match('/\A[0-9]+\z/D', $sourceId) === 1) || isset($unmatched[$sourceId])) {
+            if (!is_string($sourceId) || preg_match('/\A[0-9]+\z/D', $sourceId) !== 1 || isset($unmatched[$sourceId])) {
                 throw new InvalidArgumentException('Matcher returned invalid or duplicate source identities');
             }
             $unmatched[$sourceId] = true;
         }
         $unresolved = [];
         foreach ($unresolvedSourceIds as $index => $id) {
-            if (!is_string($id) || !(preg_match('/\A[0-9]+\z/D', $id) === 1) || !isset($unmatched[$id]) ||
+            if (!is_string($id) || preg_match('/\A[0-9]+\z/D', $id) !== 1 || !isset($unmatched[$id]) ||
                 isset($unresolved[$id])) {
                 throw new InvalidArgumentException("Invalid, duplicate or already matched unresolved source ID at index $index");
             }
