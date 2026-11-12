@@ -31,6 +31,9 @@ final class LocationIndex
     /** @var array<string, array<int, string>> */
     private array $sortedNameKeys = [];
 
+    /** @var array<string, array<int, array<int, object>>> */
+    private array $ancestryCache = [];
+
     /** @param array<int, District> $districts */
     public function __construct(array $districts)
     {
@@ -166,11 +169,17 @@ final class LocationIndex
     /** @return array<int, object> */
     public function ancestorsOf(string $level, int $id): array
     {
+        if (isset($this->ancestryCache[$level][$id])) {
+            return $this->ancestryCache[$level][$id];
+        }
+
         $unit = $this->byId($level, $id);
         if ($unit === null) {
             return [];
         }
 
+        $initialLevel = $level;
+        $initialId = $id;
         $parentLevels = [
             'county' => 'district',
             'subcounty' => 'county',
@@ -196,7 +205,10 @@ final class LocationIndex
             $id = $parentId;
         }
 
-        return array_reverse($ancestors);
+        $ordered = array_reverse($ancestors);
+        $this->ancestryCache[$initialLevel][$initialId] = $ordered;
+
+        return $ordered;
     }
 
     private function indexIds(string $level): void
