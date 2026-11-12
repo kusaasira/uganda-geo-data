@@ -290,9 +290,7 @@ final class UnicodeSearch
 
         if (count($this->indexOrder) >= self::MAX_INDEXES) {
             $oldest = array_shift($this->indexOrder);
-            if ($oldest !== null) {
-                unset($this->namesByIndex[$oldest], $this->sortedKeys[$oldest], $this->keysByLength[$oldest]);
-            }
+            unset($this->namesByIndex[$oldest], $this->sortedKeys[$oldest], $this->keysByLength[$oldest]);
         }
         $this->namesByIndex[$token] = $groups;
         $this->indexOrder[] = $token;
