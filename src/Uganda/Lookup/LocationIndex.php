@@ -19,7 +19,10 @@ final class LocationIndex
     private array $parentById = [];
 
     /** @var array<string, array<int, array<int, int>>> */
-    private ?array $childrenByParent = null;
+    private array $childrenByParent = [];
+
+    /** @var array<string, bool> */
+    private array $indexedChildLevels = [];
 
     /** @param array<int, District> $districts */
     public function __construct(array $districts)
@@ -79,17 +82,15 @@ final class LocationIndex
             throw new InvalidArgumentException('Districts have no administrative parent in this dataset');
         }
 
-        // Keep the secondary child index lazy: ID/name searches should not
-        // allocate an additional 70,000+ entry relation map unnecessarily.
-        if ($this->childrenByParent === null) {
-            $this->childrenByParent = [];
-            foreach ($this->parentById as $childLevel => $parents) {
-                foreach ($parents as $childId => $idOfParent) {
-                    if ($idOfParent !== null) {
-                        $this->childrenByParent[$childLevel][$idOfParent][] = $childId;
-                    }
+        // Only index the requested level. A lookup for counties must not
+        // allocate parent-child maps for every parish and village.
+        if (!isset($this->indexedChildLevels[$level])) {
+            foreach ($this->parentById[$level] ?? [] as $childId => $idOfParent) {
+                if ($idOfParent !== null) {
+                    $this->childrenByParent[$level][$idOfParent][] = $childId;
                 }
             }
+            $this->indexedChildLevels[$level] = true;
         }
 
         $children = [];
