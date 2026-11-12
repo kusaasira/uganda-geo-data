@@ -24,6 +24,9 @@ final class LocationIndex
     /** @var array<string, bool> */
     private array $indexedChildLevels = [];
 
+    /** @var array<string, array<int, string>> */
+    private array $sortedNameKeys = [];
+
     /** @param array<int, District> $districts */
     public function __construct(array $districts)
     {
@@ -58,6 +61,59 @@ final class LocationIndex
     {
         $this->assertLevel($level);
         return $this->byId[$level][$id] ?? null;
+    }
+
+    /**
+     * Return all matching records using a lazily sorted name index.
+     * First query: O(U log U), subsequent queries: O(log U + M) for
+     * U distinct names and M candidate matches before parent filtering.
+     *
+     * @return array<int, object>
+     */
+    public function byPrefix(string $level, string $prefix, ?int $parentId = null, ?int $limit = null): array
+    {
+        $this->assertLevel($level);
+        $prefix = strtolower(trim($prefix));
+        if ($prefix === '') {
+            throw new InvalidArgumentException('A nonempty location name prefix is required');
+        }
+        if ($limit !== null && $limit < 1) {
+            throw new InvalidArgumentException('Prefix result limit must be positive');
+        }
+
+        if (!isset($this->sortedNameKeys[$level])) {
+            $names = array_map('strval', array_keys($this->byName[$level] ?? []));
+            sort($names, SORT_STRING);
+            $this->sortedNameKeys[$level] = $names;
+        }
+        $names = $this->sortedNameKeys[$level];
+        $low = 0;
+        $high = count($names);
+        while ($low < $high) {
+            $middle = intdiv($low + $high, 2);
+            if (strcmp($names[$middle], $prefix) < 0) {
+                $low = $middle + 1;
+            } else {
+                $high = $middle;
+            }
+        }
+
+        $result = [];
+        for ($i = $low, $count = count($names); $i < $count; $i++) {
+            if (!str_starts_with($names[$i], $prefix)) {
+                break;
+            }
+            foreach ($this->byName[$level][$names[$i]] as $id) {
+                if ($parentId !== null && ($this->parentById[$level][$id] ?? null) !== $parentId) {
+                    continue;
+                }
+                $result[] = $this->byId[$level][$id];
+                if ($limit !== null && count($result) >= $limit) {
+                    return $result;
+                }
+            }
+        }
+        return $result;
     }
 
     /** @return array<int, object> */
