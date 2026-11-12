@@ -113,9 +113,10 @@ final class UnicodeSearch
 
         return self::appendMatchingPrefix(
             $this->namesByIndex[$token],
-            array_slice($keys, $low),
+            $keys,
             $needle,
-            $limit
+            $limit,
+            $low
         );
     }
 
@@ -192,10 +193,16 @@ final class UnicodeSearch
      * @param array<int, string> $keys
      * @return array<int, object>
      */
-    private static function appendMatchingPrefix(array $groups, array $keys, string $prefix, ?int $limit): array
-    {
+    private static function appendMatchingPrefix(
+        array $groups,
+        array $keys,
+        string $prefix,
+        ?int $limit,
+        int $start = 0
+    ): array {
         $results = [];
-        foreach ($keys as $key) {
+        for ($i = $start, $count = count($keys); $i < $count; $i++) {
+            $key = $keys[$i];
             if (!str_starts_with($key, $prefix)) {
                 // Scoped keys are also sorted. Once the prefix range has been
                 // reached, lexicographic order guarantees no later match.
