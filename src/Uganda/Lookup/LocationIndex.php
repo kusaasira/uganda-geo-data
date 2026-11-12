@@ -13,6 +13,8 @@ use Uganda\Village;
 
 final class LocationIndex
 {
+    private const MAX_ANCESTRY_CACHE_ENTRIES = 512;
+
     /** @var array<int, District> */
     private array $districts;
 
@@ -33,6 +35,11 @@ final class LocationIndex
 
     /** @var array<string, array<int, array<int, object>>> */
     private array $ancestryCache = [];
+
+    /** @var array<int, array{level: string, id: int}> */
+    private array $ancestryCacheSlots = [];
+
+    private int $nextAncestryCacheSlot = 0;
 
     /** @param array<int, District> $districts */
     public function __construct(array $districts)
@@ -206,7 +213,18 @@ final class LocationIndex
         }
 
         $ordered = array_reverse($ancestors);
+
+        // Keep repeated ancestry lookups fast without allowing a full-source
+        // traversal to retain one duplicated path for every village. A fixed
+        // ring evicts the oldest entry in O(1) time.
+        $slot = $this->nextAncestryCacheSlot;
+        if (isset($this->ancestryCacheSlots[$slot])) {
+            $previous = $this->ancestryCacheSlots[$slot];
+            unset($this->ancestryCache[$previous['level']][$previous['id']]);
+        }
         $this->ancestryCache[$initialLevel][$initialId] = $ordered;
+        $this->ancestryCacheSlots[$slot] = ['level' => $initialLevel, 'id' => $initialId];
+        $this->nextAncestryCacheSlot = ($slot + 1) % self::MAX_ANCESTRY_CACHE_ENTRIES;
 
         return $ordered;
     }
