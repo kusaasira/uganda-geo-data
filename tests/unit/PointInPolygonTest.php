@@ -19,7 +19,7 @@ final class PointInPolygonTest extends TestCase
         ]];
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function distinguishesInteriorsExteriorsBoundariesAndHoles(): void
     {
         $lookup = new PointInPolygon();
@@ -31,7 +31,7 @@ final class PointInPolygonTest extends TestCase
         $this->assertSame('boundary', $lookup->classify(1.0, 1.5, $geometry));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function includesDistinctPartsOfAMultipolygon(): void
     {
         $geometry = ['type' => 'MultiPolygon', 'coordinates' => [
@@ -42,7 +42,7 @@ final class PointInPolygonTest extends TestCase
         $this->assertSame('outside', (new PointInPolygon())->classify(2.5, 1.0, $geometry));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function rejectsInvalidLatitudesInsteadOfGuessing(): void
     {
         $this->expectException(InvalidArgumentException::class);
