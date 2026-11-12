@@ -10,7 +10,7 @@ use Uganda\Release\ReleaseNotes;
 
 final class PatchReleaseNotesTest extends TestCase
 {
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function aPatchReleaseDoesNotInheritTheMajorUpgradeWarning(): void
     {
         $manifest = ['base_version' => 'v2.0.1', 'sections' => [
@@ -23,7 +23,7 @@ final class PatchReleaseNotesTest extends TestCase
         self::assertStringContainsString('## Fixed', $notes);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function aPatchReleaseCandidateIsSupported(): void
     {
         $manifest = ['base_version' => 'v2.0.1', 'sections' => [
@@ -36,7 +36,7 @@ final class PatchReleaseNotesTest extends TestCase
         );
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function aMajorManifestCannotBeReusedForAPatchTag(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -46,7 +46,7 @@ final class PatchReleaseNotesTest extends TestCase
         ], 'v2.0.1');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function unsupportedFutureReleaseTagsRemainRejected(): void
     {
         $this->expectException(InvalidArgumentException::class);
