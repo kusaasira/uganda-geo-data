@@ -101,6 +101,14 @@ final class LocationIndex
                 if (isset($this->scopedNameCacheSlots[$slot])) {
                     $previous = $this->scopedNameCacheSlots[$slot];
                     unset($this->scopedNameCache[$previous['level']][$previous['parent']][$previous['name']]);
+                    // Removing the leaf is insufficient: empty parent arrays
+                    // would otherwise accumulate without a memory bound.
+                    if (($this->scopedNameCache[$previous['level']][$previous['parent']] ?? []) === []) {
+                        unset($this->scopedNameCache[$previous['level']][$previous['parent']]);
+                    }
+                    if (($this->scopedNameCache[$previous['level']] ?? []) === []) {
+                        unset($this->scopedNameCache[$previous['level']]);
+                    }
                 }
                 $this->scopedNameCache[$level][$parentId][$needle] = $matches;
                 $this->scopedNameCacheSlots[$slot] = ['level' => $level, 'parent' => $parentId, 'name' => $needle];
