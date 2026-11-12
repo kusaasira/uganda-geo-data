@@ -53,7 +53,9 @@ final class ImmutableFileWriterTest extends TestCase
         $folder = $this->temporaryDirectory();
         try {
             $path = $folder . '/dangling-link';
-            self::assertTrue(symlink($folder . '/missing-target', $path));
+            if (!function_exists('symlink') || !@symlink($folder . '/missing-target', $path)) {
+                self::markTestSkipped('Creating symbolic links is unavailable on this filesystem');
+            }
             try {
                 ImmutableFileWriter::write($path, 'must not be written');
                 self::fail('Writer followed an existing symlink');
