@@ -60,7 +60,6 @@ final class SyncOperationWriter
         } else {
             throw new RuntimeException('Unknown synchronization operation');
         }
-
     }
 
     /** @param array<string, mixed> $operation */
