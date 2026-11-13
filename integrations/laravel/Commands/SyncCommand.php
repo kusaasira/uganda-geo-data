@@ -63,7 +63,8 @@ final class SyncCommand extends Command
         if (!is_array($plan)) {
             throw new RuntimeException('Invalid plan document');
         }
-        if (!isset($plan['plan_hash']) || !is_string($plan['plan_hash']) ||
+        if (!preg_match('/^[a-f0-9]{64}$/D', $approval) ||
+            !isset($plan['plan_hash']) || !is_string($plan['plan_hash']) ||
             !hash_equals($plan['plan_hash'], $approval)) {
             throw new RuntimeException('Saved plan does not match its explicit approval token');
         }
@@ -80,7 +81,9 @@ final class SyncCommand extends Command
             ];
             foreach ($artifacts as $path => $content) {
                 if ($filesystem->exists($path)) {
-                    if (!hash_equals(hash('sha256', $content), hash('sha256', $filesystem->get($path)))) {
+                    $existing = $filesystem->get($path);
+                    if (!is_string($existing) ||
+                        !hash_equals(hash('sha256', $content), hash('sha256', $existing))) {
                         throw new RuntimeException('An immutable sync artifact was unexpectedly changed');
                     }
                 } elseif (!$filesystem->put($path, $content, ['visibility' => 'private'])) {
