@@ -14,6 +14,9 @@ All notable public API changes, maintenance improvements and source-data release
 - Canonical source snapshot validation, immutable SHA-256 manifests and portable JSON, NDJSON and CSV exports.
 - Explicit dry-run plans with before/after changes, unresolved identity counts and approval-bound execution.
 - Single-transaction synchronization and separately opt-in, checkpointed bounded batches with resumable failure recovery.
+- Exclusive database write leases to prevent interleaved source plans, with explicitly acknowledged abandonment and fresh-plan recovery.
+- Private dry-run plan files and byte-exact identity comparisons even under case-insensitive SQL collations.
+- Parent-first checkpoint ordering and protection against cross-level many-to-one local identity mappings.
 - Standalone Composer executable and optional Laravel service provider, Artisan setup, inspection, synchronization and status commands.
 - Laravel queue integration with approved plan and source artifacts pinned to a private storage disk.
 - Real database CI coverage for MySQL 8.4, PostgreSQL 17 and SQLite alongside the existing PHP matrix and standalone/Laravel consumer checks.
