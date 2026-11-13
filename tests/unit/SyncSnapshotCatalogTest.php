@@ -54,6 +54,33 @@ final class SyncSnapshotCatalogTest extends TestCase
     }
 
     #[Test]
+    public function escapesCsvFormulaCellsWithoutChangingCanonicalJsonValues(): void
+    {
+        $snapshot = (new SnapshotCatalog())->bundled();
+        $snapshot['snapshot_id'] = '=SUM(1,2)';
+        $snapshot['units'][0]['name'] = ' =HYPERLINK("https://example.invalid")';
+        $path = sys_get_temp_dir() . '/uganda-geo-csv-' . bin2hex(random_bytes(8)) . '.csv';
+        try {
+            (new SnapshotExporter())->export($snapshot, 'csv', $path);
+            $handle = fopen($path, 'r');
+            self::assertNotFalse($handle);
+            try {
+                self::assertIsArray(fgetcsv($handle));
+                $first = fgetcsv($handle);
+                self::assertIsArray($first);
+                self::assertSame("'=SUM(1,2)", $first[0]);
+                self::assertSame("' =HYPERLINK(\"https://example.invalid\")", $first[3]);
+            } finally {
+                fclose($handle);
+            }
+        } finally {
+            if (is_file($path)) {
+                unlink($path);
+            }
+        }
+    }
+
+    #[Test]
     public function rejectsUnsupportedExportFormats(): void
     {
         $snapshot = (new SnapshotCatalog())->bundled();
