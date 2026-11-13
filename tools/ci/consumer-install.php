@@ -90,6 +90,19 @@ try {
             if (!$container->make(Uganda\Uganda::class) instanceof Uganda\Uganda) {
                 throw new RuntimeException('Laravel container integration failed');
             }
+            if (!class_exists(Uganda\Laravel\UgandaGeoServiceProvider::class)) {
+                throw new RuntimeException('Optional Laravel service provider is not Composer autoloadable');
+            }
+            $application = new Illuminate\Foundation\Application($directory);
+            $application->instance('config', new Illuminate\Config\Repository([
+                'uganda-geo' => [],
+                'database' => ['default' => 'sqlite'],
+            ]));
+            $application->register(Uganda\Laravel\UgandaGeoServiceProvider::class);
+            $application->boot();
+            if (!$application->getProvider(Uganda\Laravel\UgandaGeoServiceProvider::class)) {
+                throw new RuntimeException('Laravel package provider registration failed');
+            }
         }
         fwrite(STDOUT, "Isolated Composer consumer passed\n");
     } finally {
