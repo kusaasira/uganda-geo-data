@@ -86,6 +86,8 @@ final class ResumableSyncExecutor
             if (!is_string($driver) || !in_array($driver, ['sqlite', 'mysql', 'pgsql'], true)) {
                 throw new RuntimeException('Unsupported synchronization database driver');
             }
+            $lease = new SyncLease($this->pdo);
+            $lease->acquire($approvedHash);
             $lock = $driver === 'sqlite' ? '' : ' FOR UPDATE';
             $statement = $this->pdo->prepare('SELECT plan_hash, mapping_scope, snapshot_hash,
                 mapping_hash, identity_hash, next_index, total_operations, status
@@ -99,6 +101,7 @@ final class ResumableSyncExecutor
                 $prior = $this->pdo->prepare('SELECT plan_hash FROM uganda_geo_sync_runs WHERE plan_hash = ?');
                 $prior->execute([$approvedHash]);
                 if ($prior->fetchColumn() !== false) {
+                    $lease->release($approvedHash);
                     $this->pdo->commit();
                     return ['status' => 'already_applied', 'plan_hash' => $approvedHash,
                         'next_index' => $total, 'total_operations' => $total];
@@ -134,6 +137,7 @@ final class ResumableSyncExecutor
                     throw new RuntimeException('Checkpoint bounds do not match the approved plan');
                 }
                 if ($checkpoint['status'] === 'completed') {
+                    $lease->release($approvedHash);
                     $this->pdo->commit();
                     return ['status' => 'already_applied', 'plan_hash' => $approvedHash,
                         'next_index' => $total, 'total_operations' => $total];
@@ -173,6 +177,9 @@ final class ResumableSyncExecutor
                     VALUES (?, ?, ?, ?, ?, ?)');
                 $insertRun->execute([$approvedHash, $this->scope, $sourceHash, $mappingHash,
                     gmdate(DATE_ATOM), $total]);
+            }
+            if ($status === 'completed') {
+                $lease->release($approvedHash);
             }
             $this->pdo->commit();
             return ['status' => $status, 'plan_hash' => $approvedHash,
