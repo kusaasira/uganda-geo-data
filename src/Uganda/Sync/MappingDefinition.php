@@ -6,11 +6,17 @@ namespace Uganda\Sync;
 
 use InvalidArgumentException;
 
+/**
+ * @phpstan-type LevelMapping array{table: string, key: string, name: string,
+ *     parent?: string, parent_level?: string, write_name?: bool, write_parent?: bool}
+ * @phpstan-type MappingConfig array{strategy: string, levels: array<string, LevelMapping>,
+ *     unmapped_policy?: string}
+ */
 final class MappingDefinition
 {
     private const LEVELS = ['district', 'county', 'subcounty', 'parish', 'village'];
 
-    /** @var array<string, mixed> */
+    /** @var MappingConfig */
     private array $config;
 
     /** @param array<string, mixed> $config */
@@ -52,10 +58,11 @@ final class MappingDefinition
                 }
             }
         }
+        /** @var MappingConfig $config */
         $this->config = $config;
     }
 
-    public static function assertIdentifier($identifier): void
+    public static function assertIdentifier(mixed $identifier): void
     {
         if (!is_string($identifier) || !preg_match('/^[a-zA-Z_][a-zA-Z0-9_]{0,62}$/D', $identifier)) {
             throw new InvalidArgumentException('Unsafe or unsupported SQL identifier');
@@ -81,7 +88,7 @@ final class MappingDefinition
         return $this->config['strategy'];
     }
 
-    /** @return array<string, array<string, mixed>> */
+    /** @return array<string, LevelMapping> */
     public function levels(): array
     {
         return $this->config['levels'];
