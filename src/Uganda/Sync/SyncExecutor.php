@@ -49,7 +49,7 @@ final class SyncExecutor
             if (!hash_equals($approvedPlanHash, $fresh['plan_hash'])) {
                 throw new RuntimeException('Stale sync plan: source, mapping or database state changed');
             }
-            if ($fresh['conflicts'] !== [] || $fresh['unmapped'] > 0 && $fresh['strategy'] === 'existing') {
+            if ($fresh['conflicts'] !== [] || ($fresh['unmapped'] > 0 && $fresh['strategy'] === 'existing' && $fresh['unmapped_policy'] !== 'ignore')) {
                 throw new RuntimeException('Unresolved existing-database identity mappings or conflicts');
             }
 

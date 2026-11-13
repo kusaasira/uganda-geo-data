@@ -66,9 +66,10 @@ final class SchemaInspector
     public function candidates(): array
     {
         $result = [];
+        $tables = $this->tables();
         foreach (['district', 'county', 'subcounty', 'parish', 'village'] as $level) {
             $result[$level] = [];
-            foreach ($this->tables() as $table => $columns) {
+            foreach ($tables as $table => $columns) {
                 $score = 0;
                 if (str_contains(strtolower($table), $level)) {
                     $score += 5;
@@ -104,6 +105,56 @@ final class SchemaInspector
                     throw new RuntimeException('Missing mapped ' . $field . ' column for ' . $level);
                 }
             }
+            if ($mapping->strategy() === 'existing') {
+                $this->assertUniqueKey($definition['table'], $definition['key']);
+            }
+        }
+    }
+
+    public function assertUniqueKey(string $table, string $key): void
+    {
+        MappingDefinition::assertIdentifier($table);
+        MappingDefinition::assertIdentifier($key);
+        $driver = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+        $valid = false;
+        if ($driver === 'sqlite') {
+            $rows = $this->pdo->query('PRAGMA table_info("' . $table . '")')->fetchAll(PDO::FETCH_ASSOC);
+            $pk = array_values(array_filter($rows, static fn (array $row): bool => (int) $row['pk'] > 0));
+            $valid = count($pk) === 1 && $pk[0]['name'] === $key;
+            if (!$valid) {
+                $indexes = $this->pdo->query('PRAGMA index_list("' . $table . '")')->fetchAll(PDO::FETCH_ASSOC);
+                foreach ($indexes as $index) {
+                    if ((int) $index['unique'] !== 1) {
+                        continue;
+                    }
+                    $indexName = str_replace('"', '""', $index['name']);
+                    $columns = $this->pdo->query('PRAGMA index_info("' . $indexName . '")')->fetchAll(PDO::FETCH_ASSOC);
+                    if (count($columns) === 1 && $columns[0]['name'] === $key) {
+                        $valid = true;
+                        break;
+                    }
+                }
+            }
+        } elseif ($driver === 'mysql') {
+            $query = $this->pdo->prepare('SELECT index_name FROM information_schema.statistics
+                WHERE table_schema = DATABASE() AND table_name = ? AND non_unique = 0
+                GROUP BY index_name HAVING COUNT(*) = 1 AND MAX(column_name) = ?');
+            $query->execute([$table, $key]);
+            $valid = $query->fetchColumn() !== false;
+        } elseif ($driver === 'pgsql') {
+            $query = $this->pdo->prepare("SELECT tc.constraint_name
+                FROM information_schema.table_constraints tc
+                JOIN information_schema.key_column_usage kcu
+                  ON tc.constraint_name = kcu.constraint_name
+                 AND tc.table_schema = kcu.table_schema AND tc.table_name = kcu.table_name
+                WHERE tc.table_schema = current_schema() AND tc.table_name = ?
+                  AND tc.constraint_type IN ('PRIMARY KEY', 'UNIQUE')
+                GROUP BY tc.constraint_name HAVING COUNT(*) = 1 AND MAX(kcu.column_name) = ?");
+            $query->execute([$table, $key]);
+            $valid = $query->fetchColumn() !== false;
+        }
+        if (!$valid) {
+            throw new RuntimeException('Mapped local key must have a single-column unique constraint: ' . $table . '.' . $key);
         }
     }
 

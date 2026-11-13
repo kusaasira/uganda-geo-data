@@ -42,6 +42,16 @@ final class MappingDefinition
                 throw new InvalidArgumentException('Mapped columns must be distinct');
             }
         }
+        if (!in_array($config['unmapped_policy'] ?? 'block', ['block', 'ignore'], true)) {
+            throw new InvalidArgumentException('Unsupported unmapped record policy');
+        }
+        foreach ($config['levels'] as $definition) {
+            foreach (['write_name', 'write_parent'] as $flag) {
+                if (isset($definition[$flag]) && !is_bool($definition[$flag])) {
+                    throw new InvalidArgumentException('Field write permissions must be explicit booleans');
+                }
+            }
+        }
         $this->config = $config;
     }
 
@@ -71,10 +81,15 @@ final class MappingDefinition
         return $this->config['strategy'];
     }
 
-    /** @return array<string, array<string, string>> */
+    /** @return array<string, array<string, mixed>> */
     public function levels(): array
     {
         return $this->config['levels'];
+    }
+
+    public function unmappedPolicy(): string
+    {
+        return $this->config['unmapped_policy'] ?? 'block';
     }
 
     public function fingerprint(): string

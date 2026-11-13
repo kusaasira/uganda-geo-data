@@ -135,6 +135,7 @@ final class SyncPlanner
             'format_version' => 1,
             'scope' => $this->scope,
             'strategy' => $strategy,
+            'unmapped_policy' => $this->mapping->unmappedPolicy(),
             'snapshot_id' => $snapshot['snapshot_id'],
             'snapshot_hash' => $snapshotHash,
             'mapping_hash' => $this->mapping->fingerprint(),
