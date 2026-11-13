@@ -55,5 +55,16 @@ final class SchemaInstaller
             applied_at VARCHAR(40) NOT NULL,
             operation_count INTEGER NOT NULL
         )' . $engine);
+        $this->pdo->exec('CREATE TABLE IF NOT EXISTS uganda_geo_sync_checkpoints (
+            plan_hash CHAR(64) NOT NULL PRIMARY KEY,
+            mapping_scope VARCHAR(80) NOT NULL,
+            snapshot_hash CHAR(64) NOT NULL,
+            mapping_hash CHAR(64) NOT NULL,
+            identity_hash CHAR(64) NOT NULL,
+            next_index INTEGER NOT NULL,
+            total_operations INTEGER NOT NULL,
+            status VARCHAR(20) NOT NULL,
+            updated_at VARCHAR(40) NOT NULL
+        )' . $engine);
     }
 }
