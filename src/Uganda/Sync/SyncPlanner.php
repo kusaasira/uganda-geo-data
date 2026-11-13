@@ -116,6 +116,10 @@ final class SyncPlanner
             }
             $newParent = null;
             $oldParent = isset($definition['parent']) ? $before[$definition['parent']] : null;
+            if ($oldParent !== null && !is_string($oldParent) && !is_int($oldParent)) {
+                throw new RuntimeException('Mapped parent identity has an unsupported database type');
+            }
+            $oldParent = $oldParent === null ? null : (string) $oldParent;
             if (isset($definition['parent'])) {
                 if ($unit['parent_id'] !== null) {
                     $parentLevel = $definition['parent_level'] ?? null;
@@ -213,12 +217,15 @@ final class SyncPlanner
             $keyColumn = $inspector->quote($definition['key']);
             $nameColumn = $inspector->quote($definition['name']);
             $parentColumn = isset($definition['parent']) ? ', ' . $inspector->quote($definition['parent']) : '';
+            $scopeSelect = isset($definition['scope_column'])
+                ? ', ' . $inspector->quote($definition['scope_column'])
+                : '';
             $scopeCondition = isset($definition['scope_column'])
                 ? ' AND ' . $inspector->quote($definition['scope_column']) . ' = ?'
                 : '';
             foreach (array_chunk($keys, 200) as $batch) {
                 $placeholders = implode(', ', array_fill(0, count($batch), '?'));
-                $statement = $this->pdo->prepare("SELECT $keyColumn, $nameColumn$parentColumn
+                $statement = $this->pdo->prepare("SELECT $keyColumn, $nameColumn$parentColumn$scopeSelect
                     FROM $table WHERE $keyColumn IN ($placeholders)$scopeCondition");
                 $values = isset($definition['scope_column']) ? [...$batch, $this->scope] : $batch;
                 $statement->execute($values);
@@ -228,6 +235,13 @@ final class SyncPlanner
                         throw new RuntimeException('Invalid mapped local primary key');
                     }
                     $key = (string) $nativeKey;
+                    if (isset($definition['scope_column'])) {
+                        $rowScope = $row[$definition['scope_column']] ?? null;
+                        if ((!is_string($rowScope) && !is_int($rowScope)) ||
+                            (string) $rowScope !== $this->scope) {
+                            continue;
+                        }
+                    }
                     if (isset($result[$level][$key])) {
                         throw new RuntimeException('Nonunique local primary key encountered');
                     }
