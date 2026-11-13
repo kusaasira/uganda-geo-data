@@ -19,6 +19,10 @@ final class SnapshotExporter
     {
         $catalog = new SnapshotCatalog();
         $units = $catalog->units($snapshot);
+        $snapshotId = $snapshot['snapshot_id'] ?? null;
+        if (!is_string($snapshotId)) {
+            throw new InvalidArgumentException('Missing validated source snapshot identity');
+        }
         if (!in_array($format, ['json', 'ndjson', 'csv'], true)) {
             throw new InvalidArgumentException('Unsupported snapshot export format');
         }
@@ -45,7 +49,7 @@ final class SnapshotExporter
                         $name = "'" . $name;
                     }
                     if (fputcsv($handle, [
-                        (string) $snapshot['snapshot_id'], $unit['id'], $unit['level'], $name,
+                        $snapshotId, $unit['id'], $unit['level'], $name,
                         $unit['parent_id'], $unit['source_id'], $unit['source_record_id'], $unit['lifecycle_status'],
                     ]) === false) {
                         throw new RuntimeException('Cannot write CSV record');
