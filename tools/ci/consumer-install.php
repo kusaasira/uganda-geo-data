@@ -68,6 +68,23 @@ try {
         if (!$first instanceof Uganda\District || $uganda->findById('district', $first->id()) === null) {
             throw new RuntimeException('Installed package lookup failed');
         }
+        $bin = $directory . '/vendor/bin/uganda-geo';
+        if (!is_file($bin)) {
+            throw new RuntimeException('Composer did not install Uganda Geo standalone executable');
+        }
+        $output = $directory . '/consumer-snapshot.json';
+        $command = escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($bin)
+            . ' export --format=json --output=' . escapeshellarg($output) . ' 2>&1';
+        $lines = [];
+        $status = 0;
+        exec($command, $lines, $status);
+        if ($status !== 0 || !is_file($output)) {
+            throw new RuntimeException('Installed CLI export failed: ' . implode("\\n", $lines));
+        }
+        $export = json_decode((string) file_get_contents($output), true, 512, JSON_THROW_ON_ERROR);
+        if (!isset($export['units']) || !is_array($export['units']) || $export['units'] === []) {
+            throw new RuntimeException('Installed CLI exported no geography records');
+        }
         if ($laravel) {
             $container = new Illuminate\Container\Container();
             if (!$container->make(Uganda\Uganda::class) instanceof Uganda\Uganda) {
