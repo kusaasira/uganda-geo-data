@@ -43,6 +43,10 @@ final class ApplyApprovedSync implements ShouldQueue
 
     public function handle(): void
     {
+        if (!preg_match('/^[a-f0-9]{64}$/D', $this->approvedHash) ||
+            $this->artifactPrefix !== 'uganda-geo/approved/' . $this->approvedHash) {
+            throw new RuntimeException('Unsafe or inconsistent approved artifact identity');
+        }
         if (Runtime::scope() !== $this->scope) {
             throw new RuntimeException('Queue worker scope differs from the approved synchronization scope');
         }
