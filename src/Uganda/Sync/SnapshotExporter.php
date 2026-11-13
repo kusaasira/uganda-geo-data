@@ -44,14 +44,12 @@ final class SnapshotExporter
                     throw new RuntimeException('Cannot write CSV header');
                 }
                 foreach ($units as $unit) {
-                    $name = $unit['name'];
-                    if (preg_match('/^\s*[=+\-@]/u', $name)) {
-                        $name = "'" . $name;
-                    }
-                    if (fputcsv($handle, [
-                        $snapshotId, $unit['id'], $unit['level'], $name,
+                    $fields = [
+                        $snapshotId, $unit['id'], $unit['level'], $unit['name'],
                         $unit['parent_id'], $unit['source_id'], $unit['source_record_id'], $unit['lifecycle_status'],
-                    ]) === false) {
+                    ];
+                    $safe = array_map($this->csvCell(...), $fields);
+                    if (fputcsv($handle, $safe, ',', '"', '') === false) {
                         throw new RuntimeException('Cannot write CSV record');
                     }
                 }
@@ -76,6 +74,17 @@ final class SnapshotExporter
             'sha256' => $digest,
             'source_manifest' => $catalog->manifest($snapshot),
         ];
+    }
+
+    private function csvCell(?string $value): string
+    {
+        if ($value === null) {
+            return '';
+        }
+        if (preg_match('/^[\\s\\x{FEFF}]*[=+\\-@]/u', $value) === 1) {
+            return "'" . $value;
+        }
+        return $value;
     }
 
     /** @param resource $handle */
