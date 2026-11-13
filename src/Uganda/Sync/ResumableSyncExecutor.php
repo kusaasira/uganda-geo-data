@@ -125,7 +125,8 @@ final class ResumableSyncExecutor
                 $storedTotal = $checkpoint['total_operations'] ?? null;
                 if ((!is_int($position) && !is_string($position)) ||
                     (!is_int($storedTotal) && !is_string($storedTotal)) ||
-                    !ctype_digit((string) $position) || !ctype_digit((string) $storedTotal)) {
+                    strspn((string) $position, '0123456789') !== strlen((string) $position) ||
+                    strspn((string) $storedTotal, '0123456789') !== strlen((string) $storedTotal)) {
                     throw new RuntimeException('Invalid stored checkpoint position');
                 }
                 $offset = (int) $position;
