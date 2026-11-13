@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace unit;
 
 use PDO;
+use PDOException;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -153,6 +154,28 @@ final class SyncSqliteIntegrationTest extends TestCase
         $preview = (new SyncPlanner($this->pdo, $partial))->plan($snapshot);
         self::assertSame([], $preview['missing_from_source']);
         self::assertSame([], $preview['operations']);
+    }
+
+    #[Test]
+    public function rejectsMappingOneLocalRowToTwoDistinctAdministrativeLevels(): void
+    {
+        $this->pdo->exec('CREATE TABLE location_units (
+            local_id TEXT PRIMARY KEY, display_name TEXT NOT NULL
+        )');
+        $this->pdo->exec("INSERT INTO location_units VALUES ('local-one', 'Existing')");
+        (new SchemaInstaller($this->pdo))->install();
+        $mapping = new MappingDefinition([
+            'strategy' => 'existing',
+            'levels' => [
+                'district' => ['table' => 'location_units', 'key' => 'local_id', 'name' => 'display_name'],
+                'county' => ['table' => 'location_units', 'key' => 'local_id', 'name' => 'display_name'],
+            ],
+        ]);
+        $registry = new IdentityRegistry($this->pdo, $mapping);
+        $registry->approve('test:district:1', 'district', 'local-one', 'reviewer');
+
+        $this->expectException(PDOException::class);
+        $registry->approve('test:county:1', 'county', 'local-one', 'reviewer');
     }
 
     #[Test]
