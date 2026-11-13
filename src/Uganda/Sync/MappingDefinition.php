@@ -58,10 +58,10 @@ final class MappingDefinition
             'strategy' => 'managed',
             'levels' => [
                 'district' => ['table' => 'uganda_geo_units', 'key' => 'source_key', 'name' => 'name'],
-                'county' => ['table' => 'uganda_geo_units', 'key' => 'source_key', 'name' => 'name', 'parent' => 'parent_key', 'parent_level' => 'district'],
-                'subcounty' => ['table' => 'uganda_geo_units', 'key' => 'source_key', 'name' => 'name', 'parent' => 'parent_key', 'parent_level' => 'county'],
-                'parish' => ['table' => 'uganda_geo_units', 'key' => 'source_key', 'name' => 'name', 'parent' => 'parent_key', 'parent_level' => 'subcounty'],
-                'village' => ['table' => 'uganda_geo_units', 'key' => 'source_key', 'name' => 'name', 'parent' => 'parent_key', 'parent_level' => 'parish'],
+                'county' => ['table' => 'uganda_geo_units', 'key' => 'source_key', 'name' => 'name', 'parent' => 'parent_hash', 'parent_level' => 'district'],
+                'subcounty' => ['table' => 'uganda_geo_units', 'key' => 'source_key', 'name' => 'name', 'parent' => 'parent_hash', 'parent_level' => 'county'],
+                'parish' => ['table' => 'uganda_geo_units', 'key' => 'source_key', 'name' => 'name', 'parent' => 'parent_hash', 'parent_level' => 'subcounty'],
+                'village' => ['table' => 'uganda_geo_units', 'key' => 'source_key', 'name' => 'name', 'parent' => 'parent_hash', 'parent_level' => 'parish'],
             ],
         ]);
     }
