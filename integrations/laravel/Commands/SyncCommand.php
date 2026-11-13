@@ -10,6 +10,7 @@ use RuntimeException;
 use Uganda\Laravel\Jobs\ApplyApprovedSync;
 use Uganda\Laravel\Runtime;
 use Uganda\Sync\SyncExecutor;
+use Uganda\Sync\ResumableSyncExecutor;
 use Uganda\Sync\SyncPlanner;
 
 final class SyncCommand extends Command
@@ -18,7 +19,8 @@ final class SyncCommand extends Command
         {--output= : Write a new dry-run plan file}
         {--plan= : Approved plan file for explicit apply}
         {--approve= : Exact SHA-256 plan approval token}
-        {--queue : Dispatch approved apply using the configured Laravel queue}';
+        {--queue : Dispatch approved apply using the configured Laravel queue}
+        {--batch-size= : Execute durable 1-1000-operation batches and resume on retry}';
 
     protected $description = 'Preview or explicitly apply an identity-safe geographic synchronization plan';
 
@@ -68,6 +70,11 @@ final class SyncCommand extends Command
             !hash_equals($plan['plan_hash'], $approval)) {
             throw new RuntimeException('Saved plan does not match its explicit approval token');
         }
+        $requestedBatch = $this->option('batch-size');
+        $batchSize = $requestedBatch === null ? 200 : filter_var($requestedBatch, FILTER_VALIDATE_INT);
+        if (!is_int($batchSize) || $batchSize < 1 || $batchSize > 1000) {
+            throw new RuntimeException('Batch size must be an integer between 1 and 1000');
+        }
         if ($this->option('queue')) {
             $disk = config('uganda-geo.queue_disk', 'local');
             if (!is_string($disk) || $disk === '') {
@@ -90,11 +97,17 @@ final class SyncCommand extends Command
                     throw new RuntimeException('Failed to pin approved sync artifacts to the private queue disk');
                 }
             }
-            ApplyApprovedSync::dispatch($disk, $prefix, $approval, $scope)->afterCommit();
+            ApplyApprovedSync::dispatch($disk, $prefix, $approval, $scope, $batchSize)->afterCommit();
             $this->info('Approved sync dispatched with pinned private source and plan artifacts');
             return self::SUCCESS;
         }
-        $report = (new SyncExecutor(Runtime::pdo(), $mapping, $scope))->apply($snapshot, $plan, $approval);
+        if ($requestedBatch !== null) {
+            $report = (new ResumableSyncExecutor(Runtime::pdo(), $mapping, $scope))
+                ->applyAll($snapshot, $plan, $approval, $batchSize);
+        } else {
+            $report = (new SyncExecutor(Runtime::pdo(), $mapping, $scope))
+                ->apply($snapshot, $plan, $approval);
+        }
         $this->line(json_encode($report, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
         return self::SUCCESS;
     }
