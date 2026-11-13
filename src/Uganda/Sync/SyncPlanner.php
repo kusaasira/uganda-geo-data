@@ -29,6 +29,10 @@ final class SyncPlanner
     {
         $catalog = new SnapshotCatalog();
         $units = $catalog->units($snapshot);
+        $snapshotId = $snapshot['snapshot_id'] ?? null;
+        if (!is_string($snapshotId)) {
+            throw new RuntimeException('Missing validated source snapshot identity');
+        }
         $inspector = new SchemaInspector($this->pdo);
         $inspector->assertMappedColumns($this->mapping);
 
@@ -146,7 +150,7 @@ final class SyncPlanner
             'scope' => $this->scope,
             'strategy' => $strategy,
             'unmapped_policy' => $this->mapping->unmappedPolicy(),
-            'snapshot_id' => (string) $snapshot['snapshot_id'],
+            'snapshot_id' => $snapshotId,
             'snapshot_hash' => $snapshotHash,
             'mapping_hash' => $this->mapping->fingerprint(),
             'operations' => $operations,
