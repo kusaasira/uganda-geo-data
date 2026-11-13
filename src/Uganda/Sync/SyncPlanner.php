@@ -50,13 +50,8 @@ final class SyncPlanner
         $strategy = $this->mapping->strategy();
         $definitions = $this->mapping->levels();
         $registry = new IdentityRegistry($this->pdo, $this->mapping, $this->scope);
-        $approvedKeys = $strategy === 'existing' ? $registry->allMappedKeys() : [];
-        foreach ($approvedKeys as &$keysBySource) {
-            ksort($keysBySource);
-        }
-        unset($keysBySource);
-        ksort($approvedKeys);
-        $identityHash = hash('sha256', json_encode($approvedKeys, JSON_THROW_ON_ERROR));
+        $approvedKeys = $strategy === 'managed' ? [] : $registry->allMappedKeys();
+        $identityHash = IdentityFingerprint::fromKeys($approvedKeys);
         $targetRows = $strategy === 'existing' ? $this->loadTargetRows($approvedKeys, $inspector) : [];
         $existingManaged = [];
         if ($strategy !== 'existing') {
