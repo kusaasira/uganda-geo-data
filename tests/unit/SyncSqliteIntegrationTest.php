@@ -138,6 +138,24 @@ final class SyncSqliteIntegrationTest extends TestCase
     }
 
     #[Test]
+    public function partialManagedMappingsDoNotReportUnconfiguredLevelsAsMissing(): void
+    {
+        (new SchemaInstaller($this->pdo))->install();
+        $snapshot = $this->snapshot();
+        $full = MappingDefinition::managed();
+        $plan = (new SyncPlanner($this->pdo, $full))->plan($snapshot);
+        (new SyncExecutor($this->pdo, $full))->apply($snapshot, $plan, $plan['plan_hash']);
+
+        $partial = new MappingDefinition([
+            'strategy' => 'managed',
+            'levels' => ['district' => $full->levels()['district']],
+        ]);
+        $preview = (new SyncPlanner($this->pdo, $partial))->plan($snapshot);
+        self::assertSame([], $preview['missing_from_source']);
+        self::assertSame([], $preview['operations']);
+    }
+
+    #[Test]
     public function discoversCandidatesButNeverAssumesTheyAreConfirmed(): void
     {
         $this->pdo->exec('CREATE TABLE geo_districts (uuid TEXT PRIMARY KEY, district_name TEXT)');
