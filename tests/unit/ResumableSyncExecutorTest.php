@@ -150,6 +150,45 @@ final class ResumableSyncExecutorTest extends TestCase
     }
 
     #[Test]
+    public function explicitAbandonmentRetainsCommittedRowsAndReleasesTheDatabase(): void
+    {
+        $mapping = MappingDefinition::managed();
+        $snapshot = $this->fixture();
+        $plan = (new SyncPlanner($this->pdo, $mapping))->plan($snapshot);
+        $runner = new ResumableSyncExecutor($this->pdo, $mapping);
+        $runner->applyNext($snapshot, $plan, $plan['plan_hash'], 1);
+        $lease = new SyncLease($this->pdo);
+
+        try {
+            $lease->abandon($plan['plan_hash'], false);
+            self::fail('Abort must require an explicit partial-write acknowledgement');
+        } catch (RuntimeException $exception) {
+            self::assertStringContainsString('acknowledgement', $exception->getMessage());
+        }
+        self::assertSame($plan['plan_hash'], $lease->active()['plan_hash']);
+
+        $report = $lease->abandon($plan['plan_hash'], true);
+        self::assertSame('abandoned', $report['status']);
+        self::assertSame(1, $report['committed_operations']);
+        self::assertNull($lease->active());
+        self::assertSame(1, (int) $this->pdo->query('SELECT COUNT(*) FROM uganda_geo_units')->fetchColumn());
+
+        try {
+            $runner->applyNext($snapshot, $plan, $plan['plan_hash'], 1);
+            self::fail('Abandoned plan must not be resumed');
+        } catch (RuntimeException $exception) {
+            self::assertStringContainsString('resumable state', $exception->getMessage());
+        }
+
+        $newPlan = (new SyncPlanner($this->pdo, $mapping))->plan($snapshot);
+        self::assertCount(2, $newPlan['operations']);
+        $final = (new SyncExecutor($this->pdo, $mapping))
+            ->apply($snapshot, $newPlan, $newPlan['plan_hash']);
+        self::assertSame('applied', $final['status']);
+        self::assertSame(3, (int) $this->pdo->query('SELECT COUNT(*) FROM uganda_geo_units')->fetchColumn());
+    }
+
+    #[Test]
     public function disallowsInvalidBatchSizes(): void
     {
         $mapping = MappingDefinition::managed();
