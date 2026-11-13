@@ -7,6 +7,7 @@ namespace Uganda\Sync;
 use PDO;
 use PDOStatement;
 use RuntimeException;
+use Throwable;
 
 /**
  * Database-wide durable ownership of the synchronization write surface.
@@ -63,6 +64,54 @@ final class SyncLease
         $delete->execute([self::LOCK_NAME, $planHash]);
         if ($delete->rowCount() !== 1) {
             throw new RuntimeException('Cannot release a synchronization lease owned by another plan');
+        }
+    }
+
+    /**
+     * Explicit administrative abandonment. Previously committed batches survive.
+     * The next import must create and review a fresh plan.
+     *
+     * @return array{status: string, plan_hash: string, committed_operations: int}
+     */
+    public function abandon(string $planHash, bool $acknowledgePartialWrites): array
+    {
+        if (!$acknowledgePartialWrites) {
+            throw new RuntimeException('Abandonment requires explicit acknowledgement of committed partial writes');
+        }
+        self::assertHash($planHash);
+        if ($this->pdo->inTransaction()) {
+            throw new RuntimeException('Abandonment owns its transaction boundary');
+        }
+        $this->pdo->beginTransaction();
+        try {
+            $this->acquire($planHash);
+            $driver = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+            $locking = $driver === 'sqlite' ? '' : ' FOR UPDATE';
+            $query = $this->pdo->prepare('SELECT next_index, status FROM uganda_geo_sync_checkpoints
+                WHERE plan_hash = ?' . $locking);
+            $query->execute([$planHash]);
+            $row = $query->fetch(PDO::FETCH_ASSOC);
+            if ($row === false || $row['status'] !== 'running' ||
+                (!is_int($row['next_index']) && !is_string($row['next_index'])) ||
+                strspn((string) $row['next_index'], '0123456789') !== strlen((string) $row['next_index'])) {
+                throw new RuntimeException('Only a running checkpointed plan may be abandoned');
+            }
+            $position = (int) $row['next_index'];
+            $update = $this->pdo->prepare('UPDATE uganda_geo_sync_checkpoints
+                SET status = ?, updated_at = ? WHERE plan_hash = ? AND status = ?');
+            $update->execute(['abandoned', gmdate(DATE_ATOM), $planHash, 'running']);
+            if ($update->rowCount() !== 1) {
+                throw new RuntimeException('Checkpoint changed while abandoning synchronization');
+            }
+            $this->release($planHash);
+            $this->pdo->commit();
+            return ['status' => 'abandoned', 'plan_hash' => $planHash,
+                'committed_operations' => $position];
+        } catch (Throwable $exception) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            throw $exception;
         }
     }
 
