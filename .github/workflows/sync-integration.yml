@@ -1,0 +1,99 @@
+name: Database synchronization integration
+
+on:
+  pull_request:
+    branches:
+      - main
+      - next/2.x
+  push:
+    branches:
+      - main
+      - next/2.x
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sqlite:
+    name: SQLite / PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.4', '8.5']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: json, pdo_sqlite
+          tools: composer:v2
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist
+      - run: ./vendor/bin/phpunit --no-coverage --filter Sync
+
+  mysql:
+    name: MySQL 8.4 / PHP 8.4
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: uganda_geo_ci
+          MYSQL_ROOT_PASSWORD: test-only-secret
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -ptest-only-secret"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      UGANDA_GEO_TEST_ALLOW_SCHEMA_RESET: '1'
+      UGANDA_GEO_TEST_DSN: mysql:host=127.0.0.1;port=3306;dbname=uganda_geo_ci;charset=utf8mb4
+      UGANDA_GEO_TEST_USER: root
+      UGANDA_GEO_TEST_PASSWORD: test-only-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: json, pdo_mysql
+          tools: composer:v2
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist
+      - run: ./vendor/bin/phpunit --no-coverage --filter SyncExternalDatabaseIntegrationTest
+
+  postgres:
+    name: PostgreSQL 17 / PHP 8.4
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: uganda_geo_ci
+          POSTGRES_USER: geo_test
+          POSTGRES_PASSWORD: test-only-secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U geo_test -d uganda_geo_ci"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      UGANDA_GEO_TEST_ALLOW_SCHEMA_RESET: '1'
+      UGANDA_GEO_TEST_DSN: pgsql:host=127.0.0.1;port=5432;dbname=uganda_geo_ci
+      UGANDA_GEO_TEST_USER: geo_test
+      UGANDA_GEO_TEST_PASSWORD: test-only-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: json, pdo_pgsql
+          tools: composer:v2
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist
+      - run: ./vendor/bin/phpunit --no-coverage --filter SyncExternalDatabaseIntegrationTest
