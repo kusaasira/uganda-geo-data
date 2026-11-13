@@ -83,6 +83,9 @@ final class MappingDefinition
             }
             new self(['strategy' => 'existing', 'levels' => $config['external_levels']]);
             foreach ($config['external_levels'] as $definition) {
+                if (!is_array($definition)) {
+                    throw new InvalidArgumentException('Malformed hybrid external mapping');
+                }
                 if (($definition['write_name'] ?? false) || ($definition['write_parent'] ?? false)) {
                     throw new InvalidArgumentException('Hybrid crosswalk targets are read-only');
                 }
