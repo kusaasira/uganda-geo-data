@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Uganda\Laravel;
 
 use Illuminate\Support\ServiceProvider;
+use Uganda\Laravel\Commands\AbortCommand;
 use Uganda\Laravel\Commands\DiscoverCommand;
 use Uganda\Laravel\Commands\SetupCommand;
 use Uganda\Laravel\Commands\StatusCommand;
@@ -25,6 +26,7 @@ final class UgandaGeoServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->commands([
+                AbortCommand::class,
                 DiscoverCommand::class,
                 SetupCommand::class,
                 SyncCommand::class,
