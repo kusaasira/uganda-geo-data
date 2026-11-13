@@ -13,7 +13,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 use Uganda\Laravel\Runtime;
-use Uganda\Sync\SyncExecutor;
+use Uganda\Sync\ResumableSyncExecutor;
 
 final class ApplyApprovedSync implements ShouldQueue
 {
@@ -31,6 +31,7 @@ final class ApplyApprovedSync implements ShouldQueue
         public string $artifactPrefix,
         public string $approvedHash,
         public string $scope,
+        public int $batchSize = 200,
     ) {
     }
 
@@ -65,7 +66,11 @@ final class ApplyApprovedSync implements ShouldQueue
             !hash_equals($this->approvedHash, $plan['plan_hash'])) {
             throw new RuntimeException('Pinned plan does not match its approval token');
         }
-        (new SyncExecutor(Runtime::pdo(), Runtime::mapping(), $this->scope))
-            ->apply($snapshot, $plan, $this->approvedHash);
+        $result = (new ResumableSyncExecutor(Runtime::pdo(), Runtime::mapping(), $this->scope))
+            ->applyNext($snapshot, $plan, $this->approvedHash, $this->batchSize);
+        if ($result['status'] === 'running') {
+            self::dispatch($this->disk, $this->artifactPrefix, $this->approvedHash,
+                $this->scope, $this->batchSize)->afterCommit();
+        }
     }
 }
