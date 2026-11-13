@@ -39,6 +39,12 @@ final class SyncExecutor
 
         $this->pdo->beginTransaction();
         try {
+            $prior = $this->pdo->prepare('SELECT plan_hash FROM uganda_geo_sync_runs WHERE plan_hash = ?');
+            $prior->execute([$approvedPlanHash]);
+            if ($prior->fetchColumn() !== false) {
+                $this->pdo->commit();
+                return ['status' => 'already_applied', 'plan_hash' => $approvedPlanHash, 'operations' => 0];
+            }
             $fresh = (new SyncPlanner($this->pdo, $this->mapping, $this->scope))->plan($snapshot);
             if (!hash_equals($approvedPlanHash, $fresh['plan_hash'])) {
                 throw new RuntimeException('Stale sync plan: source, mapping or database state changed');
@@ -48,9 +54,9 @@ final class SyncExecutor
             }
 
             $statement = $this->pdo->prepare('INSERT INTO uganda_geo_sync_runs
-                (plan_hash, snapshot_hash, mapping_hash, applied_at, operation_count) VALUES (?, ?, ?, ?, ?)');
+                (plan_hash, mapping_scope, snapshot_hash, mapping_hash, applied_at, operation_count) VALUES (?, ?, ?, ?, ?, ?)');
             $statement->execute([
-                $fresh['plan_hash'], $fresh['snapshot_hash'], $fresh['mapping_hash'],
+                $fresh['plan_hash'], $this->scope, $fresh['snapshot_hash'], $fresh['mapping_hash'],
                 gmdate('Y-m-d\TH:i:s\Z'), count($fresh['operations']),
             ]);
 
