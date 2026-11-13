@@ -105,7 +105,11 @@ final class SyncPlanner
             $oldParent = isset($definition['parent']) ? $before[$definition['parent']] : null;
             if (isset($definition['parent'])) {
                 if ($unit['parent_id'] !== null) {
-                    $newParent = $approvedKeys[$definition['parent_level']][$unit['parent_id']] ?? null;
+                    $parentLevel = $definition['parent_level'] ?? null;
+                    if ($parentLevel === null) {
+                        throw new RuntimeException('Missing parent level for mapped foreign key');
+                    }
+                    $newParent = $approvedKeys[$parentLevel][$unit['parent_id']] ?? null;
                     if ($newParent === null) {
                         $conflicts[] = ['source_key' => $key, 'reason' => 'Unmapped target parent'];
                         continue;
@@ -151,11 +155,6 @@ final class SyncPlanner
             'unchanged' => $unchanged,
         ];
         $plan['plan_hash'] = hash('sha256', json_encode($plan, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
-        /** @var array{format_version:int,scope:string,strategy:string,unmapped_policy:string,
-         *     snapshot_id:string,snapshot_hash:string,mapping_hash:string,
-         *     operations:list<array<string,mixed>>,conflicts:list<array<string,string>>,
-         *     unmapped:int,unchanged:int,plan_hash:string} $plan
-         */
         return $plan;
     }
 
@@ -184,7 +183,11 @@ final class SyncPlanner
                     FROM $table WHERE $keyColumn IN ($placeholders)");
                 $statement->execute($batch);
                 while (($row = $statement->fetch(PDO::FETCH_ASSOC)) !== false) {
-                    $key = (string) $row[$definition['key']];
+                    $nativeKey = $row[$definition['key']] ?? null;
+                    if (!is_string($nativeKey) && !is_int($nativeKey)) {
+                        throw new RuntimeException('Invalid mapped local primary key');
+                    }
+                    $key = (string) $nativeKey;
                     if (isset($result[$level][$key])) {
                         throw new RuntimeException('Nonunique local primary key encountered');
                     }

@@ -135,6 +135,9 @@ final class SyncExecutor
             $values[] = $operation['after_name'];
         }
         if (($operation['update_parent'] ?? false) === true) {
+            if (!isset($def['parent'])) {
+                throw new RuntimeException('Parent update requires an explicit mapped parent column');
+            }
             $column = $inspector->quote($def['parent']);
             $set[] = "$column = ?";
             $values[] = $operation['after_parent'];

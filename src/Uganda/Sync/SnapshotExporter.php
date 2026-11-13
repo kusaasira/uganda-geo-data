@@ -39,7 +39,7 @@ final class SnapshotExporter
                 if (fputcsv($handle, ['snapshot_id', 'id', 'level', 'name', 'parent_id', 'source_id', 'source_record_id', 'lifecycle_status']) === false) {
                     throw new RuntimeException('Cannot write CSV header');
                 }
-                foreach ($snapshot['units'] as $unit) {
+                foreach ($units as $unit) {
                     $name = $unit['name'];
                     if (preg_match('/^\s*[=+\-@]/u', $name)) {
                         $name = "'" . $name;

@@ -17,13 +17,13 @@ final class SchemaInspector
     /** @return array<string, list<string>> */
     public function tables(): array
     {
-        $driver = (string) $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+        $driver = $this->driver();
         if ($driver === 'sqlite') {
             $rows = $this->queryRows("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name");
             $nameField = 'name';
         } elseif ($driver === 'mysql') {
-            $rows = $this->queryRows("SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE' ORDER BY table_name");
-            $nameField = 'table_name';
+            $rows = $this->queryRows("SELECT table_name AS name FROM information_schema.tables WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE' ORDER BY table_name");
+            $nameField = 'name';
         } elseif ($driver === 'pgsql') {
             $rows = $this->queryRows("SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_type = 'BASE TABLE' ORDER BY table_name");
             $nameField = 'table_name';
@@ -50,14 +50,14 @@ final class SchemaInspector
     public function columns(string $table): array
     {
         MappingDefinition::assertIdentifier($table);
-        $driver = (string) $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+        $driver = $this->driver();
         if ($driver === 'sqlite') {
             $rows = $this->queryRows('PRAGMA table_info("' . $table . '")');
             $field = 'name';
         } elseif ($driver === 'mysql') {
-            $rows = $this->preparedRows('SELECT column_name FROM information_schema.columns
+            $rows = $this->preparedRows('SELECT column_name AS name FROM information_schema.columns
                 WHERE table_schema = DATABASE() AND table_name = ? ORDER BY ordinal_position', [$table]);
-            $field = 'column_name';
+            $field = 'name';
         } elseif ($driver === 'pgsql') {
             $rows = $this->preparedRows('SELECT column_name FROM information_schema.columns
                 WHERE table_schema = current_schema() AND table_name = ? ORDER BY ordinal_position', [$table]);
@@ -129,16 +129,16 @@ final class SchemaInspector
     {
         MappingDefinition::assertIdentifier($table);
         MappingDefinition::assertIdentifier($key);
-        $driver = (string) $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+        $driver = $this->driver();
         $valid = false;
         if ($driver === 'sqlite') {
             $rows = $this->queryRows('PRAGMA table_info("' . $table . '")');
-            $pk = array_values(array_filter($rows, static fn (array $row): bool => (int) ($row['pk'] ?? 0) > 0));
+            $pk = array_values(array_filter($rows, static fn (array $row): bool => is_numeric($row['pk'] ?? null) && (int) $row['pk'] > 0));
             $valid = count($pk) === 1 && $pk[0]['name'] === $key;
             if (!$valid) {
                 $indexes = $this->queryRows('PRAGMA index_list("' . $table . '")');
                 foreach ($indexes as $index) {
-                    if ((int) ($index['unique'] ?? 0) !== 1 || !is_string($index['name'] ?? null)) {
+                    if (!is_numeric($index['unique'] ?? null) || (int) $index['unique'] !== 1 || !is_string($index['name'] ?? null)) {
                         continue;
                     }
                     $indexName = str_replace('"', '""', $index['name']);
@@ -173,19 +173,28 @@ final class SchemaInspector
     public function assertTransactional(string $table): void
     {
         MappingDefinition::assertIdentifier($table);
-        if ((string) $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql') {
-            $rows = $this->preparedRows('SELECT engine FROM information_schema.tables
+        if ($this->driver() === 'mysql') {
+            $rows = $this->preparedRows('SELECT engine AS engine FROM information_schema.tables
                 WHERE table_schema = DATABASE() AND table_name = ?', [$table]);
-            if (count($rows) !== 1 || strtolower((string) $rows[0]['engine']) !== 'innodb') {
+            if (count($rows) !== 1 || (!is_string($rows[0]['engine'] ?? null) || strtolower($rows[0]['engine']) !== 'innodb')) {
                 throw new RuntimeException('Existing target must use the transactional InnoDB engine');
             }
         }
     }
 
+    private function driver(): string
+    {
+        $driver = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+        if (!is_string($driver)) {
+            throw new RuntimeException('Database driver is not a string');
+        }
+        return $driver;
+    }
+
     public function quote(string $identifier): string
     {
         MappingDefinition::assertIdentifier($identifier);
-        $driver = (string) $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+        $driver = $this->driver();
         if ($driver === 'mysql') {
             return chr(96) . $identifier . chr(96);
         }
@@ -202,7 +211,16 @@ final class SchemaInspector
         if (!$statement instanceof PDOStatement) {
             throw new RuntimeException('Schema metadata query failed');
         }
-        return $statement->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $result = [];
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                throw new RuntimeException('Invalid schema metadata row');
+            }
+            /** @var array<string, mixed> $row */
+            $result[] = $row;
+        }
+        return $result;
     }
 
     /**

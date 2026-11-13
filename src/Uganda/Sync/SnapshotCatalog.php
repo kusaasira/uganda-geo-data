@@ -51,7 +51,7 @@ final class SnapshotCatalog
             if (!is_array($errors)) {
                 throw new InvalidArgumentException('Invalid canonical snapshot');
             }
-            throw new InvalidArgumentException('Invalid canonical snapshot: ' . implode('; ', array_map('strval', $errors)));
+            throw new InvalidArgumentException('Invalid canonical snapshot: ' . implode('; ', array_map(static fn (mixed $error): string => is_string($error) ? $error : 'invalid field', $errors)));
         }
         return $snapshot;
     }
