@@ -55,6 +55,33 @@ final class IdentityRegistry
         }
     }
 
+    /**
+     * Fetch approved mappings in one query. Use source identity, level and configured
+     * target table as a combined key, never just a place name or raw numeric code.
+     *
+     * @return array<string, array<string, string>>
+     */
+    public function allMappedKeys(): array
+    {
+        $statement = $this->pdo->prepare('SELECT source_hash, source_key, level, target_table, target_key
+            FROM uganda_geo_identity_maps WHERE mapping_scope = ? AND approved = 1');
+        $statement->execute([$this->scope]);
+        $keys = [];
+        $definitions = $this->mapping->levels();
+        while (($row = $statement->fetch(PDO::FETCH_ASSOC)) !== false) {
+            $level = $row['level'];
+            if (!isset($definitions[$level]) || $definitions[$level]['table'] !== $row['target_table']) {
+                continue;
+            }
+            $source = $row['source_key'];
+            if (!hash_equals($row['source_hash'], hash('sha256', $source))) {
+                throw new RuntimeException('Corrupt approved identity digest');
+            }
+            $keys[$level][$source] = (string) $row['target_key'];
+        }
+        return $keys;
+    }
+
     public function mappedKey(string $sourceKey, string $level): ?string
     {
         $definition = $this->mapping->levels()[$level] ?? null;

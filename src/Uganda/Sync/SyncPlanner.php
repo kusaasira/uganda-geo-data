@@ -32,6 +32,8 @@ final class SyncPlanner
         $strategy = $this->mapping->strategy();
         $definitions = $this->mapping->levels();
         $registry = new IdentityRegistry($this->pdo, $this->mapping, $this->scope);
+        $approvedKeys = $strategy === 'existing' ? $registry->allMappedKeys() : [];
+        $targetRows = $strategy === 'existing' ? $this->loadTargetRows($approvedKeys, $inspector) : [];
         $existingManaged = [];
         if ($strategy !== 'existing') {
             $query = $this->pdo->query('SELECT source_hash, source_key, level, name, parent_hash FROM uganda_geo_units');
@@ -79,19 +81,13 @@ final class SyncPlanner
             }
 
             $definition = $definitions[$level];
-            $targetKey = $registry->mappedKey($key, $level);
+            $targetKey = $approvedKeys[$level][$key] ?? null;
             if ($targetKey === null) {
                 ++$unmapped;
                 continue;
             }
-            $table = $inspector->quote($definition['table']);
-            $idColumn = $inspector->quote($definition['key']);
-            $nameColumn = $inspector->quote($definition['name']);
-            $parentColumn = isset($definition['parent']) ? ', ' . $inspector->quote($definition['parent']) : '';
-            $statement = $this->pdo->prepare("SELECT $idColumn, $nameColumn$parentColumn FROM $table WHERE $idColumn = ?");
-            $statement->execute([$targetKey]);
-            $before = $statement->fetch(PDO::FETCH_ASSOC);
-            if ($before === false || $statement->fetch(PDO::FETCH_ASSOC) !== false) {
+            $before = $targetRows[$level][$targetKey] ?? null;
+            if ($before === null) {
                 $conflicts[] = ['source_key' => $key, 'reason' => 'Missing or nonunique approved local record'];
                 continue;
             }
@@ -99,7 +95,7 @@ final class SyncPlanner
             $oldParent = isset($definition['parent']) ? $before[$definition['parent']] : null;
             if (isset($definition['parent'])) {
                 if ($unit['parent_id'] !== null) {
-                    $newParent = $registry->mappedKey($unit['parent_id'], $definition['parent_level']);
+                    $newParent = $approvedKeys[$definition['parent_level']][$unit['parent_id']] ?? null;
                     if ($newParent === null) {
                         $conflicts[] = ['source_key' => $key, 'reason' => 'Unmapped target parent'];
                         continue;
@@ -146,5 +142,41 @@ final class SyncPlanner
         ];
         $plan['plan_hash'] = hash('sha256', json_encode($plan, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
         return $plan;
+    }
+
+    /**
+     * Only retrieve named, already reviewed destination rows. Bound parameters
+     * and batched IN queries avoid unbounded per-location network round trips.
+     *
+     * @param array<string, array<string, string>> $approvedKeys
+     * @return array<string, array<string, array<string, mixed>>>
+     */
+    private function loadTargetRows(array $approvedKeys, SchemaInspector $inspector): array
+    {
+        $result = [];
+        foreach ($this->mapping->levels() as $level => $definition) {
+            $keys = array_values(array_unique(array_values($approvedKeys[$level] ?? [])));
+            if ($keys === []) {
+                continue;
+            }
+            $table = $inspector->quote($definition['table']);
+            $keyColumn = $inspector->quote($definition['key']);
+            $nameColumn = $inspector->quote($definition['name']);
+            $parentColumn = isset($definition['parent']) ? ', ' . $inspector->quote($definition['parent']) : '';
+            foreach (array_chunk($keys, 200) as $batch) {
+                $placeholders = implode(', ', array_fill(0, count($batch), '?'));
+                $statement = $this->pdo->prepare("SELECT $keyColumn, $nameColumn$parentColumn
+                    FROM $table WHERE $keyColumn IN ($placeholders)");
+                $statement->execute($batch);
+                while (($row = $statement->fetch(PDO::FETCH_ASSOC)) !== false) {
+                    $key = (string) $row[$definition['key']];
+                    if (isset($result[$level][$key])) {
+                        throw new RuntimeException('Nonunique local primary key encountered');
+                    }
+                    $result[$level][$key] = $row;
+                }
+            }
+        }
+        return $result;
     }
 }
