@@ -10,7 +10,7 @@ use InvalidArgumentException;
  * @phpstan-type LevelMapping array{table: string, key: string, name: string,
  *     parent?: string, parent_level?: string, scope_column?: string, write_name?: bool, write_parent?: bool}
  * @phpstan-type MappingConfig array{strategy: string, levels: array<string, LevelMapping>,
- *     unmapped_policy?: string}
+ *     unmapped_policy?: string, external_levels?: array<string, LevelMapping>}
  */
 final class MappingDefinition
 {
@@ -64,6 +64,32 @@ final class MappingDefinition
                 }
             }
         }
+        if ($config['strategy'] !== 'existing') {
+            foreach ($config['levels'] as $definition) {
+                if ($definition['table'] !== 'uganda_geo_units' ||
+                    $definition['key'] !== 'source_key' ||
+                    $definition['name'] !== 'name' ||
+                    (isset($definition['parent']) && $definition['parent'] !== 'parent_hash') ||
+                    isset($definition['scope_column']) ||
+                    ($definition['write_name'] ?? false) ||
+                    ($definition['write_parent'] ?? false)) {
+                    throw new InvalidArgumentException('Managed and hybrid source levels must use Uganda Geo owned columns');
+                }
+            }
+        }
+        if ($config['strategy'] === 'hybrid' && isset($config['external_levels'])) {
+            if (!is_array($config['external_levels']) || $config['external_levels'] === []) {
+                throw new InvalidArgumentException('Hybrid external levels must be a nonempty mapping');
+            }
+            new self(['strategy' => 'existing', 'levels' => $config['external_levels']]);
+            foreach ($config['external_levels'] as $definition) {
+                if (($definition['write_name'] ?? false) || ($definition['write_parent'] ?? false)) {
+                    throw new InvalidArgumentException('Hybrid crosswalk targets are read-only');
+                }
+            }
+        } elseif (isset($config['external_levels'])) {
+            throw new InvalidArgumentException('External levels are supported only by hybrid integration');
+        }
         /** @var MappingConfig $config */
         $this->config = $config;
     }
@@ -98,6 +124,24 @@ final class MappingDefinition
     public function levels(): array
     {
         return $this->config['levels'];
+    }
+
+    /** @return array<string, LevelMapping> */
+    public function externalLevels(): array
+    {
+        return $this->config['external_levels'] ?? [];
+    }
+
+    /** @return array<string, LevelMapping> */
+    public function targetLevels(): array
+    {
+        if ($this->strategy() === 'hybrid') {
+            return $this->externalLevels();
+        }
+        if ($this->strategy() === 'existing') {
+            return $this->levels();
+        }
+        throw new InvalidArgumentException('Managed source tables do not require external identity approvals');
     }
 
     public function unmappedPolicy(): string
