@@ -37,6 +37,11 @@ final class SyncExecutor
         $snapshotHash = $catalog->digest($snapshot);
         if (($approvedPlan['snapshot_hash'] ?? null) !== $snapshotHash ||
             ($approvedPlan['mapping_hash'] ?? null) !== $this->mapping->fingerprint() ||
+            ($approvedPlan['identity_hash'] ?? null) !== IdentityFingerprint::forMapping(
+                $this->pdo,
+                $this->mapping,
+                $this->scope
+            ) ||
             ($approvedPlan['scope'] ?? null) !== $this->scope ||
             ($approvedPlan['strategy'] ?? null) !== $this->mapping->strategy()) {
             throw new InvalidArgumentException('Approved sync plan belongs to a different source or target configuration');
