@@ -233,6 +233,15 @@ final class SchemaInspector
         if (!$statement instanceof PDOStatement || !$statement->execute($values)) {
             throw new RuntimeException('Schema metadata query failed');
         }
-        return $statement->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $result = [];
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                throw new RuntimeException('Invalid schema metadata row');
+            }
+            /** @var array<string, mixed> $row */
+            $result[] = $row;
+        }
+        return $result;
     }
 }
