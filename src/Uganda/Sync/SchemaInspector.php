@@ -123,6 +123,16 @@ final class SchemaInspector
                 $this->assertTransactional($definition['table']);
             }
         }
+        if ($mapping->strategy() !== 'existing') {
+            $managedColumns = $tables['uganda_geo_units'] ?? [];
+            foreach (['source_hash', 'source_key', 'level', 'name', 'parent_hash', 'snapshot_hash'] as $field) {
+                if (!in_array($field, $managedColumns, true)) {
+                    throw new RuntimeException('Missing managed geography field: ' . $field);
+                }
+            }
+            $this->assertUniqueKey('uganda_geo_units', 'source_hash');
+            $this->assertTransactional('uganda_geo_units');
+        }
     }
 
     public function assertUniqueKey(string $table, string $key): void
