@@ -39,8 +39,19 @@ final class SyncCommand extends Command
             $plan = (new SyncPlanner(Runtime::pdo(), $mapping, $scope))->plan($snapshot);
             if ($this->option('output')) {
                 (new SyncPlanFileWriter())->writeNew($plan, $this->option('output'));
+                $this->line(json_encode([
+                    'status' => 'planned',
+                    'plan_hash' => $plan['plan_hash'],
+                    'operations' => count($plan['operations']),
+                    'conflicts' => count($plan['conflicts']),
+                    'unmapped' => $plan['unmapped'],
+                    'unchanged' => $plan['unchanged'],
+                    'missing_from_source' => count($plan['missing_from_source']),
+                    'plan_file' => $this->option('output'),
+                ], JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+            } else {
+                $this->line(json_encode($plan, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
             }
-            $this->line(json_encode($plan, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
             return self::SUCCESS;
         }
         if (!is_string($planPath) || $planPath === '' || !is_string($approval) || $approval === '') {
