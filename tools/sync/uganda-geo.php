@@ -11,6 +11,7 @@ use Uganda\Sync\SnapshotExporter;
 use Uganda\Sync\SyncExecutor;
 use Uganda\Sync\ResumableSyncExecutor;
 use Uganda\Sync\SyncPlanner;
+use Uganda\Sync\SyncLease;
 
 $packageRoot = dirname(__DIR__, 2);
 $checkoutAutoload = $packageRoot . '/vendor/autoload.php';
@@ -36,14 +37,16 @@ foreach (array_slice($argv, 2) as $argument) {
     $args[$key] = $value;
 }
 $action = $argv[1] ?? '';
-$usage = "Usage: php tools/sync/uganda-geo.php <discover|install|plan|apply|approve-map|export|status> [--mapping=file.json] [--snapshot=file.json] [--output=path] [--plan=file.json] [--approve=SHA256] [--batch-size=200]\n";
-if (!in_array($action, ['discover', 'install', 'plan', 'apply', 'approve-map', 'export', 'status'], true)) {
+$usage = "Usage: php tools/sync/uganda-geo.php <discover|install|plan|apply|approve-map|export|status|abort> [--mapping=file.json] [--snapshot=file.json] [--output=path] [--plan=file.json] [--approve=SHA256] [--batch-size=200]\n";
+if (!in_array($action, ['discover', 'install', 'plan', 'apply', 'approve-map', 'export', 'status', 'abort'], true)) {
     fwrite(STDERR, $usage);
     exit(2);
 }
 try {
     $catalog = new SnapshotCatalog();
-    $snapshot = isset($args['snapshot']) ? $catalog->fromFile($args['snapshot']) : $catalog->bundled();
+    $snapshot = in_array($action, ['export', 'plan', 'apply'], true)
+        ? (isset($args['snapshot']) ? $catalog->fromFile($args['snapshot']) : $catalog->bundled())
+        : [];
     $mapping = MappingDefinition::managed();
     if (isset($args['mapping'])) {
         $raw = file_get_contents($args['mapping']);
@@ -114,6 +117,12 @@ try {
                 $result = (new SyncExecutor($pdo, $mapping, $scope))
                     ->apply($snapshot, $approved, $args['approve']);
             }
+        } elseif ($action === 'abort') {
+            $hash = $args['approve'] ?? '';
+            if (!is_string($hash) || ($args['ack-partial'] ?? null) !== 'yes') {
+                throw new RuntimeException('Abort requires --approve=PLAN_HASH --ack-partial=yes; committed rows will remain');
+            }
+            $result = (new SyncLease($pdo))->abandon($hash, true);
         } elseif ($action === 'approve-map') {
             foreach (['source', 'level', 'target', 'reviewer'] as $key) {
                 if (!isset($args[$key])) {
@@ -128,7 +137,8 @@ try {
             $query = $pdo->query('SELECT plan_hash, snapshot_hash, mapping_hash, applied_at, operation_count FROM uganda_geo_sync_runs ORDER BY applied_at DESC LIMIT 20');
             $checkpointQuery = $pdo->query('SELECT plan_hash, mapping_scope, next_index, total_operations, status, updated_at FROM uganda_geo_sync_checkpoints ORDER BY updated_at DESC LIMIT 20');
             $result = ['runs' => $query->fetchAll(PDO::FETCH_ASSOC),
-                'checkpoints' => $checkpointQuery->fetchAll(PDO::FETCH_ASSOC)];
+                'checkpoints' => $checkpointQuery->fetchAll(PDO::FETCH_ASSOC),
+                'active_lease' => (new SyncLease($pdo))->active()];
         }
     }
     fwrite(STDOUT, json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n");
