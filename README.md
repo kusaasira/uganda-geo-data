@@ -169,9 +169,9 @@ Supported levels: `district`, `county`, `subcounty`, `parish` and `village`. A n
 
 See the [complete v2 API reference](docs/api/v2-reference.md) for return contracts, errors and more examples.
 
-## Development and v2.0.1 core qualification
+## v2.0.1 core qualification
 
-The released package remains v2.0.0 until the v2.0.1 candidate passes its complete release checks. The unreleased v2.0.1 branch includes independent PHP memory profiling and seeded property-based regression tests.
+The published v2.0.1 release includes independent PHP memory profiling, seeded property-based regression tests and cross-version qualification. The benchmark commands below can also be run on a development checkout.
 
 For a development checkout:
 
@@ -184,9 +184,9 @@ php -d memory_limit=128M tools/benchmarks/instance-churn.php 12
 
 See [v2.0.1 memory and property qualification](docs/releases/v2.0.1-memory-and-properties.md) and [core performance research](docs/releases/core-performance-research.md) for scenarios, limits and verification methodology. Passing benchmarks does not guarantee fixed latency on every machine.
 
-## Unicode-aware and fuzzy search (v2.0.1 candidate)
+## Unicode-aware and fuzzy search (v2.0.1)
 
-The unreleased v2.0.1 branch adds Unicode-normalized exact search, prefix search and typo-tolerant suggestions. The optional PHP `ext-intl` extension provides ICU NFKC case folding and canonical Unicode normalization. **It is not required for ordinary v2 searches or package installation.** The new methods fail explicitly when `ext-intl` is unavailable.
+The published v2.0.1 release adds Unicode-normalized exact search, prefix search and typo-tolerant suggestions. The optional PHP `ext-intl` extension provides ICU NFKC case folding and canonical Unicode normalization. **It is not required for ordinary v2 searches or package installation.** The new methods fail explicitly when `ext-intl` is unavailable.
 
 ```php
 use Uganda\Uganda;
@@ -209,11 +209,11 @@ foreach ($suggestions as $suggestion) {
 
 All suggestions preserve source IDs, duplicate names and original model instances. They are **candidates**, never authoritative identity resolution. Maximum typo distance is 3. The default is 2 and fuzzy results are capped at 100 per request.
 
-See the [Unicode and fuzzy search specification](docs/releases/v2.0.1-unicode-fuzzy-qualification.md) for matching semantics, ICU requirements, stable ranking, input limits and reproducible latency benchmarks. This capability remains part of the **same v2.0.1 patch PR**, not a separate package or Laravel release.
+See the [Unicode and fuzzy search specification](docs/releases/v2.0.1-unicode-fuzzy-qualification.md) for matching semantics, ICU requirements, stable ranking, input limits and reproducible latency benchmarks. These APIs are included in the **published v2.0.1 release**.
 
 ## Laravel integration
 
-The production library has **no Illuminate dependency** and does not register a service provider. Use it directly through Composer autoloading:
+The geographic lookup core has **no mandatory Illuminate dependency**. Existing standalone access remains supported. The upcoming v2.0.2 integration adds an optional Laravel provider for database synchronization commands and queue dispatch without requiring a framework for basic lookup use:
 
 ```php
 use Uganda\Uganda;
@@ -223,6 +223,45 @@ $districts = $geo->districts();
 ```
 
 Laravel container integration is covered by independent consumer smoke tests. No service-provider configuration or auto-discovery is required.
+
+## Database integration and synchronization (v2.0.2 development)
+
+The v2.0.2 development branch introduces **opt-in administrative data integration** for existing application databases. Nothing is imported, migrated or synchronized automatically during Composer installation or application boot.
+
+Three strategies are supported:
+
+- **Managed:** explicitly create dedicated Uganda Geo tables and import administrative records without altering existing application locality tables.
+- **Existing:** map a chosen local table, unique key, display name and optional parent and tenant scope columns. Local identities must be approved before updates.
+- **Hybrid:** preserve existing application records while maintaining a separate source-qualified Uganda Geo dataset. Approved crosswalk metadata can be stored separately.
+
+An installed standalone package exposes the `vendor/bin/uganda-geo` CLI. In a repository checkout the same commands can be run through `php tools/sync/uganda-geo.php`:
+
+```bash
+# No database required: export a canonical snapshot to a new file
+vendor/bin/uganda-geo export --format=json --output=uganda-locations.json
+
+# After setting UGANDA_GEO_DSN and optional DB user/password environment variables
+vendor/bin/uganda-geo discover
+vendor/bin/uganda-geo install
+vendor/bin/uganda-geo plan --output=plan.json
+
+# Apply only after reviewing the source identity, mappings and dry-run changes
+vendor/bin/uganda-geo apply --plan=plan.json --approve=PLAN_HASH
+
+# Optional: commit bounded batches with resumable checkpoints
+vendor/bin/uganda-geo apply --plan=plan.json --approve=PLAN_HASH --batch-size=200
+vendor/bin/uganda-geo status
+```
+
+Existing database mappings are supplied as reviewed JSON files using `--mapping=path/to/mapping.json`. Unlike managed imports, existing mode **never creates arbitrary local primary keys or automatically matches location names**. Each source-to-target record is registered through a separate approval step. The default behavior blocks unresolved mappings; an explicit `unmapped_policy: ignore` can synchronize only reviewed matches while reporting omissions.
+
+Laravel consumers may publish the provider configuration and use `php artisan uganda-geo:setup`, `uganda-geo:discover`, `uganda-geo:sync` and `uganda-geo:status`. An optional interactive wizard generates a local mapping file for review. Production commands never require interactive prompts. Queue mode pins approved plan and source artifacts to a configured **private storage disk** that must be accessible to every worker. The queued worker executes checkpointed batches and resumes from durable progress after a retry.
+
+**Atomicity:** Default synchronous execution runs in one database transaction. Explicit batch mode commits each batch and its checkpoint atomically, but does **not** provide whole-run rollback after earlier batches have committed. No mode automatically deletes historical or unmatched local records.
+
+**Data currency:** Syncing the bundled dataset reproduces the historical snapshot. It does not certify current national administrative coverage or establish that its source-local IDs are official government codes.
+
+Read [standalone integration](docs/integrations/v2.0.2-standalone.md) and [schema and identity safeguards](docs/integrations/v2.0.2-schema-and-identity.md) for configuration, approval and recovery behavior.
 
 ## Data sources and attribution
 
