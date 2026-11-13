@@ -41,13 +41,8 @@ final class ResumableSyncExecutor
         $sourceHash = $catalog->digest($snapshot);
         $mappingHash = $this->mapping->fingerprint();
         $registry = new IdentityRegistry($this->pdo, $this->mapping, $this->scope);
-        $approvedKeys = $this->mapping->strategy() === 'existing' ? $registry->allMappedKeys() : [];
-        foreach ($approvedKeys as &$bySource) {
-            ksort($bySource);
-        }
-        unset($bySource);
-        ksort($approvedKeys);
-        $identityHash = hash('sha256', json_encode($approvedKeys, JSON_THROW_ON_ERROR));
+        $approvedKeys = $this->mapping->strategy() === 'managed' ? [] : $registry->allMappedKeys();
+        $identityHash = IdentityFingerprint::fromKeys($approvedKeys);
 
         if (!preg_match('/^[a-f0-9]{64}$/D', $approvedHash) ||
             ($approvedPlan['plan_hash'] ?? null) !== $approvedHash ||
