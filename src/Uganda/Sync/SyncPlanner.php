@@ -156,6 +156,9 @@ final class SyncPlanner
 
         if ($strategy !== 'existing') {
             foreach ($existingManaged as $stored) {
+                if (!isset($definitions[$stored['level']])) {
+                    continue;
+                }
                 if (!isset($seen[$stored['level']][$stored['source_key']])) {
                     $missing[] = ['level' => $stored['level'], 'source_key' => $stored['source_key']];
                 }
