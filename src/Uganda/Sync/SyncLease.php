@@ -93,7 +93,7 @@ final class SyncLease
             $row = $query->fetch(PDO::FETCH_ASSOC);
             if ($row === false || $row['status'] !== 'running' ||
                 (!is_int($row['next_index']) && !is_string($row['next_index'])) ||
-                strspn((string) $row['next_index'], '0123456789') !== strlen((string) $row['next_index'])) {
+                preg_match('/^(0|[1-9][0-9]*)$/D', (string) $row['next_index']) !== 1) {
                 throw new RuntimeException('Only a running checkpointed plan may be abandoned');
             }
             $position = (int) $row['next_index'];
@@ -108,9 +108,7 @@ final class SyncLease
             return ['status' => 'abandoned', 'plan_hash' => $planHash,
                 'committed_operations' => $position];
         } catch (Throwable $exception) {
-            if ($this->pdo->inTransaction()) {
-                $this->pdo->rollBack();
-            }
+            $this->rollbackIfActive();
             throw $exception;
         }
     }
@@ -129,6 +127,13 @@ final class SyncLease
             throw new RuntimeException('Corrupt synchronization lease metadata');
         }
         return ['plan_hash' => $row['plan_hash'], 'acquired_at' => $row['acquired_at']];
+    }
+
+    private function rollbackIfActive(): void
+    {
+        if ($this->pdo->inTransaction()) {
+            $this->pdo->rollBack();
+        }
     }
 
     public static function assertHash(string $planHash): void
