@@ -21,7 +21,7 @@ final class SyncPlanner
      *
      * @param array<string, mixed> $snapshot
      * @return array{format_version: int, scope: string, strategy: string, unmapped_policy: string,
-     *     snapshot_id: string, snapshot_hash: string, mapping_hash: string,
+     *     snapshot_id: string, snapshot_hash: string, mapping_hash: string, identity_hash: string,
      *     operations: list<array<string, mixed>>, conflicts: list<array<string, string>>,
      *     unmapped: int, unchanged: int, plan_hash: string}
      */
@@ -40,6 +40,12 @@ final class SyncPlanner
         $definitions = $this->mapping->levels();
         $registry = new IdentityRegistry($this->pdo, $this->mapping, $this->scope);
         $approvedKeys = $strategy === 'existing' ? $registry->allMappedKeys() : [];
+        foreach ($approvedKeys as &$keysBySource) {
+            ksort($keysBySource);
+        }
+        unset($keysBySource);
+        ksort($approvedKeys);
+        $identityHash = hash('sha256', json_encode($approvedKeys, JSON_THROW_ON_ERROR));
         $targetRows = $strategy === 'existing' ? $this->loadTargetRows($approvedKeys, $inspector) : [];
         $existingManaged = [];
         if ($strategy !== 'existing') {
@@ -153,6 +159,7 @@ final class SyncPlanner
             'snapshot_id' => $snapshotId,
             'snapshot_hash' => $snapshotHash,
             'mapping_hash' => $this->mapping->fingerprint(),
+            'identity_hash' => $identityHash,
             'operations' => $operations,
             'conflicts' => $conflicts,
             'unmapped' => $unmapped,
