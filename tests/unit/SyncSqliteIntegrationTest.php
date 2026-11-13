@@ -102,6 +102,26 @@ final class SyncSqliteIntegrationTest extends TestCase
     }
 
     #[Test]
+    public function reportsMissingSourceUnitsWithoutRetiringOrDeletingLocalRows(): void
+    {
+        (new SchemaInstaller($this->pdo))->install();
+        $mapping = MappingDefinition::managed();
+        $snapshot = $this->snapshot();
+        $original = (new SyncPlanner($this->pdo, $mapping))->plan($snapshot);
+        (new SyncExecutor($this->pdo, $mapping))->apply($snapshot, $original, $original['plan_hash']);
+
+        array_pop($snapshot['units']);
+        $updated = (new SyncPlanner($this->pdo, $mapping))->plan($snapshot);
+        self::assertSame([], $updated['operations']);
+        self::assertSame([
+            ['level' => 'county', 'source_key' => 'test:county:2'],
+        ], $updated['missing_from_source']);
+
+        (new SyncExecutor($this->pdo, $mapping))->apply($snapshot, $updated, $updated['plan_hash']);
+        self::assertSame(3, (int) $this->pdo->query('SELECT COUNT(*) FROM uganda_geo_units')->fetchColumn());
+    }
+
+    #[Test]
     public function discoversCandidatesButNeverAssumesTheyAreConfirmed(): void
     {
         $this->pdo->exec('CREATE TABLE geo_districts (uuid TEXT PRIMARY KEY, district_name TEXT)');
