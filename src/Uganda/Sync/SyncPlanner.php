@@ -23,7 +23,7 @@ final class SyncPlanner
      * @return array{format_version: int, scope: string, strategy: string, unmapped_policy: string,
      *     snapshot_id: string, snapshot_hash: string, mapping_hash: string, identity_hash: string,
      *     operations: list<array<string, mixed>>, conflicts: list<array<string, string>>,
-     *     unmapped: int, unchanged: int, plan_hash: string}
+     *     unmapped: int, unchanged: int, missing_from_source: list<array{level: string, source_key: string}>, plan_hash: string}
      */
     public function plan(array $snapshot): array
     {
@@ -66,6 +66,8 @@ final class SyncPlanner
         $conflicts = [];
         $unchanged = 0;
         $unmapped = 0;
+        $seen = [];
+        $missing = [];
         $snapshotHash = $catalog->digest($snapshot);
 
         foreach ($units as $unit) {
@@ -74,6 +76,7 @@ final class SyncPlanner
                 continue;
             }
             $key = $unit['id'];
+            $seen[$level][$key] = true;
             $sourceHash = hash('sha256', $key);
             if ($strategy !== 'existing') {
                 $desired = [
@@ -151,6 +154,24 @@ final class SyncPlanner
             ];
         }
 
+        if ($strategy !== 'existing') {
+            foreach ($existingManaged as $stored) {
+                if (!isset($seen[$stored['level']][$stored['source_key']])) {
+                    $missing[] = ['level' => $stored['level'], 'source_key' => $stored['source_key']];
+                }
+            }
+        } else {
+            foreach ($approvedKeys as $level => $keys) {
+                foreach ($keys as $sourceKey => $targetKey) {
+                    if (!isset($seen[$level][$sourceKey])) {
+                        $missing[] = ['level' => $level, 'source_key' => $sourceKey];
+                    }
+                }
+            }
+        }
+        usort($missing, static fn (array $a, array $b): int =>
+            strcmp($a['level'] . ':' . $a['source_key'], $b['level'] . ':' . $b['source_key']));
+
         $plan = [
             'format_version' => 1,
             'scope' => $this->scope,
@@ -164,6 +185,7 @@ final class SyncPlanner
             'conflicts' => $conflicts,
             'unmapped' => $unmapped,
             'unchanged' => $unchanged,
+            'missing_from_source' => $missing,
         ];
         $plan['plan_hash'] = hash('sha256', json_encode($plan, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
         return $plan;
