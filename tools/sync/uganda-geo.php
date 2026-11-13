@@ -9,6 +9,7 @@ use Uganda\Sync\SchemaInstaller;
 use Uganda\Sync\SnapshotCatalog;
 use Uganda\Sync\SnapshotExporter;
 use Uganda\Sync\SyncExecutor;
+use Uganda\Sync\ResumableSyncExecutor;
 use Uganda\Sync\SyncPlanner;
 
 $packageRoot = dirname(__DIR__, 2);
@@ -35,7 +36,7 @@ foreach (array_slice($argv, 2) as $argument) {
     $args[$key] = $value;
 }
 $action = $argv[1] ?? '';
-$usage = "Usage: php tools/sync/uganda-geo.php <discover|install|plan|apply|approve-map|export|status> [--mapping=file.json] [--snapshot=file.json] [--output=path] [--plan=file.json] [--approve=SHA256]\n";
+$usage = "Usage: php tools/sync/uganda-geo.php <discover|install|plan|apply|approve-map|export|status> [--mapping=file.json] [--snapshot=file.json] [--output=path] [--plan=file.json] [--approve=SHA256] [--batch-size=200]\n";
 if (!in_array($action, ['discover', 'install', 'plan', 'apply', 'approve-map', 'export', 'status'], true)) {
     fwrite(STDERR, $usage);
     exit(2);
@@ -102,7 +103,17 @@ try {
             if (!is_array($approved)) {
                 throw new RuntimeException('Invalid approved plan');
             }
-            $result = (new SyncExecutor($pdo, $mapping, $scope))->apply($snapshot, $approved, $args['approve']);
+            if (isset($args['batch-size'])) {
+                $batchSize = filter_var($args['batch-size'], FILTER_VALIDATE_INT);
+                if (!is_int($batchSize) || $batchSize < 1 || $batchSize > 1000) {
+                    throw new RuntimeException('Batch size must be an integer between 1 and 1000');
+                }
+                $result = (new ResumableSyncExecutor($pdo, $mapping, $scope))
+                    ->applyAll($snapshot, $approved, $args['approve'], $batchSize);
+            } else {
+                $result = (new SyncExecutor($pdo, $mapping, $scope))
+                    ->apply($snapshot, $approved, $args['approve']);
+            }
         } elseif ($action === 'approve-map') {
             foreach (['source', 'level', 'target', 'reviewer'] as $key) {
                 if (!isset($args[$key])) {
@@ -115,7 +126,9 @@ try {
             $result = ['status' => 'mapped', 'source_key' => $args['source']];
         } else {
             $query = $pdo->query('SELECT plan_hash, snapshot_hash, mapping_hash, applied_at, operation_count FROM uganda_geo_sync_runs ORDER BY applied_at DESC LIMIT 20');
-            $result = ['runs' => $query->fetchAll(PDO::FETCH_ASSOC)];
+            $checkpointQuery = $pdo->query('SELECT plan_hash, mapping_scope, next_index, total_operations, status, updated_at FROM uganda_geo_sync_checkpoints ORDER BY updated_at DESC LIMIT 20');
+            $result = ['runs' => $query->fetchAll(PDO::FETCH_ASSOC),
+                'checkpoints' => $checkpointQuery->fetchAll(PDO::FETCH_ASSOC)];
         }
     }
     fwrite(STDOUT, json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n");
