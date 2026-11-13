@@ -251,11 +251,16 @@ vendor/bin/uganda-geo apply --plan=plan.json --approve=PLAN_HASH
 # Optional: commit bounded batches with resumable checkpoints
 vendor/bin/uganda-geo apply --plan=plan.json --approve=PLAN_HASH --batch-size=200
 vendor/bin/uganda-geo status
+
+# Only for a stranded checkpointed run, after confirming partial-write retention:
+vendor/bin/uganda-geo abort --approve=PLAN_HASH --ack-partial=yes
 ```
 
 Existing database mappings are supplied as reviewed JSON files using `--mapping=path/to/mapping.json`. Unlike managed imports, existing mode **never creates arbitrary local primary keys or automatically matches location names**. Each source-to-target record is registered through a separate approval step. The default behavior blocks unresolved mappings; an explicit `unmapped_policy: ignore` can synchronize only reviewed matches while reporting omissions.
 
 Laravel consumers may publish the provider configuration and use `php artisan uganda-geo:setup`, `uganda-geo:discover`, `uganda-geo:sync` and `uganda-geo:status`. An optional interactive wizard generates a local mapping file for review. Production commands never require interactive prompts. Queue mode pins approved plan and source artifacts to a configured **private storage disk** that must be accessible to every worker. The queued worker executes checkpointed batches and resumes from durable progress after a retry.
+
+**Operational safety:** Database writes are serialized through a durable lease. A checkpointed run retains that lease across batches, and an explicit abort can release a stranded lease while retaining already committed rows. Approved dry-run plan files use owner-only permissions. Tenant and local-ID comparisons are exact even on case-insensitive database collations.
 
 **Atomicity:** Default synchronous execution runs in one database transaction. Explicit batch mode commits each batch and its checkpoint atomically, but does **not** provide whole-run rollback after earlier batches have committed. No mode automatically deletes historical or unmatched local records.
 
