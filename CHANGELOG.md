@@ -2,6 +2,31 @@
 
 All notable public API changes, maintenance improvements and source-data releases are recorded here. Package versions use [Semantic Versioning](https://semver.org/). Dataset reference dates and source identities are tracked independently from Composer versions.
 
+## [2.0.2] - Unreleased
+
+**Additive integration capabilities.** Existing PHP 8.2+ geographic lookup interfaces and the bundled legacy administrative snapshot remain unchanged. All database writes require an explicit integration setup and reviewed sync approval.
+
+### Added
+
+- Framework-independent PDO integration for MySQL/MariaDB, PostgreSQL and SQLite.
+- Read-only database schema discovery, configurable level-to-table mappings and optional tenant-scoped external identifiers.
+- Dedicated source-qualified geography, reviewed local identity crosswalk, synchronization run history and resumable checkpoint tables.
+- Canonical source snapshot validation, immutable SHA-256 manifests and portable JSON, NDJSON and CSV exports.
+- Explicit dry-run plans with before/after changes, unresolved identity counts and approval-bound execution.
+- Single-transaction synchronization and separately opt-in, checkpointed bounded batches with resumable failure recovery.
+- Standalone Composer executable and optional Laravel service provider, Artisan setup, inspection, synchronization and status commands.
+- Laravel queue integration with approved plan and source artifacts pinned to a private storage disk.
+- Real database CI coverage for MySQL 8.4, PostgreSQL 17 and SQLite alongside the existing PHP matrix and standalone/Laravel consumer checks.
+
+### Safety and compatibility
+
+- Composer installation and regular lookups never change a database.
+- Existing local primary keys are preserved. Unknown or duplicate names never authorize automatic identity matches.
+- Existing target records are never automatically deleted, retired or reassigned.
+- Transactional batch checkpoints are atomic per batch, **not across the entire multi-batch run**.
+- Tenant-scoped mappings require configured scope columns and caller-side authorization.
+- Historical package source IDs are not asserted to be official UBOS identifiers.
+
 ## [2.0.1] - 2026-11-12
 
 **Backward-compatible maintenance release.** The existing PHP 8.2+ public API, source IDs and bundled historical dataset remain intact. Advanced Unicode search is available through opt-in methods with optional `ext-intl`.
