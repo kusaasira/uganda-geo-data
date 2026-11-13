@@ -72,10 +72,15 @@ final class SyncExecutor
                 'unchanged' => $fresh['unchanged'],
             ];
         } catch (Throwable $exception) {
-            if ($this->pdo->inTransaction()) {
-                $this->pdo->rollBack();
-            }
+            $this->rollbackIfActive();
             throw $exception;
+        }
+    }
+
+    private function rollbackIfActive(): void
+    {
+        if ($this->pdo->inTransaction()) {
+            $this->pdo->rollBack();
         }
     }
 }
