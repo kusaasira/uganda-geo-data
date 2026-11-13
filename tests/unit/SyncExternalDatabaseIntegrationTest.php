@@ -34,7 +34,8 @@ final class SyncExternalDatabaseIntegrationTest extends TestCase
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         self::assertContains($pdo->getAttribute(PDO::ATTR_DRIVER_NAME), ['mysql', 'pgsql']);
 
-        foreach (['uganda_geo_sync_runs', 'uganda_geo_identity_maps', 'uganda_geo_units'] as $table) {
+        foreach (['uganda_geo_sync_leases', 'uganda_geo_sync_checkpoints',
+            'uganda_geo_sync_runs', 'uganda_geo_identity_maps', 'uganda_geo_units'] as $table) {
             $pdo->exec('DROP TABLE IF EXISTS ' . $table);
         }
 
@@ -89,7 +90,8 @@ final class SyncExternalDatabaseIntegrationTest extends TestCase
             self::assertSame(1, (int) $pdo->query("SELECT COUNT(*) FROM uganda_geo_units WHERE name = 'Repeated'")->fetchColumn());
             self::assertSame(1, (int) $pdo->query("SELECT COUNT(*) FROM uganda_geo_units WHERE name = 'Fixture A Revised'")->fetchColumn());
         } finally {
-            foreach (['uganda_geo_sync_runs', 'uganda_geo_identity_maps', 'uganda_geo_units'] as $table) {
+            foreach (['uganda_geo_sync_leases', 'uganda_geo_sync_checkpoints',
+            'uganda_geo_sync_runs', 'uganda_geo_identity_maps', 'uganda_geo_units'] as $table) {
                 $pdo->exec('DROP TABLE IF EXISTS ' . $table);
             }
         }
