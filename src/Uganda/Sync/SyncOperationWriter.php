@@ -43,9 +43,10 @@ final class SyncOperationWriter
             if (!is_array($after) || !is_array($before)) {
                 throw new RuntimeException('Invalid managed update operation');
             }
+            $nameMatch = $this->strictTextMatch('name');
             $statement = $this->pdo->prepare("UPDATE uganda_geo_units
                 SET level = ?, name = ?, parent_hash = ?, snapshot_hash = ?
-                WHERE source_hash = ? AND source_key = ? AND level = ? AND name = ?
+                WHERE source_hash = ? AND source_key = ? AND level = ? AND $nameMatch
                 AND COALESCE(parent_hash, '') = ?");
             $statement->execute([
                 $after['level'], $after['name'], $after['parent_hash'], $after['snapshot_hash'],
@@ -94,10 +95,10 @@ final class SyncOperationWriter
         $values[] = $operation['target_key'];
         if (isset($def['scope_column'])) {
             $scope = $inspector->quote($def['scope_column']);
-            $conditions[] = "$scope = ?";
+            $conditions[] = $this->strictTextMatch($scope);
             $values[] = $this->scope;
         }
-        $this->expectedCondition($conditions, $values, $name, $operation['before_name']);
+        $this->expectedCondition($conditions, $values, $name, $operation['before_name'], true);
         if (isset($def['parent'])) {
             $this->expectedCondition($conditions, $values, $inspector->quote($def['parent']), $operation['before_parent']);
         }
@@ -109,16 +110,31 @@ final class SyncOperationWriter
         }
     }
 
+    private function strictTextMatch(string $column): string
+    {
+        $driver = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+        if ($driver === 'mysql') {
+            return "CAST($column AS BINARY) = CAST(? AS BINARY)";
+        }
+        if ($driver === 'sqlite') {
+            return "$column COLLATE BINARY = ?";
+        }
+        if ($driver === 'pgsql') {
+            return 'CAST(' . $column . ' AS TEXT) COLLATE "C" = ?';
+        }
+        throw new RuntimeException('Unsupported database driver for exact text matching');
+    }
+
     /**
      * @param array<int, string> $conditions
      * @param array<int, mixed> $values
      */
-    private function expectedCondition(array &$conditions, array &$values, string $column, mixed $expected): void
+    private function expectedCondition(array &$conditions, array &$values, string $column, mixed $expected, bool $exactText = false): void
     {
         if ($expected === null) {
             $conditions[] = "$column IS NULL";
         } else {
-            $conditions[] = "$column = ?";
+            $conditions[] = $exactText ? $this->strictTextMatch($column) : "$column = ?";
             $values[] = $expected;
         }
     }
