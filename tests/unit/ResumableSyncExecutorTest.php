@@ -11,9 +11,9 @@ use RuntimeException;
 use Uganda\Sync\MappingDefinition;
 use Uganda\Sync\ResumableSyncExecutor;
 use Uganda\Sync\SchemaInstaller;
-use Uganda\Sync\SyncPlanner;
 use Uganda\Sync\SyncExecutor;
 use Uganda\Sync\SyncLease;
+use Uganda\Sync\SyncPlanner;
 
 final class ResumableSyncExecutorTest extends TestCase
 {
@@ -145,8 +145,10 @@ final class ResumableSyncExecutorTest extends TestCase
         self::assertNull((new SyncLease($this->pdo))->active());
 
         $nextPlan = (new SyncPlanner($this->pdo, $mapping))->plan($competing);
-        self::assertSame('applied',
-            (new SyncExecutor($this->pdo, $mapping))->apply($competing, $nextPlan, $nextPlan['plan_hash'])['status']);
+        self::assertSame(
+            'applied',
+            (new SyncExecutor($this->pdo, $mapping))->apply($competing, $nextPlan, $nextPlan['plan_hash'])['status']
+        );
     }
 
     #[Test]
