@@ -23,14 +23,16 @@ final class IdentityRegistry
      */
     public function approve(string $sourceKey, string $level, string $targetKey, string $reviewer): void
     {
-        $levels = $this->mapping->levels();
+        $levels = $this->mapping->targetLevels();
         if (!isset($levels[$level]) || $sourceKey === '' || $targetKey === '' ||
             strlen($targetKey) > 191 || trim($reviewer) === '' || strlen($reviewer) > 191) {
             throw new InvalidArgumentException('Incomplete or unsupported identity approval');
         }
         $definition = $levels[$level];
         $inspector = new SchemaInspector($this->pdo);
-        $inspector->assertMappedColumns($this->mapping);
+        $inspector->assertMappedColumns($this->mapping->strategy() === 'hybrid'
+            ? new MappingDefinition(['strategy' => 'existing', 'levels' => $levels])
+            : $this->mapping);
         $table = $inspector->quote($definition['table']);
         $key = $inspector->quote($definition['key']);
         $scopeColumn = isset($definition['scope_column'])
@@ -72,7 +74,7 @@ final class IdentityRegistry
             FROM uganda_geo_identity_maps WHERE mapping_scope = ? AND approved = 1');
         $statement->execute([$this->scope]);
         $keys = [];
-        $definitions = $this->mapping->levels();
+        $definitions = $this->mapping->targetLevels();
         while (($row = $statement->fetch(PDO::FETCH_ASSOC)) !== false) {
             $level = $row['level'] ?? null;
             if (!is_string($level) || !is_string($row['target_table'] ?? null) ||
@@ -94,7 +96,7 @@ final class IdentityRegistry
 
     public function mappedKey(string $sourceKey, string $level): ?string
     {
-        $definition = $this->mapping->levels()[$level] ?? null;
+        $definition = $this->mapping->targetLevels()[$level] ?? null;
         if ($definition === null) {
             return null;
         }
