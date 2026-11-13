@@ -107,10 +107,14 @@ final class SchemaInspector
 
     public function assertMappedColumns(MappingDefinition $mapping): void
     {
-        $tables = $this->tables();
+        $columnCache = [];
         foreach ($mapping->levels() as $level => $definition) {
-            $available = $tables[$definition['table']] ?? null;
-            if ($available === null) {
+            $table = $definition['table'];
+            if (!isset($columnCache[$table])) {
+                $columnCache[$table] = $this->columns($table);
+            }
+            $available = $columnCache[$table];
+            if ($available === []) {
                 throw new RuntimeException('Missing mapped table for ' . $level);
             }
             foreach (['key', 'name', 'parent', 'scope_column'] as $field) {
@@ -124,7 +128,7 @@ final class SchemaInspector
             }
         }
         if ($mapping->strategy() !== 'existing') {
-            $managedColumns = $tables['uganda_geo_units'] ?? [];
+            $managedColumns = $columnCache['uganda_geo_units'] ?? $this->columns('uganda_geo_units');
             foreach (['source_hash', 'source_key', 'level', 'name', 'parent_hash', 'snapshot_hash'] as $field) {
                 if (!in_array($field, $managedColumns, true)) {
                     throw new RuntimeException('Missing managed geography field: ' . $field);
