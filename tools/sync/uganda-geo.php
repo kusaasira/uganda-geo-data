@@ -83,6 +83,16 @@ try {
             $result = (new SyncPlanner($pdo, $mapping, $scope))->plan($snapshot);
             if (isset($args['output'])) {
                 (new SyncPlanFileWriter())->writeNew($result, $args['output']);
+                $result = [
+                    'status' => 'planned',
+                    'plan_hash' => $result['plan_hash'],
+                    'operations' => count($result['operations']),
+                    'conflicts' => count($result['conflicts']),
+                    'unmapped' => $result['unmapped'],
+                    'unchanged' => $result['unchanged'],
+                    'missing_from_source' => count($result['missing_from_source']),
+                    'plan_file' => $args['output'],
+                ];
             }
         } elseif ($action === 'apply') {
             if (!isset($args['plan'], $args['approve'])) {
