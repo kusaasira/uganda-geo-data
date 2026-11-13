@@ -11,6 +11,7 @@ use Uganda\Sync\SnapshotExporter;
 use Uganda\Sync\SyncExecutor;
 use Uganda\Sync\ResumableSyncExecutor;
 use Uganda\Sync\SyncPlanner;
+use Uganda\Sync\SyncPlanFileWriter;
 use Uganda\Sync\SyncLease;
 
 $packageRoot = dirname(__DIR__, 2);
@@ -81,18 +82,7 @@ try {
         } elseif ($action === 'plan') {
             $result = (new SyncPlanner($pdo, $mapping, $scope))->plan($snapshot);
             if (isset($args['output'])) {
-                $json = json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n";
-                $file = @fopen($args['output'], 'x');
-                if ($file === false) {
-                    throw new RuntimeException('Plan file already exists or is not writable');
-                }
-                try {
-                    if (fwrite($file, $json) !== strlen($json)) {
-                        throw new RuntimeException('Incomplete plan write');
-                    }
-                } finally {
-                    fclose($file);
-                }
+                (new SyncPlanFileWriter())->writeNew($result, $args['output']);
             }
         } elseif ($action === 'apply') {
             if (!isset($args['plan'], $args['approve'])) {
