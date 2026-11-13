@@ -61,5 +61,8 @@
         "ext-pdo_sqlite": "Optional SQLite adapter for database synchronization",
         "ext-pdo_mysql": "Optional MySQL and MariaDB adapter for database synchronization",
         "ext-pdo_pgsql": "Optional PostgreSQL adapter for database synchronization"
-    }
+    },
+    "bin": [
+        "bin/uganda-geo"
+    ]
 }
