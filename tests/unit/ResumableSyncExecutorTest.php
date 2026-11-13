@@ -200,8 +200,10 @@ final class ResumableSyncExecutorTest extends TestCase
         $runner = new ResumableSyncExecutor($this->pdo, $mapping);
 
         $runner->applyNext($snapshot, $plan, $plan['plan_hash'], 1);
-        self::assertSame(['district'],
-            $this->pdo->query('SELECT level FROM uganda_geo_units')->fetchAll(PDO::FETCH_COLUMN));
+        self::assertSame(
+            ['district'],
+            $this->pdo->query('SELECT level FROM uganda_geo_units')->fetchAll(PDO::FETCH_COLUMN)
+        );
 
         $runner->applyNext($snapshot, $plan, $plan['plan_hash'], 1);
         self::assertSame(1, (int) $this->pdo->query(
