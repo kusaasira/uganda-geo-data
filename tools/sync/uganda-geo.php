@@ -11,7 +11,15 @@ use Uganda\Sync\SnapshotExporter;
 use Uganda\Sync\SyncExecutor;
 use Uganda\Sync\SyncPlanner;
 
-require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+$packageRoot = dirname(__DIR__, 2);
+$checkoutAutoload = $packageRoot . '/vendor/autoload.php';
+$consumerAutoload = dirname($packageRoot, 2) . '/autoload.php';
+$autoload = is_file($checkoutAutoload) ? $checkoutAutoload : $consumerAutoload;
+if (!is_file($autoload)) {
+    fwrite(STDERR, "Unable to locate Composer autoloader. Install the package dependencies first.\n");
+    exit(1);
+}
+require_once $autoload;
 
 $args = [];
 foreach (array_slice($argv, 2) as $argument) {
