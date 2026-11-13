@@ -149,7 +149,14 @@ final class ResumableSyncExecutor
                 if (!is_array($operation)) {
                     throw new RuntimeException('Malformed approved synchronization operation');
                 }
-                $writer->apply($operation);
+                $typedOperation = [];
+                foreach ($operation as $field => $value) {
+                    if (!is_string($field)) {
+                        throw new RuntimeException('Operation fields must be named strings');
+                    }
+                    $typedOperation[$field] = $value;
+                }
+                $writer->apply($typedOperation);
             }
             $next = $offset + count($batch);
             $status = $next === $total ? 'completed' : 'running';
@@ -171,9 +178,7 @@ final class ResumableSyncExecutor
             return ['status' => $status, 'plan_hash' => $approvedHash,
                 'next_index' => $next, 'total_operations' => $total];
         } catch (Throwable $exception) {
-            if ($this->pdo->inTransaction()) {
-                $this->pdo->rollBack();
-            }
+            $this->rollbackIfActive();
             throw $exception;
         }
     }
@@ -191,5 +196,11 @@ final class ResumableSyncExecutor
             $result = $this->applyNext($snapshot, $approvedPlan, $approvedHash, $batchSize);
         } while ($result['status'] === 'running');
         return $result;
+    }
+    private function rollbackIfActive(): void
+    {
+        if ($this->pdo->inTransaction()) {
+            $this->pdo->rollBack();
+        }
     }
 }
