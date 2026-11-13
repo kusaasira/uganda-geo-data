@@ -12,6 +12,8 @@ use Uganda\Sync\MappingDefinition;
 use Uganda\Sync\ResumableSyncExecutor;
 use Uganda\Sync\SchemaInstaller;
 use Uganda\Sync\SyncPlanner;
+use Uganda\Sync\SyncExecutor;
+use Uganda\Sync\SyncLease;
 
 final class ResumableSyncExecutorTest extends TestCase
 {
@@ -117,6 +119,34 @@ final class ResumableSyncExecutorTest extends TestCase
         self::assertSame(1, (int) $checkpoint['next_index']);
         self::assertSame('running', $checkpoint['status']);
         self::assertSame(0, (int) $this->pdo->query('SELECT COUNT(*) FROM uganda_geo_sync_runs')->fetchColumn());
+    }
+
+    #[Test]
+    public function reservesTheDatabaseAcrossBatchesAndBlocksOtherApprovedPlans(): void
+    {
+        $mapping = MappingDefinition::managed();
+        $snapshot = $this->fixture();
+        $plan = (new SyncPlanner($this->pdo, $mapping))->plan($snapshot);
+        $runner = new ResumableSyncExecutor($this->pdo, $mapping);
+        $first = $runner->applyNext($snapshot, $plan, $plan['plan_hash'], 1);
+        self::assertSame('running', $first['status']);
+        self::assertSame($plan['plan_hash'], (new SyncLease($this->pdo))->active()['plan_hash']);
+
+        $competing = $this->fixture();
+        $competing['units'][2]['name'] = 'Competing source value';
+        $otherPlan = (new SyncPlanner($this->pdo, $mapping))->plan($competing);
+        try {
+            (new SyncExecutor($this->pdo, $mapping))->apply($competing, $otherPlan, $otherPlan['plan_hash']);
+            self::fail('Concurrent plan must not obtain an active database lease');
+        } catch (RuntimeException $exception) {
+            self::assertStringContainsString('owns this database', $exception->getMessage());
+        }
+        self::assertSame('completed', $runner->applyAll($snapshot, $plan, $plan['plan_hash'], 1)['status']);
+        self::assertNull((new SyncLease($this->pdo))->active());
+
+        $nextPlan = (new SyncPlanner($this->pdo, $mapping))->plan($competing);
+        self::assertSame('applied',
+            (new SyncExecutor($this->pdo, $mapping))->apply($competing, $nextPlan, $nextPlan['plan_hash'])['status']);
     }
 
     #[Test]
