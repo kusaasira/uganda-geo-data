@@ -22,7 +22,10 @@ final class ApplyApprovedSync implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    public int $tries = 3;
+    // Middleware overlap releases consume attempts but are not execution failures.
+    public int $tries = 0;
+
+    public int $maxExceptions = 3;
 
     public int $timeout = 900;
 
@@ -33,6 +36,12 @@ final class ApplyApprovedSync implements ShouldQueue
         public string $scope,
         public int $batchSize = 200,
     ) {
+    }
+
+    /** @return list<int> */
+    public function backoff(): array
+    {
+        return [15, 60, 180];
     }
 
     /** @return array<int, object> */
