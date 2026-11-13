@@ -22,7 +22,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: json
+          extensions: json, pdo_sqlite
           tools: composer:v2
           coverage: none
       - name: Verify independent installation

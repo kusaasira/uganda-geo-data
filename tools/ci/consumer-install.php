@@ -96,12 +96,33 @@ try {
             $application = new Illuminate\Foundation\Application($directory);
             $application->instance('config', new Illuminate\Config\Repository([
                 'uganda-geo' => [],
-                'database' => ['default' => 'sqlite'],
+                'database' => [
+                    'default' => 'sqlite',
+                    'connections' => [
+                        'sqlite' => [
+                            'driver' => 'sqlite',
+                            'database' => ':memory:',
+                            'prefix' => '',
+                        ],
+                    ],
+                ],
             ]));
+            $application->register(Illuminate\Database\DatabaseServiceProvider::class);
             $application->register(Uganda\Laravel\UgandaGeoServiceProvider::class);
             $application->boot();
             if (!$application->getProvider(Uganda\Laravel\UgandaGeoServiceProvider::class)) {
                 throw new RuntimeException('Laravel package provider registration failed');
+            }
+            Illuminate\Support\Facades\Facade::setFacadeApplication($application);
+            $discover = $application->make(Uganda\Laravel\Commands\DiscoverCommand::class);
+            $discover->setLaravel($application);
+            $discoverOutput = new Symfony\Component\Console\Output\BufferedOutput();
+            $discoveryStatus = $discover->run(
+                new Symfony\Component\Console\Input\ArrayInput(['--connection' => 'sqlite']),
+                $discoverOutput
+            );
+            if ($discoveryStatus !== 0 || !str_contains($discoverOutput->fetch(), '"district"')) {
+                throw new RuntimeException('Laravel discovery command failed to inspect a real database connection');
             }
         }
         fwrite(STDOUT, "Isolated Composer consumer passed\n");
