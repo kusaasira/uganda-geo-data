@@ -66,5 +66,10 @@ final class SchemaInstaller
             status VARCHAR(20) NOT NULL,
             updated_at VARCHAR(40) NOT NULL
         )' . $engine);
+        $this->pdo->exec('CREATE TABLE IF NOT EXISTS uganda_geo_sync_leases (
+            lock_name VARCHAR(40) NOT NULL PRIMARY KEY,
+            plan_hash CHAR(64) NOT NULL,
+            acquired_at VARCHAR(40) NOT NULL
+        )' . $engine);
     }
 }
