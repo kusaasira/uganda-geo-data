@@ -29,6 +29,11 @@ final class SyncPlanner
     {
         $catalog = new SnapshotCatalog();
         $units = $catalog->units($snapshot);
+        // Stable parent-first operation order is essential for checkpointed imports.
+        $levelOrder = ['district' => 0, 'county' => 1, 'subcounty' => 2, 'parish' => 3, 'village' => 4];
+        usort($units, static fn (array $left, array $right): int =>
+            ($levelOrder[$left['level']] <=> $levelOrder[$right['level']])
+            ?: strcmp($left['id'], $right['id']));
         $snapshotId = $snapshot['snapshot_id'] ?? null;
         if (!is_string($snapshotId)) {
             throw new RuntimeException('Missing validated source snapshot identity');
