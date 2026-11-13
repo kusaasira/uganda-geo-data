@@ -8,6 +8,7 @@ use PDO;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Uganda\Sync\MappingDefinition;
+use Uganda\Sync\ResumableSyncExecutor;
 use Uganda\Sync\SchemaInspector;
 use Uganda\Sync\SchemaInstaller;
 use Uganda\Sync\SyncExecutor;
@@ -72,12 +73,21 @@ final class SyncExternalDatabaseIntegrationTest extends TestCase
             self::assertSame('already_applied', $again['status']);
             self::assertSame([], $planner->plan($snapshot)['operations']);
 
+            $snapshot['units'][0]['name'] = 'Fixture A Revised';
             $snapshot['units'][1]['name'] = 'Renamed';
             $changed = $planner->plan($snapshot);
-            self::assertCount(1, $changed['operations']);
-            $executor->apply($snapshot, $changed, $changed['plan_hash']);
+            self::assertCount(2, $changed['operations']);
+            $batchRunner = new ResumableSyncExecutor($pdo, $mapping);
+            $firstBatch = $batchRunner->applyNext($snapshot, $changed, $changed['plan_hash'], 1);
+            self::assertSame('running', $firstBatch['status']);
+            self::assertSame(1, $firstBatch['next_index']);
+            $lastBatch = (new ResumableSyncExecutor($pdo, $mapping))
+                ->applyNext($snapshot, $changed, $changed['plan_hash'], 1);
+            self::assertSame('completed', $lastBatch['status']);
+            self::assertSame(2, $lastBatch['next_index']);
             self::assertSame(1, (int) $pdo->query("SELECT COUNT(*) FROM uganda_geo_units WHERE name = 'Renamed'")->fetchColumn());
             self::assertSame(1, (int) $pdo->query("SELECT COUNT(*) FROM uganda_geo_units WHERE name = 'Repeated'")->fetchColumn());
+            self::assertSame(1, (int) $pdo->query("SELECT COUNT(*) FROM uganda_geo_units WHERE name = 'Fixture A Revised'")->fetchColumn());
         } finally {
             foreach (['uganda_geo_sync_runs', 'uganda_geo_identity_maps', 'uganda_geo_units'] as $table) {
                 $pdo->exec('DROP TABLE IF EXISTS ' . $table);
