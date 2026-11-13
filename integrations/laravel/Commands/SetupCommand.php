@@ -64,6 +64,41 @@ final class SetupCommand extends Command
                 throw new RuntimeException('No levels were selected');
             }
         }
+        if ($strategy === 'hybrid' && $this->input->isInteractive() &&
+            $this->confirm('Map existing application tables as read-only identity crosswalk targets?', false)) {
+            $tables = $inspector->tables();
+            $external = [];
+            $parents = ['county' => 'district', 'subcounty' => 'county', 'parish' => 'subcounty', 'village' => 'parish'];
+            foreach (['district', 'county', 'subcounty', 'parish', 'village'] as $level) {
+                $table = $this->choice("External table for $level", array_merge(['skip'], array_keys($tables)), 'skip');
+                if ($table === 'skip') {
+                    continue;
+                }
+                $columns = $tables[$table];
+                $key = $this->choice("External unique key for $level", $columns,
+                    in_array('id', $columns, true) ? 'id' : $columns[0]);
+                $name = $this->choice("External display field for $level", $columns,
+                    in_array('name', $columns, true) ? 'name' : $columns[0]);
+                $definition = ['table' => $table, 'key' => $key, 'name' => $name];
+                $scopeColumn = $this->choice("Optional tenant scope column for $level",
+                    array_merge(['skip'], $columns), 'skip');
+                if ($scopeColumn !== 'skip') {
+                    $definition['scope_column'] = $scopeColumn;
+                }
+                if (isset($parents[$level], $external[$parents[$level]])) {
+                    $parent = $this->choice("External parent foreign key for $level",
+                        array_merge(['skip'], $columns), 'skip');
+                    if ($parent !== 'skip') {
+                        $definition['parent'] = $parent;
+                        $definition['parent_level'] = $parents[$level];
+                    }
+                }
+                $external[$level] = $definition;
+            }
+            if ($external !== []) {
+                $config['external_levels'] = $external;
+            }
+        }
         new MappingDefinition($config);
         $path = config_path('uganda-geo-mapping.json');
         $handle = @fopen($path, 'x');
