@@ -68,6 +68,17 @@ final class SyncHybridIntegrationTest extends TestCase
         self::assertSame('Existing Locality', $row['district_label']);
         self::assertSame('original-owner', $row['created_by']);
 
+        $pdo->exec("INSERT INTO partner_districts VALUES
+            ('uuid-0202', 'organization-1', 'Another Locality', 'original-owner')");
+        $registry->approve('test:district:8', 'district', 'uuid-0202', 'steward');
+        try {
+            (new SyncExecutor($pdo, $mapping, 'organization-1'))
+                ->apply($snapshot, $plan, $plan['plan_hash']);
+            self::fail('Replayed plan must refuse an altered reviewed crosswalk');
+        } catch (\InvalidArgumentException $exception) {
+            self::assertStringContainsString('different source or target', $exception->getMessage());
+        }
+
         $pdo->exec('DROP TABLE partner_districts');
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Missing mapped table');
