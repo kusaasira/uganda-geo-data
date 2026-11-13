@@ -35,15 +35,28 @@ final class IdentityRegistry
             : $this->mapping);
         $table = $inspector->quote($definition['table']);
         $key = $inspector->quote($definition['key']);
+        $scopeSelect = isset($definition['scope_column'])
+            ? ', ' . $inspector->quote($definition['scope_column'])
+            : '';
         $scopeColumn = isset($definition['scope_column'])
             ? ' AND ' . $inspector->quote($definition['scope_column']) . ' = ?'
             : '';
-        $statement = $this->pdo->prepare("SELECT $key FROM $table WHERE $key = ?$scopeColumn");
+        $statement = $this->pdo->prepare("SELECT $key$scopeSelect FROM $table WHERE $key = ?$scopeColumn");
         $statement->execute(isset($definition['scope_column']) ? [$targetKey, $this->scope] : [$targetKey]);
         $first = $statement->fetch(PDO::FETCH_ASSOC);
         $second = $statement->fetch(PDO::FETCH_ASSOC);
         if ($first === false || $second !== false) {
             throw new RuntimeException('Identity mapping requires exactly one existing target record');
+        }
+        $actualKey = $first[$definition['key']] ?? null;
+        if ((!is_string($actualKey) && !is_int($actualKey)) || (string) $actualKey !== $targetKey) {
+            throw new RuntimeException('Local primary key differs from the exact reviewed identity');
+        }
+        if (isset($definition['scope_column'])) {
+            $actualScope = $first[$definition['scope_column']] ?? null;
+            if ((!is_string($actualScope) && !is_int($actualScope)) || (string) $actualScope !== $this->scope) {
+                throw new RuntimeException('Target row belongs to a different exact tenant scope');
+            }
         }
         $sql = 'INSERT INTO uganda_geo_identity_maps
             (mapping_scope, source_hash, source_key, level, target_table, target_key, reviewer, approved)
