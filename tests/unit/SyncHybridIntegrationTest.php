@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace unit;
 
 use PDO;
+use RuntimeException;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Uganda\Sync\IdentityRegistry;
@@ -66,5 +67,10 @@ final class SyncHybridIntegrationTest extends TestCase
         $row = $pdo->query("SELECT * FROM partner_districts WHERE uuid = 'uuid-0101'")->fetch(PDO::FETCH_ASSOC);
         self::assertSame('Existing Locality', $row['district_label']);
         self::assertSame('original-owner', $row['created_by']);
+
+        $pdo->exec('DROP TABLE partner_districts');
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Missing mapped table');
+        (new SyncPlanner($pdo, $mapping, 'organization-1'))->plan($snapshot);
     }
 }
