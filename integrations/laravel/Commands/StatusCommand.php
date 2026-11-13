@@ -7,6 +7,7 @@ namespace Uganda\Laravel\Commands;
 use Illuminate\Console\Command;
 use PDO;
 use Uganda\Laravel\Runtime;
+use Uganda\Sync\SyncLease;
 
 final class StatusCommand extends Command
 {
@@ -22,6 +23,7 @@ final class StatusCommand extends Command
         $this->line(json_encode([
             'completed_runs' => $query->fetchAll(PDO::FETCH_ASSOC),
             'checkpoints' => $pending->fetchAll(PDO::FETCH_ASSOC),
+            'active_lease' => (new SyncLease(Runtime::pdo()))->active(),
         ], JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
         return self::SUCCESS;
     }
