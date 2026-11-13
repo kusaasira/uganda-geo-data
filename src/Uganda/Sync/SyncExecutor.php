@@ -62,8 +62,12 @@ final class SyncExecutor
 
             $inspector = new SchemaInspector($this->pdo);
             foreach ($fresh['operations'] as $operation) {
-                if ($operation['kind'] === 'insert_managed') {
-                    $after = $operation['after'];
+                $kind = $operation['kind'] ?? null;
+                if ($kind === 'insert_managed') {
+                    $after = $operation['after'] ?? null;
+                    if (!is_array($after)) {
+                        throw new RuntimeException('Invalid insert operation');
+                    }
                     $statement = $this->pdo->prepare('INSERT INTO uganda_geo_units
                         (source_hash, source_key, level, name, parent_hash, snapshot_hash)
                         VALUES (?, ?, ?, ?, ?, ?)');
@@ -71,9 +75,12 @@ final class SyncExecutor
                         $after['source_hash'], $after['source_key'], $after['level'],
                         $after['name'], $after['parent_hash'], $after['snapshot_hash'],
                     ]);
-                } elseif ($operation['kind'] === 'update_managed') {
-                    $after = $operation['after'];
-                    $before = $operation['before'];
+                } elseif ($kind === 'update_managed') {
+                    $after = $operation['after'] ?? null;
+                    $before = $operation['before'] ?? null;
+                    if (!is_array($after) || !is_array($before)) {
+                        throw new RuntimeException('Invalid managed update operation');
+                    }
                     $statement = $this->pdo->prepare("UPDATE uganda_geo_units
                         SET level = ?, name = ?, parent_hash = ?, snapshot_hash = ?
                         WHERE source_hash = ? AND source_key = ? AND level = ? AND name = ?
@@ -86,7 +93,7 @@ final class SyncExecutor
                     if ($statement->rowCount() !== 1) {
                         throw new RuntimeException('Managed record changed during sync');
                     }
-                } elseif ($operation['kind'] === 'update_existing') {
+                } elseif ($kind === 'update_existing') {
                     $this->updateExisting($operation, $inspector);
                 } else {
                     throw new RuntimeException('Unknown synchronization operation');
@@ -110,17 +117,24 @@ final class SyncExecutor
     /** @param array<string, mixed> $operation */
     private function updateExisting(array $operation, SchemaInspector $inspector): void
     {
-        $def = $this->mapping->levels()[$operation['level']];
+        $level = $operation['level'] ?? null;
+        if (!is_string($level)) {
+            throw new RuntimeException('Missing external target level');
+        }
+        $def = $this->mapping->levels()[$level] ?? null;
+        if ($def === null) {
+            throw new RuntimeException('Unsupported external target level');
+        }
         $table = $inspector->quote($def['table']);
         $key = $inspector->quote($def['key']);
         $name = $inspector->quote($def['name']);
         $values = [];
         $set = [];
-        if ($operation['update_name']) {
+        if (($operation['update_name'] ?? false) === true) {
             $set[] = "$name = ?";
             $values[] = $operation['after_name'];
         }
-        if ($operation['update_parent']) {
+        if (($operation['update_parent'] ?? false) === true) {
             $column = $inspector->quote($def['parent']);
             $set[] = "$column = ?";
             $values[] = $operation['after_parent'];
@@ -143,7 +157,7 @@ final class SyncExecutor
      * @param array<int, string> $conditions
      * @param array<int, mixed> $values
      */
-    private function expectedCondition(array &$conditions, array &$values, string $column, $expected): void
+    private function expectedCondition(array &$conditions, array &$values, string $column, mixed $expected): void
     {
         if ($expected === null) {
             $conditions[] = "$column IS NULL";

@@ -92,7 +92,10 @@ final class SnapshotCatalog
         return hash('sha256', json_encode($snapshot, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
     }
 
-    /** @param array<string, mixed> $snapshot @return array<string, mixed> */
+    /**
+     * @param array<string, mixed> $snapshot
+     * @return array<string, mixed>
+     */
     public function manifest(array $snapshot): array
     {
         $this->validate($snapshot);

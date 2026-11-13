@@ -40,6 +40,9 @@ final class SyncPlanner
         $existingManaged = [];
         if ($strategy !== 'existing') {
             $query = $this->pdo->query('SELECT source_hash, source_key, level, name, parent_hash FROM uganda_geo_units');
+            if (!$query instanceof \PDOStatement) {
+                throw new RuntimeException('Cannot read existing managed geography');
+            }
             while (($row = $query->fetch(PDO::FETCH_ASSOC)) !== false) {
                 if (!is_string($row['source_hash'] ?? null) || !is_string($row['source_key'] ?? null) ||
                     !is_string($row['level'] ?? null) || !is_string($row['name'] ?? null)) {
