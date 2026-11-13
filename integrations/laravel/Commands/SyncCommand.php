@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Uganda\Laravel\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 use Uganda\Laravel\Jobs\ApplyApprovedSync;
 use Uganda\Laravel\Runtime;
@@ -54,11 +55,6 @@ final class SyncCommand extends Command
         if (!is_string($planPath) || $planPath === '' || !is_string($approval) || $approval === '') {
             throw new RuntimeException('Applying requires both --plan and --approve');
         }
-        if ($this->option('queue')) {
-            ApplyApprovedSync::dispatch($planPath, $approval)->afterCommit();
-            $this->info('Approved plan dispatched to the configured queue');
-            return self::SUCCESS;
-        }
         $json = file_get_contents($planPath);
         if ($json === false) {
             throw new RuntimeException('Cannot read approved plan');
@@ -66,6 +62,34 @@ final class SyncCommand extends Command
         $plan = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
         if (!is_array($plan)) {
             throw new RuntimeException('Invalid plan document');
+        }
+        if (!isset($plan['plan_hash']) || !is_string($plan['plan_hash']) ||
+            !hash_equals($plan['plan_hash'], $approval)) {
+            throw new RuntimeException('Saved plan does not match its explicit approval token');
+        }
+        if ($this->option('queue')) {
+            $disk = config('uganda-geo.queue_disk', 'local');
+            if (!is_string($disk) || $disk === '') {
+                throw new RuntimeException('Queue storage disk must be configured');
+            }
+            $filesystem = Storage::disk($disk);
+            $prefix = 'uganda-geo/approved/' . $approval;
+            $artifacts = [
+                $prefix . '/plan.json' => json_encode($plan, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
+                $prefix . '/snapshot.json' => json_encode($snapshot, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
+            ];
+            foreach ($artifacts as $path => $content) {
+                if ($filesystem->exists($path)) {
+                    if (!hash_equals(hash('sha256', $content), hash('sha256', $filesystem->get($path)))) {
+                        throw new RuntimeException('An immutable sync artifact was unexpectedly changed');
+                    }
+                } elseif (!$filesystem->put($path, $content, ['visibility' => 'private'])) {
+                    throw new RuntimeException('Failed to pin approved sync artifacts to the private queue disk');
+                }
+            }
+            ApplyApprovedSync::dispatch($disk, $prefix, $approval, $scope)->afterCommit();
+            $this->info('Approved sync dispatched with pinned private source and plan artifacts');
+            return self::SUCCESS;
         }
         $report = (new SyncExecutor(Runtime::pdo(), $mapping, $scope))->apply($snapshot, $plan, $approval);
         $this->line(json_encode($report, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
