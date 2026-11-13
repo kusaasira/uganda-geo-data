@@ -33,6 +33,14 @@ final class SyncExecutor
             !hash_equals($approvedPlan['plan_hash'], $approvedPlanHash)) {
             throw new InvalidArgumentException('Explicit approval must match the complete immutable plan hash');
         }
+        $catalog = new SnapshotCatalog();
+        $snapshotHash = $catalog->digest($snapshot);
+        if (($approvedPlan['snapshot_hash'] ?? null) !== $snapshotHash ||
+            ($approvedPlan['mapping_hash'] ?? null) !== $this->mapping->fingerprint() ||
+            ($approvedPlan['scope'] ?? null) !== $this->scope ||
+            ($approvedPlan['strategy'] ?? null) !== $this->mapping->strategy()) {
+            throw new InvalidArgumentException('Approved sync plan belongs to a different source or target configuration');
+        }
         if ($this->pdo->inTransaction()) {
             throw new RuntimeException('Synchronization owns its transaction boundary');
         }
