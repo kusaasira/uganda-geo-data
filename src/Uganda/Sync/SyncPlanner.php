@@ -35,6 +35,12 @@ final class SyncPlanner
         }
         $inspector = new SchemaInspector($this->pdo);
         $inspector->assertMappedColumns($this->mapping);
+        if ($this->mapping->strategy() === 'hybrid' && $this->mapping->externalLevels() !== []) {
+            $inspector->assertMappedColumns(new MappingDefinition([
+                'strategy' => 'existing',
+                'levels' => $this->mapping->externalLevels(),
+            ]));
+        }
 
         $strategy = $this->mapping->strategy();
         $definitions = $this->mapping->levels();
