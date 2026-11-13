@@ -83,6 +83,22 @@ final class SyncSqliteIntegrationTest extends TestCase
     }
 
     #[Test]
+    public function rejectsReplayedApprovalAgainstDifferentSourceSnapshot(): void
+    {
+        (new SchemaInstaller($this->pdo))->install();
+        $mapping = MappingDefinition::managed();
+        $snapshot = $this->snapshot();
+        $plan = (new SyncPlanner($this->pdo, $mapping))->plan($snapshot);
+        $executor = new SyncExecutor($this->pdo, $mapping);
+        $executor->apply($snapshot, $plan, $plan['plan_hash']);
+
+        $changed = $this->snapshot('Different Source Name');
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('different source or target');
+        $executor->apply($changed, $plan, $plan['plan_hash']);
+    }
+
+    #[Test]
     public function explicitlyMappedExistingIdsSurviveNameUpdates(): void
     {
         $this->pdo->exec('CREATE TABLE geo_districts (uuid TEXT PRIMARY KEY, district_name TEXT NOT NULL, created_by TEXT NOT NULL)');
