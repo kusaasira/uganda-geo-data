@@ -65,8 +65,8 @@ final class SyncSnapshotCatalogTest extends TestCase
             $handle = fopen($path, 'r');
             self::assertNotFalse($handle);
             try {
-                self::assertIsArray(fgetcsv($handle));
-                $first = fgetcsv($handle);
+                self::assertIsArray(fgetcsv($handle, null, ',', '"', ''));
+                $first = fgetcsv($handle, null, ',', '"', '');
                 self::assertIsArray($first);
                 self::assertSame("'=SUM(1,2)", $first[0]);
                 self::assertSame("' =HYPERLINK(\"https://example.invalid\")", $first[3]);
