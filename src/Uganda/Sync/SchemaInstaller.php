@@ -45,7 +45,7 @@ final class SchemaInstaller
             reviewer VARCHAR(191) NOT NULL,
             approved INTEGER NOT NULL,
             PRIMARY KEY (mapping_scope, source_hash, target_table),
-            UNIQUE (mapping_scope, level, target_table, target_key)
+            UNIQUE (mapping_scope, target_table, target_key)
         )' . $engine);
         $this->pdo->exec('CREATE TABLE IF NOT EXISTS uganda_geo_sync_runs (
             plan_hash CHAR(64) NOT NULL PRIMARY KEY,
