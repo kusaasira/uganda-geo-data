@@ -12,6 +12,7 @@ use Uganda\Laravel\Runtime;
 use Uganda\Sync\SyncExecutor;
 use Uganda\Sync\ResumableSyncExecutor;
 use Uganda\Sync\SyncPlanner;
+use Uganda\Sync\SyncPlanFileWriter;
 
 final class SyncCommand extends Command
 {
@@ -37,19 +38,7 @@ final class SyncCommand extends Command
             }
             $plan = (new SyncPlanner(Runtime::pdo(), $mapping, $scope))->plan($snapshot);
             if ($this->option('output')) {
-                $path = $this->option('output');
-                $handle = @fopen($path, 'x');
-                if ($handle === false) {
-                    throw new RuntimeException('Plan file must not already exist');
-                }
-                try {
-                    $json = json_encode($plan, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n";
-                    if (fwrite($handle, $json) !== strlen($json)) {
-                        throw new RuntimeException('Incomplete plan write');
-                    }
-                } finally {
-                    fclose($handle);
-                }
+                (new SyncPlanFileWriter())->writeNew($plan, $this->option('output'));
             }
             $this->line(json_encode($plan, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
             return self::SUCCESS;
