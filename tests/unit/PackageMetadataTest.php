@@ -23,13 +23,15 @@ final class PackageMetadataTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
-    public function frameworkDiscoveryNeverReferencesAnUninstalledProvider(): void
+    public function frameworkDiscoveryReferencesAnExistingOptionalProvider(): void
     {
         $raw = file_get_contents(dirname(__DIR__, 2) . '/composer.json');
         $this->assertNotFalse($raw);
         $composer = json_decode((string) $raw, true, 512, JSON_THROW_ON_ERROR);
 
-        $this->assertArrayNotHasKey('laravel', $composer['extra'] ?? []);
+        $provider = $composer['extra']['laravel']['providers'][0] ?? null;
+        $this->assertSame('Uganda' . chr(92) . 'Laravel' . chr(92) . 'UgandaGeoServiceProvider', $provider);
+        $this->assertFileExists(dirname(__DIR__, 2) . '/integrations/laravel/UgandaGeoServiceProvider.php');
         $this->assertArrayNotHasKey('files', $composer['autoload']);
     }
 }

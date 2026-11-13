@@ -74,8 +74,9 @@ final class SyncSqliteIntegrationTest extends TestCase
         $mapping = MappingDefinition::managed();
         $snapshot = $this->snapshot();
         $plan = (new SyncPlanner($this->pdo, $mapping))->plan($snapshot);
-        $this->pdo->exec("INSERT INTO uganda_geo_units (source_hash, source_key, level, name, parent_hash, snapshot_hash)
-             VALUES ('other', 'other', 'district', 'Manual', NULL, 'other')");
+        $statement = $this->pdo->prepare('INSERT INTO uganda_geo_units
+            (source_hash, source_key, level, name, parent_hash, snapshot_hash) VALUES (?, ?, ?, ?, ?, ?)');
+        $statement->execute([hash('sha256', 'test:district:1'), 'test:district:1', 'district', 'Manual', null, 'other']);
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Stale sync plan');
         (new SyncExecutor($this->pdo, $mapping))->apply($snapshot, $plan, $plan['plan_hash']);
