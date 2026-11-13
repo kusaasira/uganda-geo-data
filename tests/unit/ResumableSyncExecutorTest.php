@@ -191,6 +191,29 @@ final class ResumableSyncExecutorTest extends TestCase
     }
 
     #[Test]
+    public function importsParentsBeforeChildrenEvenWhenSourceRowsAreReversed(): void
+    {
+        $mapping = MappingDefinition::managed();
+        $snapshot = $this->fixture();
+        $snapshot['units'] = array_reverse($snapshot['units']);
+        $plan = (new SyncPlanner($this->pdo, $mapping))->plan($snapshot);
+        $runner = new ResumableSyncExecutor($this->pdo, $mapping);
+
+        $runner->applyNext($snapshot, $plan, $plan['plan_hash'], 1);
+        self::assertSame(['district'],
+            $this->pdo->query('SELECT level FROM uganda_geo_units')->fetchAll(PDO::FETCH_COLUMN));
+
+        $runner->applyNext($snapshot, $plan, $plan['plan_hash'], 1);
+        self::assertSame(1, (int) $this->pdo->query(
+            "SELECT COUNT(*) FROM uganda_geo_units WHERE level = 'county'"
+        )->fetchColumn());
+
+        $last = $runner->applyNext($snapshot, $plan, $plan['plan_hash'], 1);
+        self::assertSame('completed', $last['status']);
+        self::assertSame(3, (int) $this->pdo->query('SELECT COUNT(*) FROM uganda_geo_units')->fetchColumn());
+    }
+
+    #[Test]
     public function disallowsInvalidBatchSizes(): void
     {
         $mapping = MappingDefinition::managed();
