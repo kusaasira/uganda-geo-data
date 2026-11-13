@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace unit;
 
 use PDO;
-use RuntimeException;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 use Uganda\Sync\IdentityRegistry;
 use Uganda\Sync\MappingDefinition;
 use Uganda\Sync\ResumableSyncExecutor;
@@ -29,8 +29,11 @@ final class SyncExternalDatabaseIntegrationTest extends TestCase
         if (!is_string($dsn) || !str_starts_with($dsn, 'mysql:')) {
             self::markTestSkipped('Regression targets MySQL case-insensitive collations');
         }
-        $pdo = new PDO($dsn, getenv('UGANDA_GEO_TEST_USER') ?: null,
-            getenv('UGANDA_GEO_TEST_PASSWORD') ?: null);
+        $pdo = new PDO(
+            $dsn,
+            getenv('UGANDA_GEO_TEST_USER') ?: null,
+            getenv('UGANDA_GEO_TEST_PASSWORD') ?: null
+        );
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $pdo->exec('DROP TABLE IF EXISTS uganda_geo_case_fixture');
         $pdo->exec('CREATE TABLE uganda_geo_case_fixture (
