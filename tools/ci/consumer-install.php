@@ -68,10 +68,61 @@ try {
         if (!$first instanceof Uganda\District || $uganda->findById('district', $first->id()) === null) {
             throw new RuntimeException('Installed package lookup failed');
         }
+        $bin = $directory . '/vendor/bin/uganda-geo';
+        if (!is_file($bin)) {
+            throw new RuntimeException('Composer did not install Uganda Geo standalone executable');
+        }
+        $output = $directory . '/consumer-snapshot.json';
+        $command = escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($bin)
+            . ' export --format=json --output=' . escapeshellarg($output) . ' 2>&1';
+        $lines = [];
+        $status = 0;
+        exec($command, $lines, $status);
+        if ($status !== 0 || !is_file($output)) {
+            throw new RuntimeException('Installed CLI export failed: ' . implode("\\n", $lines));
+        }
+        $export = json_decode((string) file_get_contents($output), true, 512, JSON_THROW_ON_ERROR);
+        if (!isset($export['units']) || !is_array($export['units']) || $export['units'] === []) {
+            throw new RuntimeException('Installed CLI exported no geography records');
+        }
         if ($laravel) {
             $container = new Illuminate\Container\Container();
             if (!$container->make(Uganda\Uganda::class) instanceof Uganda\Uganda) {
                 throw new RuntimeException('Laravel container integration failed');
+            }
+            if (!class_exists(Uganda\Laravel\UgandaGeoServiceProvider::class)) {
+                throw new RuntimeException('Optional Laravel service provider is not Composer autoloadable');
+            }
+            $application = new Illuminate\Foundation\Application($directory);
+            $application->instance('config', new Illuminate\Config\Repository([
+                'uganda-geo' => [],
+                'database' => [
+                    'default' => 'sqlite',
+                    'connections' => [
+                        'sqlite' => [
+                            'driver' => 'sqlite',
+                            'database' => ':memory:',
+                            'prefix' => '',
+                        ],
+                    ],
+                ],
+            ]));
+            $application->register(Illuminate\Database\DatabaseServiceProvider::class);
+            $application->register(Uganda\Laravel\UgandaGeoServiceProvider::class);
+            $application->boot();
+            if (!$application->getProvider(Uganda\Laravel\UgandaGeoServiceProvider::class)) {
+                throw new RuntimeException('Laravel package provider registration failed');
+            }
+            Illuminate\Support\Facades\Facade::setFacadeApplication($application);
+            $discover = $application->make(Uganda\Laravel\Commands\DiscoverCommand::class);
+            $discover->setLaravel($application);
+            $discoverOutput = new Symfony\Component\Console\Output\BufferedOutput();
+            $discoveryStatus = $discover->run(
+                new Symfony\Component\Console\Input\ArrayInput(['--connection' => 'sqlite']),
+                $discoverOutput
+            );
+            if ($discoveryStatus !== 0 || !str_contains($discoverOutput->fetch(), '"district"')) {
+                throw new RuntimeException('Laravel discovery command failed to inspect a real database connection');
             }
         }
         fwrite(STDOUT, "Isolated Composer consumer passed\n");

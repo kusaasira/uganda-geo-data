@@ -16,7 +16,15 @@
     "minimum-stability": "stable",
     "autoload": {
         "psr-4": {
+            "Uganda\\Laravel\\": "integrations/laravel/",
             "Uganda\\": "src/Uganda/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Uganda\\Laravel\\UgandaGeoServiceProvider"
+            ]
         }
     },
     "require-dev": {
@@ -48,6 +56,13 @@
         "docs": "https://github.com/kusaasira/uganda-geo-data/blob/main/README.md"
     },
     "suggest": {
-        "ext-intl": "Optional ICU dependency for Unicode-aware exact, prefix and fuzzy administrative searches"
-    }
+        "ext-intl": "Optional ICU dependency for Unicode-aware exact, prefix and fuzzy administrative searches",
+        "ext-pdo": "Required only when using optional database integration",
+        "ext-pdo_sqlite": "Optional SQLite adapter for database synchronization",
+        "ext-pdo_mysql": "Optional MySQL and MariaDB adapter for database synchronization",
+        "ext-pdo_pgsql": "Optional PostgreSQL adapter for database synchronization"
+    },
+    "bin": [
+        "bin/uganda-geo"
+    ]
 }
