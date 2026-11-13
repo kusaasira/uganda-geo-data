@@ -53,6 +53,8 @@ final class SyncExecutor
                 $this->pdo->commit();
                 return ['status' => 'already_applied', 'plan_hash' => $approvedPlanHash, 'operations' => 0];
             }
+            $lease = new SyncLease($this->pdo);
+            $lease->acquire($approvedPlanHash);
             $fresh = (new SyncPlanner($this->pdo, $this->mapping, $this->scope))->plan($snapshot);
             if (!hash_equals($approvedPlanHash, $fresh['plan_hash'])) {
                 throw new RuntimeException('Stale sync plan: source, mapping or database state changed');
@@ -72,6 +74,7 @@ final class SyncExecutor
             foreach ($fresh['operations'] as $operation) {
                 $writer->apply($operation);
             }
+            $lease->release($approvedPlanHash);
             $this->pdo->commit();
             return [
                 'status' => 'applied',
