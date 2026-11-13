@@ -8,7 +8,7 @@ use InvalidArgumentException;
 
 /**
  * @phpstan-type LevelMapping array{table: string, key: string, name: string,
- *     parent?: string, parent_level?: string, write_name?: bool, write_parent?: bool}
+ *     parent?: string, parent_level?: string, scope_column?: string, write_name?: bool, write_parent?: bool}
  * @phpstan-type MappingConfig array{strategy: string, levels: array<string, LevelMapping>,
  *     unmapped_policy?: string}
  */
@@ -35,6 +35,12 @@ final class MappingDefinition
             foreach (['table', 'key', 'name'] as $field) {
                 self::assertIdentifier($mapping[$field] ?? null);
             }
+            if (isset($mapping['scope_column'])) {
+                self::assertIdentifier($mapping['scope_column']);
+                if (in_array($mapping['scope_column'], [$mapping['key'], $mapping['name']], true)) {
+                    throw new InvalidArgumentException('Scope column must be distinct from identity and name columns');
+                }
+            }
             if (isset($mapping['parent'])) {
                 self::assertIdentifier($mapping['parent']);
                 if (!isset($mapping['parent_level']) || !in_array($mapping['parent_level'], self::LEVELS, true)) {
@@ -44,7 +50,7 @@ final class MappingDefinition
                 throw new InvalidArgumentException('Parent level requires a parent column');
             }
             if ($mapping['key'] === $mapping['name'] || (isset($mapping['parent']) &&
-                in_array($mapping['parent'], [$mapping['key'], $mapping['name']], true))) {
+                in_array($mapping['parent'], [$mapping['key'], $mapping['name'], $mapping['scope_column'] ?? null], true))) {
                 throw new InvalidArgumentException('Mapped columns must be distinct');
             }
         }

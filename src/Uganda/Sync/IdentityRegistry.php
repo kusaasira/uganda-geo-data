@@ -33,8 +33,11 @@ final class IdentityRegistry
         $inspector->assertMappedColumns($this->mapping);
         $table = $inspector->quote($definition['table']);
         $key = $inspector->quote($definition['key']);
-        $statement = $this->pdo->prepare("SELECT $key FROM $table WHERE $key = ?");
-        $statement->execute([$targetKey]);
+        $scopeColumn = isset($definition['scope_column'])
+            ? ' AND ' . $inspector->quote($definition['scope_column']) . ' = ?'
+            : '';
+        $statement = $this->pdo->prepare("SELECT $key FROM $table WHERE $key = ?$scopeColumn");
+        $statement->execute(isset($definition['scope_column']) ? [$targetKey, $this->scope] : [$targetKey]);
         $first = $statement->fetch(PDO::FETCH_ASSOC);
         $second = $statement->fetch(PDO::FETCH_ASSOC);
         if ($first === false || $second !== false) {

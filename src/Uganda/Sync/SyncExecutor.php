@@ -144,6 +144,11 @@ final class SyncExecutor
         }
         $conditions = ["$key = ?"];
         $values[] = $operation['target_key'];
+        if (isset($def['scope_column'])) {
+            $scope = $inspector->quote($def['scope_column']);
+            $conditions[] = "$scope = ?";
+            $values[] = $this->scope;
+        }
         $this->expectedCondition($conditions, $values, $name, $operation['before_name']);
         if (isset($def['parent'])) {
             $this->expectedCondition($conditions, $values, $inspector->quote($def['parent']), $operation['before_parent']);

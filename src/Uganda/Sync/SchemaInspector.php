@@ -113,7 +113,7 @@ final class SchemaInspector
             if ($available === null) {
                 throw new RuntimeException('Missing mapped table for ' . $level);
             }
-            foreach (['key', 'name', 'parent'] as $field) {
+            foreach (['key', 'name', 'parent', 'scope_column'] as $field) {
                 if (isset($definition[$field]) && !in_array($definition[$field], $available, true)) {
                     throw new RuntimeException('Missing mapped ' . $field . ' column for ' . $level);
                 }

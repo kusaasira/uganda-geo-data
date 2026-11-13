@@ -181,11 +181,15 @@ final class SyncPlanner
             $keyColumn = $inspector->quote($definition['key']);
             $nameColumn = $inspector->quote($definition['name']);
             $parentColumn = isset($definition['parent']) ? ', ' . $inspector->quote($definition['parent']) : '';
+            $scopeCondition = isset($definition['scope_column'])
+                ? ' AND ' . $inspector->quote($definition['scope_column']) . ' = ?'
+                : '';
             foreach (array_chunk($keys, 200) as $batch) {
                 $placeholders = implode(', ', array_fill(0, count($batch), '?'));
                 $statement = $this->pdo->prepare("SELECT $keyColumn, $nameColumn$parentColumn
-                    FROM $table WHERE $keyColumn IN ($placeholders)");
-                $statement->execute($batch);
+                    FROM $table WHERE $keyColumn IN ($placeholders)$scopeCondition");
+                $values = isset($definition['scope_column']) ? [...$batch, $this->scope] : $batch;
+                $statement->execute($values);
                 while (($row = $statement->fetch(PDO::FETCH_ASSOC)) !== false) {
                     $nativeKey = $row[$definition['key']] ?? null;
                     if (!is_string($nativeKey) && !is_int($nativeKey)) {
