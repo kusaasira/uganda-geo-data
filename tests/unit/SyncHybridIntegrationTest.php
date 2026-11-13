@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace unit;
 
 use PDO;
-use RuntimeException;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 use Uganda\Sync\IdentityRegistry;
 use Uganda\Sync\MappingDefinition;
 use Uganda\Sync\SchemaInstaller;
