@@ -35,7 +35,9 @@ final class IdentityRegistry
         $key = $inspector->quote($definition['key']);
         $statement = $this->pdo->prepare("SELECT $key FROM $table WHERE $key = ?");
         $statement->execute([$targetKey]);
-        if ($statement->fetchColumn() === false || $statement->fetchColumn() !== false) {
+        $first = $statement->fetch(PDO::FETCH_ASSOC);
+        $second = $statement->fetch(PDO::FETCH_ASSOC);
+        if ($first === false || $second !== false) {
             throw new RuntimeException('Identity mapping requires exactly one existing target record');
         }
         $sql = 'INSERT INTO uganda_geo_identity_maps
@@ -69,7 +71,12 @@ final class IdentityRegistry
         $keys = [];
         $definitions = $this->mapping->levels();
         while (($row = $statement->fetch(PDO::FETCH_ASSOC)) !== false) {
-            $level = $row['level'];
+            $level = $row['level'] ?? null;
+            if (!is_string($level) || !is_string($row['target_table'] ?? null) ||
+                !is_string($row['source_key'] ?? null) || !is_string($row['source_hash'] ?? null) ||
+                !is_string($row['target_key'] ?? null)) {
+                throw new RuntimeException('Corrupt approved mapping record');
+            }
             if (!isset($definitions[$level]) || $definitions[$level]['table'] !== $row['target_table']) {
                 continue;
             }
@@ -98,6 +105,10 @@ final class IdentityRegistry
         if ($row['source_key'] !== $sourceKey) {
             throw new RuntimeException('Identity digest collision or corrupted mapping');
         }
-        return (string) $row['target_key'];
+        $target = $row['target_key'] ?? null;
+        if (!is_string($target)) {
+            throw new RuntimeException('Corrupt approved mapping target');
+        }
+        return $target;
     }
 }

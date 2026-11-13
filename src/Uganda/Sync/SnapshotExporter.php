@@ -18,7 +18,7 @@ final class SnapshotExporter
     public function export(array $snapshot, string $format, string $destination): array
     {
         $catalog = new SnapshotCatalog();
-        $catalog->validate($snapshot);
+        $units = $catalog->units($snapshot);
         if (!in_array($format, ['json', 'ndjson', 'csv'], true)) {
             throw new InvalidArgumentException('Unsupported snapshot export format');
         }
@@ -31,7 +31,7 @@ final class SnapshotExporter
                 $data = json_encode($snapshot, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n";
                 $this->write($handle, $data);
             } elseif ($format === 'ndjson') {
-                foreach ($snapshot['units'] as $unit) {
+                foreach ($units as $unit) {
                     $data = json_encode($unit, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n";
                     $this->write($handle, $data);
                 }
@@ -45,7 +45,7 @@ final class SnapshotExporter
                         $name = "'" . $name;
                     }
                     if (fputcsv($handle, [
-                        $snapshot['snapshot_id'], $unit['id'], $unit['level'], $name,
+                        (string) $snapshot['snapshot_id'], $unit['id'], $unit['level'], $name,
                         $unit['parent_id'], $unit['source_id'], $unit['source_record_id'], $unit['lifecycle_status'],
                     ]) === false) {
                         throw new RuntimeException('Cannot write CSV record');

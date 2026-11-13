@@ -20,12 +20,15 @@ final class SyncPlanner
      * Analyze database state without modifications. Only an explicit executor may write.
      *
      * @param array<string, mixed> $snapshot
-     * @return array<string, mixed>
+     * @return array{format_version: int, scope: string, strategy: string, unmapped_policy: string,
+     *     snapshot_id: string, snapshot_hash: string, mapping_hash: string,
+     *     operations: list<array<string, mixed>>, conflicts: list<array<string, string>>,
+     *     unmapped: int, unchanged: int, plan_hash: string}
      */
     public function plan(array $snapshot): array
     {
         $catalog = new SnapshotCatalog();
-        $catalog->validate($snapshot);
+        $units = $catalog->units($snapshot);
         $inspector = new SchemaInspector($this->pdo);
         $inspector->assertMappedColumns($this->mapping);
 
@@ -38,6 +41,10 @@ final class SyncPlanner
         if ($strategy !== 'existing') {
             $query = $this->pdo->query('SELECT source_hash, source_key, level, name, parent_hash FROM uganda_geo_units');
             while (($row = $query->fetch(PDO::FETCH_ASSOC)) !== false) {
+                if (!is_string($row['source_hash'] ?? null) || !is_string($row['source_key'] ?? null) ||
+                    !is_string($row['level'] ?? null) || !is_string($row['name'] ?? null)) {
+                    throw new RuntimeException('Corrupt managed administrative record');
+                }
                 $existingManaged[$row['source_hash']] = $row;
             }
         }
@@ -48,7 +55,7 @@ final class SyncPlanner
         $unmapped = 0;
         $snapshotHash = $catalog->digest($snapshot);
 
-        foreach ($snapshot['units'] as $unit) {
+        foreach ($units as $unit) {
             $level = $unit['level'];
             if (!isset($definitions[$level])) {
                 continue;
@@ -132,7 +139,7 @@ final class SyncPlanner
             'scope' => $this->scope,
             'strategy' => $strategy,
             'unmapped_policy' => $this->mapping->unmappedPolicy(),
-            'snapshot_id' => $snapshot['snapshot_id'],
+            'snapshot_id' => (string) $snapshot['snapshot_id'],
             'snapshot_hash' => $snapshotHash,
             'mapping_hash' => $this->mapping->fingerprint(),
             'operations' => $operations,
@@ -141,6 +148,11 @@ final class SyncPlanner
             'unchanged' => $unchanged,
         ];
         $plan['plan_hash'] = hash('sha256', json_encode($plan, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
+        /** @var array{format_version:int,scope:string,strategy:string,unmapped_policy:string,
+         *     snapshot_id:string,snapshot_hash:string,mapping_hash:string,
+         *     operations:list<array<string,mixed>>,conflicts:list<array<string,string>>,
+         *     unmapped:int,unchanged:int,plan_hash:string} $plan
+         */
         return $plan;
     }
 
